@@ -8,10 +8,14 @@ import { buttonVariants } from "@/app/components/shared/Button";
 
 export type CalendarProps = React.ComponentProps<typeof DayPicker>;
 
-const CalendarDayButton = React.forwardRef<HTMLButtonElement, DayButtonProps>(
-  ({ day, modifiers, className, ...props }, ref) => (
+function CalendarDayButton({
+  day: _day,
+  modifiers,
+  className,
+  ...props
+}: DayButtonProps) {
+  return (
     <button
-      ref={ref}
       type="button"
       className={cn(
         className,
@@ -20,15 +24,14 @@ const CalendarDayButton = React.forwardRef<HTMLButtonElement, DayButtonProps>(
       )}
       {...props}
     />
-  ),
-);
-CalendarDayButton.displayName = "CalendarDayButton";
+  );
+}
 
-const CalendarNavButton = React.forwardRef<
-  HTMLButtonElement,
-  React.ComponentPropsWithoutRef<"button">
->(({ ...props }, ref) => <button ref={ref} type="button" {...props} />);
-CalendarNavButton.displayName = "CalendarNavButton";
+function CalendarNavButton({
+  ...props
+}: React.ButtonHTMLAttributes<HTMLButtonElement>) {
+  return <button type="button" {...props} />;
+}
 
 export default function Calendar({
   className,
