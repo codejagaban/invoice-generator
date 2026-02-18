@@ -26,10 +26,7 @@ const CardHeader = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn(
-      "mb-4 border-b pb-4 [border-color:var(--border)]",
-      className,
-    )}
+    className={cn("mb-4 border-b pb-4 [border-color:var(--border)]", className)}
     {...props}
   />
 ));
