@@ -277,12 +277,12 @@ export default function InvoiceForm({
                     <input
                       type="number"
                       placeholder="Qty"
-                      value={item.quantity}
+                      value={item.quantity || ""}
                       onChange={(e) =>
                         handleItemChange(
                           index,
                           "quantity",
-                          parseFloat(e.target.value),
+                          e.target.value === "" ? 0 : parseFloat(e.target.value),
                         )
                       }
                       min="0.01"
@@ -292,12 +292,12 @@ export default function InvoiceForm({
                     <input
                       type="number"
                       placeholder="Rate"
-                      value={item.rate}
+                      value={item.rate || ""}
                       onChange={(e) =>
                         handleItemChange(
                           index,
                           "rate",
-                          parseFloat(e.target.value),
+                          e.target.value === "" ? 0 : parseFloat(e.target.value),
                         )
                       }
                       min="0"
@@ -306,7 +306,7 @@ export default function InvoiceForm({
                     />
                     <div className="px-3 py-2 text-right font-semibold text-black dark:text-white">
                       {formatCurrency(
-                        item.quantity * item.rate,
+                        (item.quantity || 0) * (item.rate || 0),
                         formData.currency,
                       )}
                     </div>

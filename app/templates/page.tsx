@@ -15,7 +15,7 @@ import Card, {
 } from "@/app/components/shared/Card";
 import type { InvoiceTemplate } from "@/app/lib/types";
 import { getTemplates, deleteTemplate } from "@/app/lib/storage";
-import { formatDate, formatCurrency } from "@/app/lib/invoice";
+import { formatDate } from "@/app/lib/invoice";
 
 export default function TemplatesPage() {
   const [templates, setTemplates] = useState<InvoiceTemplate[]>([]);

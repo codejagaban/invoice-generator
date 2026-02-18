@@ -18,7 +18,9 @@ export function calculateInvoiceSummary(
 
   // Calculate subtotal and item-level discounts
   for (const item of items) {
-    const itemTotal = item.quantity * item.rate;
+    const qty = isNaN(item.quantity) ? 0 : (item.quantity || 0);
+    const rate = isNaN(item.rate) ? 0 : (item.rate || 0);
+    const itemTotal = qty * rate;
     const discount = item.discount ? (itemTotal * item.discount) / 100 : 0;
     const itemTaxBase = itemTotal - discount;
 
@@ -49,6 +51,11 @@ export function formatCurrency(
   amount: number,
   currency: string = "USD",
 ): string {
+  // Handle NaN and invalid values
+  if (isNaN(amount)) {
+    return `$0.00`;
+  }
+  
   try {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
