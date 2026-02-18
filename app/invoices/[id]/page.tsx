@@ -121,13 +121,6 @@ export default function InvoiceDetailPage() {
               </p>
             </div>
             <div className="flex gap-2">
-              <Button
-                variant="secondary"
-                onClick={handleDownloadPDF}
-                disabled={isDownloadingPDF}
-              >
-                {isDownloadingPDF ? "Generating PDF..." : "Download PDF"}
-              </Button>
               <Link href={`/invoices/${id}/edit`}>
                 <Button variant="secondary">Edit</Button>
               </Link>
@@ -314,7 +307,9 @@ export default function InvoiceDetailPage() {
             <Link href="/invoices">
               <Button variant="secondary">Back to Invoices</Button>
             </Link>
-            <Button>Download PDF (Coming Soon)</Button>
+            <Button onClick={handleDownloadPDF} disabled={isDownloadingPDF}>
+              {isDownloadingPDF ? "Generating PDF..." : "Download PDF"}
+            </Button>
             <Button variant="secondary">Send Email (Coming Soon)</Button>
           </div>
         </div>

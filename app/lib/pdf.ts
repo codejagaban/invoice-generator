@@ -44,10 +44,11 @@ export function generateInvoiceHTML(
             padding: 40px;
           }
           header {
-            display: flex;
-            justify-content: space-between;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
             margin-bottom: 40px;
-            border-bottom: 2px solid #000;
+            border-bottom: 1px solid #000;
             padding-bottom: 20px;
           }
           .company-info, .invoice-info {
@@ -119,7 +120,7 @@ export function generateInvoiceHTML(
             padding: 10px;
             text-align: left;
             font-weight: 600;
-            border-bottom: 2px solid #000;
+            border-bottom: 1px solid #000;
             font-size: 12px;
           }
           table td {
@@ -142,8 +143,8 @@ export function generateInvoiceHTML(
             border-bottom: 1px solid #eee;
           }
           .total-row.final {
-            border-bottom: 2px solid #000;
-            border-top: 2px solid #000;
+            border-bottom: 1px solid #000;
+            border-top: 1px solid #000;
             padding: 12px 0;
             font-size: 16px;
             font-weight: bold;
@@ -207,7 +208,6 @@ export function generateInvoiceHTML(
             <div class="invoice-info">
               <h1>INVOICE</h1>
               <div class="invoice-number">Invoice #${invoice.invoiceNumber}</div>
-              <div class="invoice-number">Status: <span class="status-badge status-${invoice.status.toLowerCase()}">${invoice.status}</span></div>
               <div class="invoice-dates">
                 <div><span class="label">Invoice Date</span><br>${formatDate(invoice.date)}</div>
                 <div><span class="label">Due Date</span><br>${formatDate(invoice.dueDate)}</div>
@@ -292,7 +292,6 @@ export function generateInvoiceHTML(
           <!-- Footer -->
           <div style="margin-top: 60px; padding-top: 20px; border-top: 1px solid #ddd; font-size: 12px; color: #999; text-align: center;">
             <p>Thank you for your business!</p>
-            <p style="margin-top: 12px;">Generated on ${new Date().toLocaleDateString()}</p>
           </div>
         </div>
       </body>
@@ -313,9 +312,9 @@ export async function downloadInvoicePDF(
   const htmlContent = generateInvoiceHTML(invoice, company);
 
   const options = {
-    margin: [10, 10, 10, 10],
+    margin: [10, 10, 10, 10] as [number, number, number, number],
     filename: `Invoice_${invoice.invoiceNumber}.pdf`,
-    image: { type: "jpeg", quality: 0.98 },
+    image: { type: "png" as const, quality: 0.98 },
     html2canvas: { scale: 2 },
     jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
   };
