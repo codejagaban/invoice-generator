@@ -10,7 +10,7 @@ import type { Invoice, InvoiceItem, InvoiceSummary } from "./types";
  */
 export function calculateInvoiceSummary(
   items: InvoiceItem[],
-  globalTaxRate: number = 0
+  globalTaxRate: number = 0,
 ): InvoiceSummary {
   let subtotal = 0;
   let itemDiscount = 0;
@@ -45,7 +45,10 @@ export function calculateInvoiceSummary(
 /**
  * Format currency with proper locale and currency symbol
  */
-export function formatCurrency(amount: number, currency: string = "USD"): string {
+export function formatCurrency(
+  amount: number,
+  currency: string = "USD",
+): string {
   try {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
@@ -62,7 +65,10 @@ export function formatCurrency(amount: number, currency: string = "USD"): string
 /**
  * Format a date string to a readable format
  */
-export function formatDate(dateString: string, format: "short" | "long" = "short"): string {
+export function formatDate(
+  dateString: string,
+  format: "short" | "long" = "short",
+): string {
   const date = new Date(dateString);
   if (isNaN(date.getTime())) return dateString;
 
