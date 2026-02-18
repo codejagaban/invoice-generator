@@ -44,15 +44,17 @@ export function generateInvoiceHTML(
             padding: 40px;
           }
           header {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 40px;
+            display: flex;
+            justify-content: space-between;
             margin-bottom: 40px;
-            border-bottom: 1px solid #000;
             padding-bottom: 20px;
+            border-bottom: 1px solid #ddd;
           }
           .company-info, .invoice-info {
             flex: 1;
+          }
+          .company-info {
+            text-align: right;
           }
           h1 {
             font-size: 28px;
@@ -66,6 +68,7 @@ export function generateInvoiceHTML(
           .company-name {
             font-size: 20px;
             font-weight: bold;
+            align-self: end;
             margin-bottom: 8px;
           }
           .company-detail {
@@ -74,7 +77,7 @@ export function generateInvoiceHTML(
             line-height: 1.4;
           }
           .invoice-dates {
-            text-align: right;
+          margin-top: 20px;
             font-size: 13px;
           }
           .invoice-dates div {
@@ -96,11 +99,10 @@ export function generateInvoiceHTML(
             color: #333;
             margin-bottom: 12px;
             padding-bottom: 6px;
-            border-bottom: 1px solid #ddd;
           }
           .customer-info, .payment-terms {
-            font-size: 13px;
-            line-height: 1.6;
+            font-size: 12px;
+            line-height: 1.4;
           }
           .customer-label, .terms-label {
             font-weight: 600;
@@ -114,18 +116,18 @@ export function generateInvoiceHTML(
             font-size: 13px;
           }
           table thead {
-            background: #f5f5f5;
+            background: #f7f7f7;
           }
           table th {
             padding: 10px;
             text-align: left;
             font-weight: 600;
-            border-bottom: 1px solid #000;
+            border-bottom: 0.5px solid #646464;
             font-size: 12px;
           }
           table td {
             padding: 12px 10px;
-            border-bottom: 1px solid #eee;
+            border-bottom: 0.5px solid #eee;
           }
           table th:last-child, table td:last-child {
             text-align: right;
@@ -140,11 +142,11 @@ export function generateInvoiceHTML(
             justify-content: space-between;
             padding: 8px 0;
             font-size: 13px;
-            border-bottom: 1px solid #eee;
+            border-bottom: 0.5px solid #eee;
           }
           .total-row.final {
-            border-bottom: 1px solid #000;
-            border-top: 1px solid #000;
+            border-bottom: 0.5px solid #646464;
+            border-top: 0.5px solid #646464;
             padding: 12px 0;
             font-size: 16px;
             font-weight: bold;
@@ -157,7 +159,7 @@ export function generateInvoiceHTML(
             line-height: 1.6;
             color: #666;
             padding-top: 20px;
-            border-top: 1px solid #ddd;
+            border-top: 0.5px solid #ddd;
           }
           .notes-title {
             font-weight: 600;
@@ -195,7 +197,15 @@ export function generateInvoiceHTML(
         <div class="container">
           <!-- Header -->
           <header>
-            <div class="company-info">
+            <div class="invoice-info">
+              <h1>INVOICE</h1>
+              <div class="invoice-number">Invoice #${invoice.invoiceNumber}</div>
+              <div class="invoice-dates">
+                <div><span class="label">Invoice Date</span><br>${formatDate(invoice.date)}</div>
+                <div><span class="label">Due Date</span><br>${formatDate(invoice.dueDate)}</div>
+              </div>
+            </div>
+                <div class="company-info">
               ${company ? `<div class="company-name">${company.name}</div>` : ""}
               <div class="company-detail">
                 ${company ? `<div>${company.email}</div>` : ""}
@@ -205,19 +215,11 @@ export function generateInvoiceHTML(
                 ${company && company.taxId ? `<div>Tax ID: ${company.taxId}</div>` : ""}
               </div>
             </div>
-            <div class="invoice-info">
-              <h1>INVOICE</h1>
-              <div class="invoice-number">Invoice #${invoice.invoiceNumber}</div>
-              <div class="invoice-dates">
-                <div><span class="label">Invoice Date</span><br>${formatDate(invoice.date)}</div>
-                <div><span class="label">Due Date</span><br>${formatDate(invoice.dueDate)}</div>
-              </div>
-            </div>
           </header>
 
           <!-- Customer Info -->
           <section>
-            <div class="section-title">Bill To</div>
+            <div class="section-title">Bill To:</div>
             <div class="customer-info">
               <div class="customer-label">${invoice.customer.name}</div>
               <div>${invoice.customer.email}</div>
@@ -291,7 +293,7 @@ export function generateInvoiceHTML(
 
           <!-- Footer -->
           <div style="margin-top: 60px; padding-top: 20px; border-top: 1px solid #ddd; font-size: 12px; color: #999; text-align: center;">
-            <p>Thank you for your business!</p>
+            <p>Thank you for patronizing us!</p>
           </div>
         </div>
       </body>
