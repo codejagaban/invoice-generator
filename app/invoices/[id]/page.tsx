@@ -76,8 +76,8 @@ export default function InvoiceDetailPage() {
 
   if (!invoice) {
     return (
-      <div className="min-h-screen bg-white dark:bg-black">
-        <header className="border-b border-gray-200 dark:border-gray-800">
+      <div className="min-h-screen bg-[var(--background)]">
+        <header className="border-b border-b-[var(--border)] bg-[var(--surface)]">
           <div className="mx-auto max-w-7xl px-6 py-6">
             <h1 className="text-3xl font-bold text-black dark:text-white">
               Invoice Not Found
@@ -111,8 +111,8 @@ export default function InvoiceDetailPage() {
   const totalWithTax = total + taxAmount;
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black">
-      <header className="border-b border-gray-200 dark:border-gray-800">
+    <div className="min-h-screen bg-[var(--background)]">
+      <header className="border-b border-b-[var(--border)] bg-[var(--surface)]">
         <div className="mx-auto max-w-7xl px-6 py-6">
           <div className="flex items-center justify-between">
             <div>
@@ -245,7 +245,7 @@ export default function InvoiceDetailPage() {
                 {invoice.items.map((item) => (
                   <div
                     key={item.id}
-                    className="flex items-center justify-between border-b border-gray-200 py-2 dark:border-gray-800"
+                    className="flex items-center justify-between border-b py-2 [border-color:var(--border)]"
                   >
                     <div>
                       <p className="font-medium text-black dark:text-white">
@@ -289,7 +289,7 @@ export default function InvoiceDetailPage() {
                   </span>
                 </div>
               )}
-              <div className="flex justify-between border-t border-gray-200 pt-3 text-lg font-bold dark:border-gray-800">
+              <div className="flex justify-between border-t pt-3 text-lg font-bold [border-color:var(--border)]">
                 <span className="text-black dark:text-white">Total</span>
                 <span className="text-black dark:text-white">
                   {formatCurrency(totalWithTax, invoice.currency)}

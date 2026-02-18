@@ -498,7 +498,7 @@ export default function InvoiceForm({
             {items.map((item, index) => (
               <div
                 key={item.id}
-                className="grid gap-3 rounded-lg border border-gray-200 p-4 dark:border-gray-800 sm:grid-cols-[1fr_auto]"
+                className="grid gap-3 rounded-lg border p-4 sm:grid-cols-[1fr_auto] [border-color:var(--border)]"
               >
                 <div className="space-y-2">
                   <Input
@@ -603,7 +603,7 @@ export default function InvoiceForm({
               leadingIcon={<Percent className="h-4 w-4" />}
             />
           </div>
-          <div className="space-y-2 border-t border-gray-200 pt-4 dark:border-gray-800">
+          <div className="space-y-2 border-t pt-4 [border-color:var(--border)]">
             <div className="flex justify-between text-sm">
               <span className="text-gray-600 dark:text-gray-400">
                 Subtotal:
@@ -632,7 +632,7 @@ export default function InvoiceForm({
                 </span>
               </div>
             )}
-            <div className="flex justify-between border-t border-gray-200 pt-2 text-lg font-bold dark:border-gray-800">
+            <div className="flex justify-between border-t pt-2 text-lg font-bold [border-color:var(--border)]">
               <span>Total:</span>
               <span>{formatCurrency(summary.total, formData.currency)}</span>
             </div>
@@ -716,7 +716,7 @@ export default function InvoiceForm({
               />
             </div>
           </div>
-          <DialogFooter className="border-t border-gray-200 pt-4 dark:border-gray-800">
+          <DialogFooter className="border-t pt-4 [border-color:var(--border)]">
             <Button
               type="button"
               onClick={handleSaveAsTemplate}

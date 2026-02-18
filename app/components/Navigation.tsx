@@ -104,7 +104,7 @@ export default function Navigation() {
   };
 
   return (
-    <header className="border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-black sticky top-0 z-50">
+    <header className="border-b border-b-[var(--border)] bg-[var(--surface)] sticky top-0 z-50">
       <nav className="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
@@ -124,8 +124,8 @@ export default function Navigation() {
               href={item.href}
               className={`px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 isActive(item.href)
-                  ? "bg-gray-100 text-black dark:bg-gray-900 dark:text-white"
-                  : "text-gray-600 hover:text-black hover:bg-gray-50 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-900"
+                  ? "bg-[var(--surface-raised)] text-black dark:text-white"
+                  : "text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white hover:bg-[var(--surface-raised)]"
               }`}
             >
               <span className="inline-flex items-center gap-2">

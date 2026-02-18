@@ -26,7 +26,7 @@ export default function Home() {
               </Link>
               <Link
                 href="/invoices"
-                className="rounded-lg border border-gray-300 px-6 py-3 font-medium text-black transition-colors hover:bg-gray-50 dark:border-gray-700 dark:text-white dark:hover:bg-gray-900"
+                className="rounded-lg border px-6 py-3 font-medium text-black transition-colors hover:bg-[var(--surface-raised)] dark:text-white [border-color:var(--border)]"
               >
                 View Invoices
               </Link>
@@ -70,7 +70,7 @@ export default function Home() {
               ].map((feature) => (
                 <div
                   key={feature.title}
-                  className="rounded-lg border border-gray-200 bg-gray-50 p-6 dark:border-gray-800 dark:bg-gray-900"
+                  className="rounded-lg border bg-[var(--surface-raised)] p-6 [border-color:var(--border)]"
                 >
                   <h4 className="font-semibold text-black dark:text-white">
                     {feature.title}
@@ -84,7 +84,7 @@ export default function Home() {
           </section>
 
           {/* CTA Section */}
-          <section className="mt-16 rounded-lg bg-gray-100 p-8 dark:bg-gray-900 sm:p-12">
+          <section className="mt-16 rounded-lg bg-[var(--surface-raised)] p-8 sm:p-12">
             <div className="space-y-4">
               <h3 className="text-2xl font-bold text-black dark:text-white">
                 Ready to create your first invoice?
@@ -106,7 +106,7 @@ export default function Home() {
         </div>
       </main>
 
-      <footer className="border-t border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-black">
+      <footer className="border-t bg-[var(--surface)] [border-color:var(--border)]">
         <div className="mx-auto max-w-7xl px-6 py-8">
           <p className="text-center text-sm text-gray-600 dark:text-gray-400">
             © 2026 Invoice Generator. Simple invoicing for everyone.

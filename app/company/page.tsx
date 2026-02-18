@@ -87,7 +87,7 @@ export default function CompanyPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-white dark:bg-gray-950 p-6">
+      <div className="min-h-screen bg-[var(--background)] p-6">
         <div className="max-w-6xl mx-auto">
           <p className="text-gray-600 dark:text-gray-400">Loading...</p>
         </div>
@@ -96,7 +96,7 @@ export default function CompanyPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-950 p-6">
+    <div className="min-h-screen bg-[var(--background)] p-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -209,7 +209,7 @@ export default function CompanyPage() {
                       </div>
                     </div>
 
-                    <div className="flex gap-2 pt-4 border-t border-gray-200 dark:border-gray-800">
+                    <div className="flex gap-2 pt-4 border-t [border-color:var(--border)]">
                       {!company.isDefault && companies.length > 0 && (
                         <Button
                           variant="secondary"

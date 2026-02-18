@@ -50,8 +50,8 @@ export default function EditInvoicePage() {
 
   if (!invoice) {
     return (
-      <div className="min-h-screen bg-white dark:bg-black">
-        <header className="border-b border-gray-200 dark:border-gray-800">
+      <div className="min-h-screen bg-[var(--background)]">
+        <header className="border-b border-b-[var(--border)] bg-[var(--surface)]">
           <div className="mx-auto max-w-7xl px-6 py-6">
             <h1 className="text-3xl font-bold text-black dark:text-white">
               Invoice Not Found
@@ -66,8 +66,8 @@ export default function EditInvoicePage() {
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black">
-      <header className="border-b border-gray-200 dark:border-gray-800">
+    <div className="min-h-screen bg-[var(--background)]">
+      <header className="border-b border-b-[var(--border)] bg-[var(--surface)]">
         <div className="mx-auto max-w-7xl px-6 py-6">
           <h1 className="text-3xl font-bold text-black dark:text-white">
             Edit Invoice {invoice.invoiceNumber}
