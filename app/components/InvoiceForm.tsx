@@ -10,6 +10,7 @@ import Link from "next/link";
 import Button from "@/app/components/shared/Button";
 import { InputWithRef as Input } from "@/app/components/shared/Input";
 import Textarea from "@/app/components/shared/Textarea";
+import DatePicker from "@/app/components/shared/DatePicker";
 import Card, {
   CardContent,
   CardHeader,
@@ -37,7 +38,6 @@ import type {
 } from "@/app/lib/types";
 import {
   Building2,
-  Calendar,
   DollarSign,
   FileText,
   Hash,
@@ -373,21 +373,19 @@ export default function InvoiceForm({
             </div>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Input
+            <DatePicker
               label="Invoice Date"
-              name="date"
-              type="date"
               value={formData.date}
-              onChange={handleInputChange}
-              leadingIcon={<Calendar className="h-4 w-4" />}
+              onChange={(value) =>
+                setFormData((prev) => ({ ...prev, date: value }))
+              }
             />
-            <Input
+            <DatePicker
               label="Due Date"
-              name="dueDate"
-              type="date"
               value={formData.dueDate}
-              onChange={handleInputChange}
-              leadingIcon={<Calendar className="h-4 w-4" />}
+              onChange={(value) =>
+                setFormData((prev) => ({ ...prev, dueDate: value }))
+              }
             />
           </div>
         </CardContent>
