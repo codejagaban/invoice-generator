@@ -282,7 +282,9 @@ export default function InvoiceForm({
                         handleItemChange(
                           index,
                           "quantity",
-                          e.target.value === "" ? 0 : parseFloat(e.target.value),
+                          e.target.value === ""
+                            ? 0
+                            : parseFloat(e.target.value),
                         )
                       }
                       min="0.01"
@@ -297,7 +299,9 @@ export default function InvoiceForm({
                         handleItemChange(
                           index,
                           "rate",
-                          e.target.value === "" ? 0 : parseFloat(e.target.value),
+                          e.target.value === ""
+                            ? 0
+                            : parseFloat(e.target.value),
                         )
                       }
                       min="0"
