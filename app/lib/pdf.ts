@@ -316,7 +316,7 @@ export async function downloadInvoicePDF(
     filename: `Invoice_${invoice.invoiceNumber}.pdf`,
     image: { type: "png" as const, quality: 0.98 },
     html2canvas: { scale: 2 },
-    jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+    jsPDF: { unit: "mm", format: "a4", orientation: "portrait" as const },
   };
 
   try {

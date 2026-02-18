@@ -52,14 +52,9 @@ export default function TemplatesPage() {
     <div className="min-h-screen bg-white dark:bg-black">
       <header className="border-b border-gray-200 dark:border-gray-800">
         <div className="mx-auto max-w-7xl px-6 py-6">
-          <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold text-black dark:text-white">
-              Invoice Templates
-            </h1>
-            <Link href="/invoices">
-              <Button variant="secondary">View Invoices</Button>
-            </Link>
-          </div>
+          <h1 className="text-3xl font-bold text-black dark:text-white">
+            Invoice Templates
+          </h1>
         </div>
       </header>
 
