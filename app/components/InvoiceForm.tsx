@@ -21,6 +21,20 @@ import {
   formatCurrency,
 } from "@/app/lib/invoice";
 
+const CURRENCIES = [
+  { code: "USD", label: "US Dollar" },
+  { code: "EUR", label: "Euro" },
+  { code: "GBP", label: "British Pound" },
+  { code: "CAD", label: "Canadian Dollar" },
+  { code: "AUD", label: "Australian Dollar" },
+  { code: "JPY", label: "Japanese Yen" },
+  { code: "CHF", label: "Swiss Franc" },
+  { code: "CNY", label: "Chinese Yuan" },
+  { code: "INR", label: "Indian Rupee" },
+  { code: "MXN", label: "Mexican Peso" },
+  { code: "NGN", label: "Nigerian Naira" },
+];
+
 interface InvoiceFormProps {
   initialData?: Invoice;
   onSubmit: (data: Invoice) => Promise<void>;
@@ -171,12 +185,23 @@ export default function InvoiceForm({
               onChange={handleInputChange}
               error={errors.invoiceNumber}
             />
-            <Input
-              label="Currency"
-              name="currency"
-              value={formData.currency}
-              onChange={handleInputChange}
-            />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Currency
+              </label>
+              <select
+                name="currency"
+                value={formData.currency}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 rounded border border-gray-300 bg-white text-black dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+              >
+                {CURRENCIES.map((currency) => (
+                  <option key={currency.code} value={currency.code}>
+                    {currency.label} ({currency.code})
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <Input
