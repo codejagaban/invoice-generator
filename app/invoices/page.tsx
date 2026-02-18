@@ -109,7 +109,10 @@ export default function InvoicesDashboardPage() {
               Invoices
             </h1>
             <div className="flex items-center gap-3">
-              <Link href="/company" className="text-sm text-gray-600 hover:text-black dark:text-gray-400 dark:hover:text-white transition-colors">
+              <Link
+                href="/company"
+                className="text-sm text-gray-600 hover:text-black dark:text-gray-400 dark:hover:text-white transition-colors"
+              >
                 Settings
               </Link>
               <Link href="/invoices/create">
