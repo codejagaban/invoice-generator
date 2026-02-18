@@ -4,10 +4,16 @@ export default function Home() {
   return (
     <div className="min-h-screen w-full bg-white dark:bg-black">
       <header className="border-b border-gray-200 dark:border-gray-800">
-        <nav className="mx-auto max-w-7xl px-6 py-4 sm:py-6">
+        <nav className="mx-auto max-w-7xl px-6 py-4 sm:py-6 flex justify-between items-center">
           <h1 className="text-2xl font-bold text-black dark:text-white">
             Invoice Generator
           </h1>
+          <Link
+            href="/company"
+            className="text-sm text-gray-600 hover:text-black dark:text-gray-400 dark:hover:text-white transition-colors"
+          >
+            Settings
+          </Link>
         </nav>
       </header>
 

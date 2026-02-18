@@ -3,11 +3,12 @@
  * Handles invoice and template persistence (initially localStorage, extensible for database)
  */
 
-import type { Invoice, InvoiceTemplate } from "./types";
+import type { Invoice, InvoiceTemplate, CompanyDetails } from "./types";
 
 // Storage keys
 const INVOICES_KEY = "invoices";
 const TEMPLATES_KEY = "templates";
+const COMPANY_DETAILS_KEY = "company_details";
 
 /**
  * Initialize storage with default data (runs once on first load)
@@ -20,6 +21,9 @@ export function initializeStorage(): void {
   }
   if (!localStorage.getItem(TEMPLATES_KEY)) {
     localStorage.setItem(TEMPLATES_KEY, JSON.stringify([]));
+  }
+  if (!localStorage.getItem(COMPANY_DETAILS_KEY)) {
+    localStorage.setItem(COMPANY_DETAILS_KEY, JSON.stringify([]));
   }
 }
 
@@ -163,4 +167,108 @@ export function deleteTemplate(id: string): boolean {
   }
 
   return true;
+}
+
+// ============ COMPANY DETAILS STORAGE ============
+
+/**
+ * Get all company details from storage
+ */
+export function getCompanyDetails(): CompanyDetails[] {
+  if (typeof window === "undefined") return [];
+  const data = localStorage.getItem(COMPANY_DETAILS_KEY);
+  return data ? JSON.parse(data) : [];
+}
+
+/**
+ * Get default company details
+ */
+export function getDefaultCompanyDetails(): CompanyDetails | null {
+  const companies = getCompanyDetails();
+  return companies.find((c) => c.isDefault) || null;
+}
+
+/**
+ * Get a single company by ID
+ */
+export function getCompanyById(id: string): CompanyDetails | null {
+  const companies = getCompanyDetails();
+  return companies.find((c) => c.id === id) || null;
+}
+
+/**
+ * Create a new company profile
+ */
+export function createCompany(company: CompanyDetails): CompanyDetails {
+  const companies = getCompanyDetails();
+  companies.push(company);
+  if (typeof window !== "undefined") {
+    localStorage.setItem(COMPANY_DETAILS_KEY, JSON.stringify(companies));
+  }
+  return company;
+}
+
+/**
+ * Update an existing company profile
+ */
+export function updateCompany(
+  id: string,
+  updates: Partial<CompanyDetails>,
+): CompanyDetails | null {
+  const companies = getCompanyDetails();
+  const index = companies.findIndex((c) => c.id === id);
+
+  if (index === -1) return null;
+
+  const updated = {
+    ...companies[index],
+    ...updates,
+    updatedAt: new Date().toISOString(),
+  };
+  companies[index] = updated;
+
+  if (typeof window !== "undefined") {
+    localStorage.setItem(COMPANY_DETAILS_KEY, JSON.stringify(companies));
+  }
+
+  return updated;
+}
+
+/**
+ * Delete a company profile
+ */
+export function deleteCompany(id: string): boolean {
+  const companies = getCompanyDetails();
+  const filtered = companies.filter((c) => c.id !== id);
+
+  if (filtered.length === companies.length) return false;
+
+  if (typeof window !== "undefined") {
+    localStorage.setItem(COMPANY_DETAILS_KEY, JSON.stringify(filtered));
+  }
+
+  return true;
+}
+
+/**
+ * Set a company as default
+ */
+export function setDefaultCompany(id: string): boolean {
+  const companies = getCompanyDetails();
+  let updated = false;
+
+  for (let i = 0; i < companies.length; i++) {
+    if (companies[i].id === id) {
+      companies[i].isDefault = true;
+      updated = true;
+    } else {
+      companies[i].isDefault = false;
+    }
+  }
+
+  if (updated && typeof window !== "undefined") {
+    localStorage.setItem(COMPANY_DETAILS_KEY, JSON.stringify(companies));
+  }
+
+  return updated;
 }

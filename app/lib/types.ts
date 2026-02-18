@@ -59,3 +59,21 @@ export interface InvoiceSummary {
   taxAmount: number;
   total: number;
 }
+
+export interface CompanyDetails {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  address: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  country: string;
+  website?: string;
+  taxId?: string;
+  logo?: string;
+  isDefault: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
