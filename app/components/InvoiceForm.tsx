@@ -123,8 +123,10 @@ export default function InvoiceForm({
   );
 
   useEffect(() => {
-    const storedCustomers = getCustomers();
-    setCustomers(storedCustomers);
+    (async () => {
+      const storedCustomers = await getCustomers();
+      setCustomers(storedCustomers);
+    })();
   }, []);
 
   // Load template from sessionStorage on mount
@@ -255,7 +257,7 @@ export default function InvoiceForm({
         createdAt: new Date().toISOString(),
       };
 
-      createTemplate(template);
+      await createTemplate(template);
       alert("Template saved successfully!");
       setShowSaveTemplateModal(false);
       setTemplateName("");

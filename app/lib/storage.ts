@@ -1,6 +1,6 @@
 /**
  * Data Storage Utilities
- * Handles invoice and template persistence (initially localStorage, extensible for database)
+ * All persistence via IndexedDB through app/lib/db.ts
  */
 
 import type {
@@ -9,344 +9,152 @@ import type {
   CompanyDetails,
   Customer,
 } from "./types";
-
-// Storage keys
-const INVOICES_KEY = "invoices";
-const TEMPLATES_KEY = "templates";
-const COMPANY_DETAILS_KEY = "company_details";
-const CUSTOMERS_KEY = "customers";
-
-/**
- * Initialize storage with default data (runs once on first load)
- */
-export function initializeStorage(): void {
-  if (typeof window === "undefined") return;
-
-  if (!localStorage.getItem(INVOICES_KEY)) {
-    localStorage.setItem(INVOICES_KEY, JSON.stringify([]));
-  }
-  if (!localStorage.getItem(TEMPLATES_KEY)) {
-    localStorage.setItem(TEMPLATES_KEY, JSON.stringify([]));
-  }
-  if (!localStorage.getItem(COMPANY_DETAILS_KEY)) {
-    localStorage.setItem(COMPANY_DETAILS_KEY, JSON.stringify([]));
-  }
-  if (!localStorage.getItem(CUSTOMERS_KEY)) {
-    localStorage.setItem(CUSTOMERS_KEY, JSON.stringify([]));
-  }
-}
+import { STORES, dbGetAll, dbGetOne, dbPut, dbDelete } from "./db";
 
 // ============ INVOICE STORAGE ============
 
-/**
- * Get all invoices from storage
- */
-export function getInvoices(): Invoice[] {
-  if (typeof window === "undefined") return [];
-  const data = localStorage.getItem(INVOICES_KEY);
-  return data ? JSON.parse(data) : [];
+export async function getInvoices(): Promise<Invoice[]> {
+  return dbGetAll<Invoice>(STORES.invoices);
 }
 
-/**
- * Get a single invoice by ID
- */
-export function getInvoiceById(id: string): Invoice | null {
-  const invoices = getInvoices();
-  return invoices.find((inv) => inv.id === id) || null;
+export async function getInvoiceById(id: string): Promise<Invoice | null> {
+  return dbGetOne<Invoice>(STORES.invoices, id);
 }
 
-/**
- * Create a new invoice
- */
-export function createInvoice(invoice: Invoice): Invoice {
-  const invoices = getInvoices();
-  invoices.push(invoice);
-  if (typeof window !== "undefined") {
-    localStorage.setItem(INVOICES_KEY, JSON.stringify(invoices));
-  }
-  return invoice;
+export async function createInvoice(invoice: Invoice): Promise<Invoice> {
+  return dbPut<Invoice>(STORES.invoices, invoice);
 }
 
-/**
- * Update an existing invoice
- */
-export function updateInvoice(
+export async function updateInvoice(
   id: string,
   updates: Partial<Invoice>,
-): Invoice | null {
-  const invoices = getInvoices();
-  const index = invoices.findIndex((inv) => inv.id === id);
-
-  if (index === -1) return null;
-
-  const updated = {
-    ...invoices[index],
+): Promise<Invoice | null> {
+  const existing = await getInvoiceById(id);
+  if (!existing) return null;
+  const updated: Invoice = {
+    ...existing,
     ...updates,
     updatedAt: new Date().toISOString(),
   };
-  invoices[index] = updated;
-
-  if (typeof window !== "undefined") {
-    localStorage.setItem(INVOICES_KEY, JSON.stringify(invoices));
-  }
-
-  return updated;
+  return dbPut<Invoice>(STORES.invoices, updated);
 }
 
-/**
- * Delete an invoice
- */
-export function deleteInvoice(id: string): boolean {
-  const invoices = getInvoices();
-  const filtered = invoices.filter((inv) => inv.id !== id);
-
-  if (filtered.length === invoices.length) return false;
-
-  if (typeof window !== "undefined") {
-    localStorage.setItem(INVOICES_KEY, JSON.stringify(filtered));
-  }
-
-  return true;
+export async function deleteInvoice(id: string): Promise<boolean> {
+  return dbDelete(STORES.invoices, id);
 }
 
 // ============ CUSTOMER STORAGE ============
 
-/**
- * Get all customers from storage
- */
-export function getCustomers(): Customer[] {
-  if (typeof window === "undefined") return [];
-  const data = localStorage.getItem(CUSTOMERS_KEY);
-  return data ? JSON.parse(data) : [];
+export async function getCustomers(): Promise<Customer[]> {
+  return dbGetAll<Customer>(STORES.customers);
 }
 
-/**
- * Get a single customer by ID
- */
-export function getCustomerById(id: string): Customer | null {
-  const customers = getCustomers();
-  return customers.find((customer) => customer.id === id) || null;
+export async function getCustomerById(id: string): Promise<Customer | null> {
+  return dbGetOne<Customer>(STORES.customers, id);
 }
 
-/**
- * Create a new customer
- */
-export function createCustomer(customer: Customer): Customer {
-  const customers = getCustomers();
-  customers.push(customer);
-  if (typeof window !== "undefined") {
-    localStorage.setItem(CUSTOMERS_KEY, JSON.stringify(customers));
-  }
-  return customer;
+export async function createCustomer(customer: Customer): Promise<Customer> {
+  return dbPut<Customer>(STORES.customers, customer);
 }
 
-/**
- * Update an existing customer
- */
-export function updateCustomer(
+export async function updateCustomer(
   id: string,
   updates: Partial<Customer>,
-): Customer | null {
-  const customers = getCustomers();
-  const index = customers.findIndex((customer) => customer.id === id);
-
-  if (index === -1) return null;
-
-  const updated = { ...customers[index], ...updates };
-  customers[index] = updated;
-
-  if (typeof window !== "undefined") {
-    localStorage.setItem(CUSTOMERS_KEY, JSON.stringify(customers));
-  }
-
-  return updated;
+): Promise<Customer | null> {
+  const existing = await getCustomerById(id);
+  if (!existing) return null;
+  const updated: Customer = { ...existing, ...updates };
+  return dbPut<Customer>(STORES.customers, updated);
 }
 
-/**
- * Delete a customer
- */
-export function deleteCustomer(id: string): boolean {
-  const customers = getCustomers();
-  const filtered = customers.filter((customer) => customer.id !== id);
-
-  if (filtered.length === customers.length) return false;
-
-  if (typeof window !== "undefined") {
-    localStorage.setItem(CUSTOMERS_KEY, JSON.stringify(filtered));
-  }
-
-  return true;
+export async function deleteCustomer(id: string): Promise<boolean> {
+  return dbDelete(STORES.customers, id);
 }
 
 // ============ TEMPLATE STORAGE ============
 
-/**
- * Get all invoice templates from storage
- */
-export function getTemplates(): InvoiceTemplate[] {
-  if (typeof window === "undefined") return [];
-  const data = localStorage.getItem(TEMPLATES_KEY);
-  return data ? JSON.parse(data) : [];
+export async function getTemplates(): Promise<InvoiceTemplate[]> {
+  return dbGetAll<InvoiceTemplate>(STORES.templates);
 }
 
-/**
- * Get a single template by ID
- */
-export function getTemplateById(id: string): InvoiceTemplate | null {
-  const templates = getTemplates();
-  return templates.find((tpl) => tpl.id === id) || null;
+export async function getTemplateById(
+  id: string,
+): Promise<InvoiceTemplate | null> {
+  return dbGetOne<InvoiceTemplate>(STORES.templates, id);
 }
 
-/**
- * Create a new invoice template
- */
-export function createTemplate(template: InvoiceTemplate): InvoiceTemplate {
-  const templates = getTemplates();
-  templates.push(template);
-  if (typeof window !== "undefined") {
-    localStorage.setItem(TEMPLATES_KEY, JSON.stringify(templates));
-  }
-  return template;
+export async function createTemplate(
+  template: InvoiceTemplate,
+): Promise<InvoiceTemplate> {
+  return dbPut<InvoiceTemplate>(STORES.templates, template);
 }
 
-/**
- * Update an existing template
- */
-export function updateTemplate(
+export async function updateTemplate(
   id: string,
   updates: Partial<InvoiceTemplate>,
-): InvoiceTemplate | null {
-  const templates = getTemplates();
-  const index = templates.findIndex((tpl) => tpl.id === id);
-
-  if (index === -1) return null;
-
-  const updated = { ...templates[index], ...updates };
-  templates[index] = updated;
-
-  if (typeof window !== "undefined") {
-    localStorage.setItem(TEMPLATES_KEY, JSON.stringify(templates));
-  }
-
-  return updated;
+): Promise<InvoiceTemplate | null> {
+  const existing = await getTemplateById(id);
+  if (!existing) return null;
+  const updated: InvoiceTemplate = { ...existing, ...updates };
+  return dbPut<InvoiceTemplate>(STORES.templates, updated);
 }
 
-/**
- * Delete a template
- */
-export function deleteTemplate(id: string): boolean {
-  const templates = getTemplates();
-  const filtered = templates.filter((tpl) => tpl.id !== id);
-
-  if (filtered.length === templates.length) return false;
-
-  if (typeof window !== "undefined") {
-    localStorage.setItem(TEMPLATES_KEY, JSON.stringify(filtered));
-  }
-
-  return true;
+export async function deleteTemplate(id: string): Promise<boolean> {
+  return dbDelete(STORES.templates, id);
 }
 
 // ============ COMPANY DETAILS STORAGE ============
 
-/**
- * Get all company details from storage
- */
-export function getCompanyDetails(): CompanyDetails[] {
-  if (typeof window === "undefined") return [];
-  const data = localStorage.getItem(COMPANY_DETAILS_KEY);
-  return data ? JSON.parse(data) : [];
+export async function getCompanyDetails(): Promise<CompanyDetails[]> {
+  return dbGetAll<CompanyDetails>(STORES.company_details);
 }
 
-/**
- * Get default company details
- */
-export function getDefaultCompanyDetails(): CompanyDetails | null {
-  const companies = getCompanyDetails();
-  return companies.find((c) => c.isDefault) || null;
+export async function getDefaultCompanyDetails(): Promise<CompanyDetails | null> {
+  const companies = await getCompanyDetails();
+  return companies.find((c) => c.isDefault) ?? null;
 }
 
-/**
- * Get a single company by ID
- */
-export function getCompanyById(id: string): CompanyDetails | null {
-  const companies = getCompanyDetails();
-  return companies.find((c) => c.id === id) || null;
+export async function getCompanyById(
+  id: string,
+): Promise<CompanyDetails | null> {
+  return dbGetOne<CompanyDetails>(STORES.company_details, id);
 }
 
-/**
- * Create a new company profile
- */
-export function createCompany(company: CompanyDetails): CompanyDetails {
-  const companies = getCompanyDetails();
-  companies.push(company);
-  if (typeof window !== "undefined") {
-    localStorage.setItem(COMPANY_DETAILS_KEY, JSON.stringify(companies));
-  }
-  return company;
+export async function createCompany(
+  company: CompanyDetails,
+): Promise<CompanyDetails> {
+  return dbPut<CompanyDetails>(STORES.company_details, company);
 }
 
-/**
- * Update an existing company profile
- */
-export function updateCompany(
+export async function updateCompany(
   id: string,
   updates: Partial<CompanyDetails>,
-): CompanyDetails | null {
-  const companies = getCompanyDetails();
-  const index = companies.findIndex((c) => c.id === id);
-
-  if (index === -1) return null;
-
-  const updated = {
-    ...companies[index],
+): Promise<CompanyDetails | null> {
+  const existing = await getCompanyById(id);
+  if (!existing) return null;
+  const updated: CompanyDetails = {
+    ...existing,
     ...updates,
     updatedAt: new Date().toISOString(),
   };
-  companies[index] = updated;
-
-  if (typeof window !== "undefined") {
-    localStorage.setItem(COMPANY_DETAILS_KEY, JSON.stringify(companies));
-  }
-
-  return updated;
+  return dbPut<CompanyDetails>(STORES.company_details, updated);
 }
 
-/**
- * Delete a company profile
- */
-export function deleteCompany(id: string): boolean {
-  const companies = getCompanyDetails();
-  const filtered = companies.filter((c) => c.id !== id);
+export async function deleteCompany(id: string): Promise<boolean> {
+  return dbDelete(STORES.company_details, id);
+}
 
-  if (filtered.length === companies.length) return false;
-
-  if (typeof window !== "undefined") {
-    localStorage.setItem(COMPANY_DETAILS_KEY, JSON.stringify(filtered));
-  }
-
+export async function setDefaultCompany(id: string): Promise<boolean> {
+  const companies = await getCompanyDetails();
+  const target = companies.find((c) => c.id === id);
+  if (!target) return false;
+  await Promise.all(
+    companies.map((c) =>
+      dbPut<CompanyDetails>(STORES.company_details, {
+        ...c,
+        isDefault: c.id === id,
+      }),
+    ),
+  );
   return true;
-}
-
-/**
- * Set a company as default
- */
-export function setDefaultCompany(id: string): boolean {
-  const companies = getCompanyDetails();
-  let updated = false;
-
-  for (let i = 0; i < companies.length; i++) {
-    if (companies[i].id === id) {
-      companies[i].isDefault = true;
-      updated = true;
-    } else {
-      companies[i].isDefault = false;
-    }
-  }
-
-  if (updated && typeof window !== "undefined") {
-    localStorage.setItem(COMPANY_DETAILS_KEY, JSON.stringify(companies));
-  }
-
-  return updated;
 }

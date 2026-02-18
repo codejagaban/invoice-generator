@@ -20,18 +20,20 @@ export default function EditInvoicePage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const inv = getInvoiceById(id);
-    if (!inv) {
-      setError("Invoice not found");
-    }
-    setInvoice(inv);
-    setIsLoading(false);
+    (async () => {
+      const inv = await getInvoiceById(id);
+      if (!inv) {
+        setError("Invoice not found");
+      }
+      setInvoice(inv);
+      setIsLoading(false);
+    })();
   }, [id]);
 
   const handleSubmit = async (updatedInvoice: Invoice) => {
     try {
       setError(null);
-      updateInvoice(id, updatedInvoice);
+      await updateInvoice(id, updatedInvoice);
       router.push(`/invoices/${id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to update invoice");

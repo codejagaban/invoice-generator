@@ -31,22 +31,23 @@ export default function CompanyPage() {
   const [editingData, setEditingData] = useState<CompanyDetails | undefined>();
 
   useEffect(() => {
-    // Load companies
-    const companies = getCompanyDetails();
-    setCompanies(companies);
-    setIsLoading(false);
+    (async () => {
+      const companies = await getCompanyDetails();
+      setCompanies(companies);
+      setIsLoading(false);
+    })();
   }, []);
 
   const handleSubmit = async (company: CompanyDetails) => {
     if (editingId) {
-      const updated = updateCompany(editingId, company);
+      const updated = await updateCompany(editingId, company);
       if (updated) {
         setCompanies((prev) =>
           prev.map((c) => (c.id === editingId ? updated : c)),
         );
       }
     } else {
-      const created = createCompany(company);
+      const created = await createCompany(company);
       setCompanies((prev) => [...prev, created]);
     }
     setShowForm(false);
@@ -54,15 +55,15 @@ export default function CompanyPage() {
     setEditingData(undefined);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm("Are you sure you want to delete this company profile?")) {
-      deleteCompany(id);
+      await deleteCompany(id);
       setCompanies((prev) => prev.filter((c) => c.id !== id));
     }
   };
 
-  const handleSetDefault = (id: string) => {
-    if (setDefaultCompany(id)) {
+  const handleSetDefault = async (id: string) => {
+    if (await setDefaultCompany(id)) {
       setCompanies((prev) =>
         prev.map((c) => ({
           ...c,

@@ -23,14 +23,16 @@ export default function TemplatesPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const data = getTemplates();
-    setTemplates(data);
-    setIsLoading(false);
+    (async () => {
+      const data = await getTemplates();
+      setTemplates(data);
+      setIsLoading(false);
+    })();
   }, []);
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this template?")) return;
-    deleteTemplate(id);
+    await deleteTemplate(id);
     setTemplates(templates.filter((t) => t.id !== id));
   };
 

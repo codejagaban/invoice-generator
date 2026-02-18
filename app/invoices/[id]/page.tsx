@@ -39,16 +39,18 @@ export default function InvoiceDetailPage() {
   const [isDownloadingPDF, setIsDownloadingPDF] = useState(false);
 
   useEffect(() => {
-    const inv = getInvoiceById(id);
-    setInvoice(inv);
-    setIsLoading(false);
+    (async () => {
+      const inv = await getInvoiceById(id);
+      setInvoice(inv);
+      setIsLoading(false);
+    })();
   }, [id]);
 
   const handleDownloadPDF = async () => {
     if (!invoice) return;
     try {
       setIsDownloadingPDF(true);
-      const company = getDefaultCompanyDetails();
+      const company = await getDefaultCompanyDetails();
       await downloadInvoicePDF(invoice, company || undefined);
     } catch (error) {
       alert("Failed to download PDF. Please try again.");
@@ -60,7 +62,7 @@ export default function InvoiceDetailPage() {
 
   const handleDelete = async () => {
     if (!confirm("Are you sure you want to delete this invoice?")) return;
-    deleteInvoice(id);
+    await deleteInvoice(id);
     router.push("/invoices");
   };
 

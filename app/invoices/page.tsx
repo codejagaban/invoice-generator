@@ -37,8 +37,10 @@ export default function InvoicesDashboardPage() {
   const [sortBy, setSortBy] = useState<"date" | "amount" | "name">("date");
 
   useEffect(() => {
-    const data = getInvoices();
-    setInvoices(data);
+    (async () => {
+      const data = await getInvoices();
+      setInvoices(data);
+    })();
   }, []);
   useEffect(() => {
     let filtered = invoices;

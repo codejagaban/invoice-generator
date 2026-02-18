@@ -20,7 +20,7 @@ export default function CreateInvoicePage() {
   const handleSubmit = async (invoice: Invoice) => {
     try {
       setError(null);
-      createInvoice(invoice);
+      await createInvoice(invoice);
       router.push(`/invoices/${invoice.id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create invoice");
