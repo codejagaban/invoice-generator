@@ -57,13 +57,20 @@ export function createInvoice(invoice: Invoice): Invoice {
 /**
  * Update an existing invoice
  */
-export function updateInvoice(id: string, updates: Partial<Invoice>): Invoice | null {
+export function updateInvoice(
+  id: string,
+  updates: Partial<Invoice>,
+): Invoice | null {
   const invoices = getInvoices();
   const index = invoices.findIndex((inv) => inv.id === id);
 
   if (index === -1) return null;
 
-  const updated = { ...invoices[index], ...updates, updatedAt: new Date().toISOString() };
+  const updated = {
+    ...invoices[index],
+    ...updates,
+    updatedAt: new Date().toISOString(),
+  };
   invoices[index] = updated;
 
   if (typeof window !== "undefined") {
@@ -123,7 +130,10 @@ export function createTemplate(template: InvoiceTemplate): InvoiceTemplate {
 /**
  * Update an existing template
  */
-export function updateTemplate(id: string, updates: Partial<InvoiceTemplate>): InvoiceTemplate | null {
+export function updateTemplate(
+  id: string,
+  updates: Partial<InvoiceTemplate>,
+): InvoiceTemplate | null {
   const templates = getTemplates();
   const index = templates.findIndex((tpl) => tpl.id === id);
 
