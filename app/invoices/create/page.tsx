@@ -5,9 +5,11 @@
 
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import InvoiceForm from "@/app/components/InvoiceForm";
+import Card from "@/app/components/shared/Card";
 import type { Invoice } from "@/app/lib/types";
 import { createInvoice } from "@/app/lib/storage";
 
@@ -32,6 +34,13 @@ export default function CreateInvoicePage() {
           <h1 className="text-3xl font-bold text-black dark:text-white">
             Create Invoice
           </h1>
+          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+            Fill out the form below to create a new invoice. You can{" "}
+            <Link href="/templates" className="font-medium hover:underline">
+              load a template
+            </Link>{" "}
+            to get started faster.
+          </p>
         </div>
       </header>
 

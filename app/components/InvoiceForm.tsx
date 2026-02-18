@@ -5,7 +5,8 @@
  * Client-side form for creating and editing invoices
  */
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import Link from "next/link";
 import Button from "@/app/components/shared/Button";
 import { InputWithRef as Input } from "@/app/components/shared/Input";
 import Card, {
@@ -13,13 +14,19 @@ import Card, {
   CardHeader,
   CardTitle,
 } from "@/app/components/shared/Card";
-import type { Invoice, InvoiceItem, Customer } from "@/app/lib/types";
+import type {
+  Invoice,
+  InvoiceItem,
+  Customer,
+  InvoiceTemplate,
+} from "@/app/lib/types";
 import { validateInvoiceForm, invoiceValidation } from "@/app/lib/validation";
 import {
   calculateInvoiceSummary,
   generateInvoiceNumber,
   formatCurrency,
 } from "@/app/lib/invoice";
+import { createTemplate, getCustomers } from "@/app/lib/storage";
 
 const CURRENCIES = [
   { code: "USD", label: "US Dollar" },
@@ -46,6 +53,12 @@ export default function InvoiceForm({
 }: InvoiceFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showSaveTemplateModal, setShowSaveTemplateModal] = useState(false);
+  const [templateName, setTemplateName] = useState("");
+  const [templateDescription, setTemplateDescription] = useState("");
+  const [isSavingTemplate, setIsSavingTemplate] = useState(false);
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [selectedCustomerId, setSelectedCustomerId] = useState<string>("");
 
   const [formData, setFormData] = useState({
     invoiceNumber: initialData?.invoiceNumber || generateInvoiceNumber(),
@@ -76,6 +89,70 @@ export default function InvoiceForm({
       },
     ],
   );
+
+  useEffect(() => {
+    const storedCustomers = getCustomers();
+    setCustomers(storedCustomers);
+  }, []);
+
+  // Load template from sessionStorage on mount
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const selectedTemplate = sessionStorage.getItem("selectedTemplate");
+    if (selectedTemplate && !initialData) {
+      try {
+        const template: InvoiceTemplate = JSON.parse(selectedTemplate);
+
+        // Populate form with template data
+        setFormData((prev) => ({
+          ...prev,
+          customerName: template.customer.name || "",
+          customerEmail: template.customer.email || "",
+          customerAddress: template.customer.address || "",
+          customerCity: template.customer.city || "",
+          customerState: template.customer.state || "",
+          customerZipCode: template.customer.zipCode || "",
+          currency: template.currency,
+          notes: template.notes || "",
+          taxRate: template.taxRate || 0,
+        }));
+
+        // Populate items
+        if (template.items && template.items.length > 0) {
+          const populatedItems = template.items.map((item, index) => ({
+            id: String(index + 1),
+            description: item.description || "",
+            quantity: item.quantity || 1,
+            rate: item.rate || 0,
+          }));
+          setItems(populatedItems);
+        }
+
+        // Clear sessionStorage
+        sessionStorage.removeItem("selectedTemplate");
+      } catch (err) {
+        console.error("Failed to load template:", err);
+      }
+    }
+  }, [initialData]);
+
+  const handleCustomerSelect = (customerId: string) => {
+    setSelectedCustomerId(customerId);
+
+    const selected = customers.find((customer) => customer.id === customerId);
+    if (!selected) return;
+
+    setFormData((prev) => ({
+      ...prev,
+      customerName: selected.name,
+      customerEmail: selected.email,
+      customerAddress: selected.address,
+      customerCity: selected.city,
+      customerState: selected.state,
+      customerZipCode: selected.zipCode,
+    }));
+  };
 
   const handleInputChange = (
     e: React.ChangeEvent<
@@ -118,6 +195,47 @@ export default function InvoiceForm({
     setItems(items.filter((_, i) => i !== index));
   };
 
+  const handleSaveAsTemplate = async () => {
+    if (!templateName.trim()) {
+      alert("Please enter a template name");
+      return;
+    }
+
+    try {
+      setIsSavingTemplate(true);
+
+      const template: InvoiceTemplate = {
+        id: String(Date.now()),
+        name: templateName,
+        description: templateDescription,
+        customer: {
+          name: formData.customerName,
+          email: formData.customerEmail,
+          address: formData.customerAddress,
+          city: formData.customerCity,
+          state: formData.customerState,
+          zipCode: formData.customerZipCode,
+        },
+        items,
+        notes: formData.notes,
+        taxRate: Number(formData.taxRate),
+        currency: formData.currency,
+        createdAt: new Date().toISOString(),
+      };
+
+      createTemplate(template);
+      alert("Template saved successfully!");
+      setShowSaveTemplateModal(false);
+      setTemplateName("");
+      setTemplateDescription("");
+    } catch (error) {
+      alert("Failed to save template. Please try again.");
+      console.error(error);
+    } finally {
+      setIsSavingTemplate(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
@@ -136,6 +254,9 @@ export default function InvoiceForm({
       }
 
       // Create invoice object
+      const customerId =
+        initialData?.customer.id || selectedCustomerId || String(Date.now());
+
       const invoice: Invoice = {
         id: initialData?.id || String(Date.now()),
         invoiceNumber: formData.invoiceNumber,
@@ -143,7 +264,7 @@ export default function InvoiceForm({
         dueDate: formData.dueDate,
         status: initialData?.status || "draft",
         customer: {
-          id: initialData?.customer.id || String(Date.now()),
+          id: customerId,
           name: formData.customerName,
           email: formData.customerEmail,
           address: formData.customerAddress,
@@ -233,6 +354,33 @@ export default function InvoiceForm({
           <CardTitle>Customer Information</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Select Customer
+              </label>
+              <select
+                value={selectedCustomerId}
+                onChange={(e) => handleCustomerSelect(e.target.value)}
+                className="w-full px-3 py-2 rounded border border-gray-300 bg-white text-black dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+              >
+                <option value="">Choose an existing customer</option>
+                {customers.map((customer) => (
+                  <option key={customer.id} value={customer.id}>
+                    {customer.name} ({customer.email})
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex items-end">
+              <Link
+                href="/customers"
+                className="text-sm text-blue-600 hover:underline dark:text-blue-400"
+              >
+                Manage customers
+              </Link>
+            </div>
+          </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <Input
               label="Customer Name"
@@ -445,6 +593,13 @@ export default function InvoiceForm({
         <Button
           type="button"
           variant="secondary"
+          onClick={() => setShowSaveTemplateModal(true)}
+        >
+          Save as Template
+        </Button>
+        <Button
+          type="button"
+          variant="secondary"
           onClick={() => window.history.back()}
         >
           Cancel
@@ -454,6 +609,56 @@ export default function InvoiceForm({
       {errors.submit && (
         <div className="rounded-lg border border-red-500 bg-red-50 p-4 text-red-700 dark:bg-red-900/20 dark:text-red-400">
           {errors.submit}
+        </div>
+      )}
+
+      {/* Save Template Modal */}
+      {showSaveTemplateModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/70">
+          <Card className="w-full max-w-md mx-4">
+            <CardHeader>
+              <CardTitle>Save as Template</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Input
+                label="Template Name"
+                value={templateName}
+                onChange={(e) => setTemplateName(e.target.value)}
+                placeholder="e.g., Monthly Service Invoice"
+                autoFocus
+              />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Description (Optional)
+                </label>
+                <textarea
+                  value={templateDescription}
+                  onChange={(e) => setTemplateDescription(e.target.value)}
+                  placeholder="Add any notes about this template..."
+                  rows={3}
+                  className="w-full rounded border border-gray-300 px-3 py-2 text-black placeholder-gray-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+                />
+              </div>
+              <div className="flex gap-3 border-t border-gray-200 pt-4 dark:border-gray-800">
+                <Button
+                  type="button"
+                  onClick={handleSaveAsTemplate}
+                  isLoading={isSavingTemplate}
+                  className="flex-1"
+                >
+                  Save Template
+                </Button>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => setShowSaveTemplateModal(false)}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       )}
     </form>

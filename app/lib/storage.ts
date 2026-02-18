@@ -3,12 +3,18 @@
  * Handles invoice and template persistence (initially localStorage, extensible for database)
  */
 
-import type { Invoice, InvoiceTemplate, CompanyDetails } from "./types";
+import type {
+  Invoice,
+  InvoiceTemplate,
+  CompanyDetails,
+  Customer,
+} from "./types";
 
 // Storage keys
 const INVOICES_KEY = "invoices";
 const TEMPLATES_KEY = "templates";
 const COMPANY_DETAILS_KEY = "company_details";
+const CUSTOMERS_KEY = "customers";
 
 /**
  * Initialize storage with default data (runs once on first load)
@@ -24,6 +30,9 @@ export function initializeStorage(): void {
   }
   if (!localStorage.getItem(COMPANY_DETAILS_KEY)) {
     localStorage.setItem(COMPANY_DETAILS_KEY, JSON.stringify([]));
+  }
+  if (!localStorage.getItem(CUSTOMERS_KEY)) {
+    localStorage.setItem(CUSTOMERS_KEY, JSON.stringify([]));
   }
 }
 
@@ -95,6 +104,75 @@ export function deleteInvoice(id: string): boolean {
 
   if (typeof window !== "undefined") {
     localStorage.setItem(INVOICES_KEY, JSON.stringify(filtered));
+  }
+
+  return true;
+}
+
+// ============ CUSTOMER STORAGE ============
+
+/**
+ * Get all customers from storage
+ */
+export function getCustomers(): Customer[] {
+  if (typeof window === "undefined") return [];
+  const data = localStorage.getItem(CUSTOMERS_KEY);
+  return data ? JSON.parse(data) : [];
+}
+
+/**
+ * Get a single customer by ID
+ */
+export function getCustomerById(id: string): Customer | null {
+  const customers = getCustomers();
+  return customers.find((customer) => customer.id === id) || null;
+}
+
+/**
+ * Create a new customer
+ */
+export function createCustomer(customer: Customer): Customer {
+  const customers = getCustomers();
+  customers.push(customer);
+  if (typeof window !== "undefined") {
+    localStorage.setItem(CUSTOMERS_KEY, JSON.stringify(customers));
+  }
+  return customer;
+}
+
+/**
+ * Update an existing customer
+ */
+export function updateCustomer(
+  id: string,
+  updates: Partial<Customer>,
+): Customer | null {
+  const customers = getCustomers();
+  const index = customers.findIndex((customer) => customer.id === id);
+
+  if (index === -1) return null;
+
+  const updated = { ...customers[index], ...updates };
+  customers[index] = updated;
+
+  if (typeof window !== "undefined") {
+    localStorage.setItem(CUSTOMERS_KEY, JSON.stringify(customers));
+  }
+
+  return updated;
+}
+
+/**
+ * Delete a customer
+ */
+export function deleteCustomer(id: string): boolean {
+  const customers = getCustomers();
+  const filtered = customers.filter((customer) => customer.id !== id);
+
+  if (filtered.length === customers.length) return false;
+
+  if (typeof window !== "undefined") {
+    localStorage.setItem(CUSTOMERS_KEY, JSON.stringify(filtered));
   }
 
   return true;
