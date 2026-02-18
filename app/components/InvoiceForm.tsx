@@ -9,17 +9,49 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Button from "@/app/components/shared/Button";
 import { InputWithRef as Input } from "@/app/components/shared/Input";
+import Textarea from "@/app/components/shared/Textarea";
 import Card, {
   CardContent,
   CardHeader,
   CardTitle,
 } from "@/app/components/shared/Card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogFooter,
+  DialogTitle,
+} from "@/app/components/shared/Dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/app/components/shared/Select";
 import type {
   Invoice,
   InvoiceItem,
   Customer,
   InvoiceTemplate,
 } from "@/app/lib/types";
+import {
+  Building2,
+  Calendar,
+  DollarSign,
+  FileText,
+  Hash,
+  Layers,
+  Mail,
+  Map,
+  MapPin,
+  Percent,
+  Plus,
+  Save,
+  Trash2,
+  User,
+  X,
+} from "lucide-react";
 import { validateInvoiceForm, invoiceValidation } from "@/app/lib/validation";
 import {
   calculateInvoiceSummary,
@@ -310,23 +342,34 @@ export default function InvoiceForm({
               value={formData.invoiceNumber}
               onChange={handleInputChange}
               error={errors.invoiceNumber}
+              leadingIcon={<Hash className="h-4 w-4" />}
             />
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Currency
               </label>
-              <select
-                name="currency"
-                value={formData.currency}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 rounded border border-gray-300 bg-white text-black dark:border-gray-700 dark:bg-gray-900 dark:text-white"
-              >
-                {CURRENCIES.map((currency) => (
-                  <option key={currency.code} value={currency.code}>
-                    {currency.label} ({currency.code})
-                  </option>
-                ))}
-              </select>
+              <div className="relative">
+                <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">
+                  <DollarSign className="h-4 w-4" />
+                </span>
+                <Select
+                  value={formData.currency}
+                  onValueChange={(value) =>
+                    setFormData((prev) => ({ ...prev, currency: value }))
+                  }
+                >
+                  <SelectTrigger className="pl-9">
+                    <SelectValue placeholder="Select currency" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CURRENCIES.map((currency) => (
+                      <SelectItem key={currency.code} value={currency.code}>
+                        {currency.label} ({currency.code})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
@@ -336,6 +379,7 @@ export default function InvoiceForm({
               type="date"
               value={formData.date}
               onChange={handleInputChange}
+              leadingIcon={<Calendar className="h-4 w-4" />}
             />
             <Input
               label="Due Date"
@@ -343,6 +387,7 @@ export default function InvoiceForm({
               type="date"
               value={formData.dueDate}
               onChange={handleInputChange}
+              leadingIcon={<Calendar className="h-4 w-4" />}
             />
           </div>
         </CardContent>
@@ -359,18 +404,26 @@ export default function InvoiceForm({
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Select Customer
               </label>
-              <select
-                value={selectedCustomerId}
-                onChange={(e) => handleCustomerSelect(e.target.value)}
-                className="w-full px-3 py-2 rounded border border-gray-300 bg-white text-black dark:border-gray-700 dark:bg-gray-900 dark:text-white"
-              >
-                <option value="">Choose an existing customer</option>
-                {customers.map((customer) => (
-                  <option key={customer.id} value={customer.id}>
-                    {customer.name} ({customer.email})
-                  </option>
-                ))}
-              </select>
+              <div className="relative">
+                <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">
+                  <User className="h-4 w-4" />
+                </span>
+                <Select
+                  value={selectedCustomerId || undefined}
+                  onValueChange={(value) => handleCustomerSelect(value)}
+                >
+                  <SelectTrigger className="pl-9">
+                    <SelectValue placeholder="Choose an existing customer" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {customers.map((customer) => (
+                      <SelectItem key={customer.id} value={customer.id}>
+                        {customer.name} ({customer.email})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             <div className="flex items-end">
               <Link
@@ -389,6 +442,7 @@ export default function InvoiceForm({
               onChange={handleInputChange}
               error={errors.customerName}
               required
+              leadingIcon={<User className="h-4 w-4" />}
             />
             <Input
               label="Email"
@@ -398,6 +452,7 @@ export default function InvoiceForm({
               onChange={handleInputChange}
               error={errors.customerEmail}
               required
+              leadingIcon={<Mail className="h-4 w-4" />}
             />
           </div>
           <Input
@@ -405,6 +460,7 @@ export default function InvoiceForm({
             name="customerAddress"
             value={formData.customerAddress}
             onChange={handleInputChange}
+            leadingIcon={<MapPin className="h-4 w-4" />}
           />
           <div className="grid gap-4 sm:grid-cols-3">
             <Input
@@ -412,18 +468,21 @@ export default function InvoiceForm({
               name="customerCity"
               value={formData.customerCity}
               onChange={handleInputChange}
+              leadingIcon={<Building2 className="h-4 w-4" />}
             />
             <Input
               label="State/Province"
               name="customerState"
               value={formData.customerState}
               onChange={handleInputChange}
+              leadingIcon={<Map className="h-4 w-4" />}
             />
             <Input
               label="Zip/Postal Code"
               name="customerZipCode"
               value={formData.customerZipCode}
               onChange={handleInputChange}
+              leadingIcon={<Hash className="h-4 w-4" />}
             />
           </div>
         </CardContent>
@@ -439,54 +498,64 @@ export default function InvoiceForm({
             {items.map((item, index) => (
               <div
                 key={item.id}
-                className="flex gap-2 rounded-lg border border-gray-200 p-4 dark:border-gray-800"
+                className="grid gap-3 rounded-lg border border-gray-200 p-4 dark:border-gray-800 sm:grid-cols-[1fr_auto]"
               >
-                <div className="flex-1 space-y-2">
-                  <input
+                <div className="space-y-2">
+                  <Input
                     type="text"
                     placeholder="Description"
                     value={item.description}
                     onChange={(e) =>
                       handleItemChange(index, "description", e.target.value)
                     }
-                    className="w-full px-3 py-2 rounded border border-gray-300 text-black placeholder-gray-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+                    leadingIcon={<FileText className="h-4 w-4" />}
                   />
-                  <div className="flex gap-2">
-                    <input
-                      type="number"
-                      placeholder="Qty"
-                      value={item.quantity || ""}
-                      onChange={(e) =>
-                        handleItemChange(
-                          index,
-                          "quantity",
-                          e.target.value === ""
-                            ? 0
-                            : parseFloat(e.target.value),
-                        )
-                      }
-                      min="0.01"
-                      step="0.01"
-                      className="w-20 px-3 py-2 rounded border border-gray-300 text-black dark:border-gray-700 dark:bg-gray-900 dark:text-white"
-                    />
-                    <input
-                      type="number"
-                      placeholder="Rate"
-                      value={item.rate || ""}
-                      onChange={(e) =>
-                        handleItemChange(
-                          index,
-                          "rate",
-                          e.target.value === ""
-                            ? 0
-                            : parseFloat(e.target.value),
-                        )
-                      }
-                      min="0"
-                      step="0.01"
-                      className="flex-1 px-3 py-2 rounded border border-gray-300 text-black dark:border-gray-700 dark:bg-gray-900 dark:text-white"
-                    />
-                    <div className="px-3 py-2 text-right font-semibold text-black dark:text-white">
+                  <div className="grid gap-2 sm:grid-cols-[96px_1fr_auto]">
+                    <div>
+                      <span className="block text-xs text-gray-500 dark:text-gray-400">
+                        Qty
+                      </span>
+                      <Input
+                        type="number"
+                        placeholder="0"
+                        value={item.quantity || ""}
+                        onChange={(e) =>
+                          handleItemChange(
+                            index,
+                            "quantity",
+                            e.target.value === ""
+                              ? 0
+                              : parseFloat(e.target.value),
+                          )
+                        }
+                        min="0.01"
+                        step="0.01"
+                        leadingIcon={<Hash className="h-4 w-4" />}
+                      />
+                    </div>
+                    <div>
+                      <span className="block text-xs text-gray-500 dark:text-gray-400">
+                        Rate
+                      </span>
+                      <Input
+                        type="number"
+                        placeholder="0.00"
+                        value={item.rate || ""}
+                        onChange={(e) =>
+                          handleItemChange(
+                            index,
+                            "rate",
+                            e.target.value === ""
+                              ? 0
+                              : parseFloat(e.target.value),
+                          )
+                        }
+                        min="0"
+                        step="0.01"
+                        leadingIcon={<DollarSign className="h-4 w-4" />}
+                      />
+                    </div>
+                    <div className="flex items-end justify-end px-3 py-2 text-right font-semibold text-black dark:text-white">
                       {formatCurrency(
                         (item.quantity || 0) * (item.rate || 0),
                         formData.currency,
@@ -501,6 +570,7 @@ export default function InvoiceForm({
                     size="sm"
                     onClick={() => removeItem(index)}
                   >
+                    <Trash2 className="h-4 w-4" />
                     Remove
                   </Button>
                 )}
@@ -508,7 +578,8 @@ export default function InvoiceForm({
             ))}
           </div>
           <Button type="button" variant="secondary" onClick={addItem}>
-            + Add Item
+            <Plus className="h-4 w-4" />
+            Add Item
           </Button>
         </CardContent>
       </Card>
@@ -529,6 +600,7 @@ export default function InvoiceForm({
               min="0"
               max="100"
               step="0.01"
+              leadingIcon={<Percent className="h-4 w-4" />}
             />
           </div>
           <div className="space-y-2 border-t border-gray-200 pt-4 dark:border-gray-800">
@@ -574,13 +646,12 @@ export default function InvoiceForm({
           <CardTitle>Notes</CardTitle>
         </CardHeader>
         <CardContent>
-          <textarea
+          <Textarea
             name="notes"
             placeholder="Add any additional notes or terms..."
             value={formData.notes}
             onChange={handleInputChange}
             rows={4}
-            className="w-full rounded border border-gray-300 px-4 py-2 text-black placeholder-gray-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
           />
         </CardContent>
       </Card>
@@ -588,6 +659,7 @@ export default function InvoiceForm({
       {/* Actions */}
       <div className="flex gap-3">
         <Button type="submit" isLoading={isLoading}>
+          <Save className="h-4 w-4" />
           {initialData ? "Update Invoice" : "Create Invoice"}
         </Button>
         <Button
@@ -595,6 +667,7 @@ export default function InvoiceForm({
           variant="secondary"
           onClick={() => setShowSaveTemplateModal(true)}
         >
+          <Layers className="h-4 w-4" />
           Save as Template
         </Button>
         <Button
@@ -602,6 +675,7 @@ export default function InvoiceForm({
           variant="secondary"
           onClick={() => window.history.back()}
         >
+          <X className="h-4 w-4" />
           Cancel
         </Button>
       </div>
@@ -613,54 +687,57 @@ export default function InvoiceForm({
       )}
 
       {/* Save Template Modal */}
-      {showSaveTemplateModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/70">
-          <Card className="w-full max-w-md mx-4">
-            <CardHeader>
-              <CardTitle>Save as Template</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <Input
-                label="Template Name"
-                value={templateName}
-                onChange={(e) => setTemplateName(e.target.value)}
-                placeholder="e.g., Monthly Service Invoice"
-                autoFocus
+      <Dialog
+        open={showSaveTemplateModal}
+        onOpenChange={setShowSaveTemplateModal}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Save as Template</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Input
+              label="Template Name"
+              value={templateName}
+              onChange={(e) => setTemplateName(e.target.value)}
+              placeholder="e.g., Monthly Service Invoice"
+              autoFocus
+              leadingIcon={<FileText className="h-4 w-4" />}
+            />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Description (Optional)
+              </label>
+              <Textarea
+                value={templateDescription}
+                onChange={(e) => setTemplateDescription(e.target.value)}
+                placeholder="Add any notes about this template..."
+                rows={3}
               />
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Description (Optional)
-                </label>
-                <textarea
-                  value={templateDescription}
-                  onChange={(e) => setTemplateDescription(e.target.value)}
-                  placeholder="Add any notes about this template..."
-                  rows={3}
-                  className="w-full rounded border border-gray-300 px-3 py-2 text-black placeholder-gray-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
-                />
-              </div>
-              <div className="flex gap-3 border-t border-gray-200 pt-4 dark:border-gray-800">
-                <Button
-                  type="button"
-                  onClick={handleSaveAsTemplate}
-                  isLoading={isSavingTemplate}
-                  className="flex-1"
-                >
-                  Save Template
-                </Button>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={() => setShowSaveTemplateModal(false)}
-                  className="flex-1"
-                >
-                  Cancel
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+            </div>
+          </div>
+          <DialogFooter className="border-t border-gray-200 pt-4 dark:border-gray-800">
+            <Button
+              type="button"
+              onClick={handleSaveAsTemplate}
+              isLoading={isSavingTemplate}
+              className="flex-1"
+            >
+              <Save className="h-4 w-4" />
+              Save Template
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setShowSaveTemplateModal(false)}
+              className="flex-1"
+            >
+              <X className="h-4 w-4" />
+              Cancel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </form>
   );
 }

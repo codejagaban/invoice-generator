@@ -8,7 +8,15 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Button from "@/app/components/shared/Button";
+import { InputWithRef as Input } from "@/app/components/shared/Input";
 import Card from "@/app/components/shared/Card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/app/components/shared/Select";
 import type { Invoice } from "@/app/lib/types";
 import { getInvoices } from "@/app/lib/storage";
 import {
@@ -163,33 +171,47 @@ export default function InvoicesDashboardPage() {
           {/* Filters */}
           <Card>
             <div className="space-y-4 sm:flex sm:gap-4 sm:space-y-0">
-              <input
+              <Input
                 type="text"
                 placeholder="Search by invoice #, customer, or email..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="flex-1 rounded border border-gray-300 px-4 py-2 text-black placeholder-gray-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+                className="flex-1"
               />
-              <select
+              <Select
                 value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value as any)}
-                className="rounded border border-gray-300 px-4 py-2 text-black dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+                onValueChange={(value) =>
+                  setStatusFilter(
+                    value as "all" | "draft" | "sent" | "paid" | "cancelled",
+                  )
+                }
               >
-                <option value="all">All Status</option>
-                <option value="draft">Draft</option>
-                <option value="sent">Sent</option>
-                <option value="paid">Paid</option>
-                <option value="cancelled">Cancelled</option>
-              </select>
-              <select
+                <SelectTrigger className="sm:w-[180px]">
+                  <SelectValue placeholder="All Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="draft">Draft</SelectItem>
+                  <SelectItem value="sent">Sent</SelectItem>
+                  <SelectItem value="paid">Paid</SelectItem>
+                  <SelectItem value="cancelled">Cancelled</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select
                 value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as any)}
-                className="rounded border border-gray-300 px-4 py-2 text-black dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+                onValueChange={(value) =>
+                  setSortBy(value as "date" | "amount" | "name")
+                }
               >
-                <option value="date">Sort by Date</option>
-                <option value="amount">Sort by Amount</option>
-                <option value="name">Sort by Name</option>
-              </select>
+                <SelectTrigger className="sm:w-[180px]">
+                  <SelectValue placeholder="Sort by Date" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="date">Sort by Date</SelectItem>
+                  <SelectItem value="amount">Sort by Amount</SelectItem>
+                  <SelectItem value="name">Sort by Name</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </Card>
 
