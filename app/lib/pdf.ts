@@ -46,15 +46,19 @@ export function generateInvoiceHTML(
           header {
             display: flex;
             justify-content: space-between;
+            align-items: stretch;
             margin-bottom: 40px;
             padding-bottom: 20px;
             border-bottom: 1px solid #ddd;
           }
           .company-info, .invoice-info {
             flex: 1;
+            display: flex;
+            flex-direction: column;
           }
           .company-info {
             text-align: right;
+            justify-content: flex-end;
           }
           h1 {
             font-size: 28px;
