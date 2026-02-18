@@ -41,13 +41,13 @@ import {
   DollarSign,
   FileText,
   Hash,
-  Layers,
+  BookmarkPlus,
   Mail,
   Map,
   MapPin,
   Percent,
   Plus,
-  Save,
+  CheckCircle2,
   Trash2,
   User,
   X,
@@ -657,7 +657,7 @@ export default function InvoiceForm({
       {/* Actions */}
       <div className="flex gap-3">
         <Button type="submit" isLoading={isLoading}>
-          <Save className="h-4 w-4" />
+          <CheckCircle2 className="h-4 w-4 text-green-400" />
           {initialData ? "Update Invoice" : "Create Invoice"}
         </Button>
         <Button
@@ -665,7 +665,7 @@ export default function InvoiceForm({
           variant="secondary"
           onClick={() => setShowSaveTemplateModal(true)}
         >
-          <Layers className="h-4 w-4" />
+          <BookmarkPlus className="h-4 w-4 text-blue-500" />
           Save as Template
         </Button>
         <Button
@@ -673,7 +673,7 @@ export default function InvoiceForm({
           variant="secondary"
           onClick={() => window.history.back()}
         >
-          <X className="h-4 w-4" />
+          <X className="h-4 w-4 text-red-500" />
           Cancel
         </Button>
       </div>
@@ -721,7 +721,7 @@ export default function InvoiceForm({
               isLoading={isSavingTemplate}
               className="flex-1"
             >
-              <Save className="h-4 w-4" />
+              <BookmarkPlus className="h-4 w-4 text-blue-400" />
               Save Template
             </Button>
             <Button

@@ -9,7 +9,7 @@ import { Loader2 } from "lucide-react";
 import { cn } from "@/app/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 dark:focus-visible:ring-white",
+  "inline-flex cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 dark:focus-visible:ring-white",
   {
     variants: {
       variant: {
@@ -18,8 +18,12 @@ const buttonVariants = cva(
         secondary:
           "bg-gray-100 text-black hover:bg-gray-200 dark:bg-gray-900 dark:text-white dark:hover:bg-gray-800",
         danger: "bg-red-600 text-white hover:bg-red-700 dark:hover:bg-red-500",
+        "danger-soft":
+          "border border-red-300 bg-red-50 text-black hover:bg-red-100 [&>svg]:text-red-500 dark:border-red-800 dark:bg-red-950/40 dark:text-white dark:hover:bg-red-950/70 dark:[&>svg]:text-red-400",
         ghost:
           "bg-transparent text-black hover:bg-gray-100 dark:text-white dark:hover:bg-gray-900",
+        outline:
+          "border border-black bg-transparent text-black hover:bg-gray-100 dark:border-white dark:text-white dark:hover:bg-gray-900",
       },
       size: {
         sm: "h-9 px-3",

@@ -7,6 +7,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { FilePlus2 } from "lucide-react";
 import Button from "@/app/components/shared/Button";
 import { InputWithRef as Input } from "@/app/components/shared/Input";
 import Card from "@/app/components/shared/Card";
@@ -116,7 +117,10 @@ export default function InvoicesDashboardPage() {
               Invoices
             </h1>
             <Link href="/invoices/create">
-              <Button>+ Create Invoice</Button>
+              <Button variant="outline">
+                <FilePlus2 className="h-4 w-4 text-green-500" />
+                Create Invoice
+              </Button>
             </Link>
           </div>
         </div>

@@ -8,6 +8,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
+import { Pencil, Trash2, ArrowLeft, FileDown, Mail } from "lucide-react";
 import Button from "@/app/components/shared/Button";
 import Card, {
   CardContent,
@@ -122,10 +123,17 @@ export default function InvoiceDetailPage() {
             </div>
             <div className="flex gap-2">
               <Link href={`/invoices/${id}/edit`}>
-                <Button variant="secondary">Edit</Button>
+                <Button variant="ghost" size="sm" className="w-9 px-0">
+                  <Pencil className="h-4 w-4 text-blue-500" />
+                </Button>
               </Link>
-              <Button variant="danger" onClick={handleDelete}>
-                Delete
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-9 px-0"
+                onClick={handleDelete}
+              >
+                <Trash2 className="h-4 w-4 text-red-500" />
               </Button>
             </div>
           </div>
@@ -305,12 +313,22 @@ export default function InvoiceDetailPage() {
           {/* Actions */}
           <div className="flex gap-3">
             <Link href="/invoices">
-              <Button variant="secondary">Back to Invoices</Button>
+              <Button variant="secondary">
+                <ArrowLeft className="h-4 w-4" />
+                Back to Invoices
+              </Button>
             </Link>
             <Button onClick={handleDownloadPDF} disabled={isDownloadingPDF}>
+              <FileDown className="h-4 w-4" />
               {isDownloadingPDF ? "Generating PDF..." : "Download PDF"}
             </Button>
-            <Button variant="secondary">Send Email (Coming Soon)</Button>
+            <Button variant="secondary" disabled>
+              <Mail className="h-4 w-4" />
+              Send Email{" "}
+              <span className="text-xs text-gray-400 dark:text-gray-500">
+                (Coming Soon)
+              </span>
+            </Button>
           </div>
         </div>
       </main>

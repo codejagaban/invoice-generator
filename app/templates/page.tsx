@@ -7,6 +7,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { FilePlus2, LayoutTemplate, Trash2 } from "lucide-react";
 import Button from "@/app/components/shared/Button";
 import Card, {
   CardContent,
@@ -68,7 +69,10 @@ export default function TemplatesPage() {
                   to reuse it.
                 </p>
                 <Link href="/invoices/create">
-                  <Button>Create Invoice</Button>
+                  <Button variant="outline">
+                    <FilePlus2 className="h-4 w-4 text-green-500" />
+                    Create Invoice
+                  </Button>
                 </Link>
               </div>
             </Card>
@@ -120,14 +124,15 @@ export default function TemplatesPage() {
                         className="flex-1"
                         onClick={() => handleUseTemplate(template)}
                       >
+                        <LayoutTemplate className="h-4 w-4 text-blue-400" />
                         Use Template
                       </Button>
                       <Button
                         size="sm"
-                        variant="danger"
+                        variant="ghost"
                         onClick={() => handleDelete(template.id)}
                       >
-                        Delete
+                        <Trash2 className="h-4 w-4 text-red-500" />
                       </Button>
                     </div>
                   </CardContent>
