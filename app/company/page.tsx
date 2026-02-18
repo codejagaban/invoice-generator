@@ -99,12 +99,6 @@ export default function CompanyPage() {
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <Link
-            href="/"
-            className="text-sm text-gray-600 dark:text-gray-400 mb-4 inline-block hover:text-gray-900 dark:hover:text-white"
-          >
-            ← Back to Home
-          </Link>
           <h1 className="text-4xl font-bold text-black dark:text-white mb-2">
             Company Settings
           </h1>
