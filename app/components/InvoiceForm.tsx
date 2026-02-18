@@ -79,6 +79,8 @@ interface InvoiceFormProps {
   onSubmit: (data: Invoice) => Promise<void>;
 }
 
+const toLocalDateString = (date: Date) => date.toLocaleDateString("en-CA");
+
 export default function InvoiceForm({
   initialData,
   onSubmit,
@@ -94,12 +96,10 @@ export default function InvoiceForm({
 
   const [formData, setFormData] = useState({
     invoiceNumber: initialData?.invoiceNumber || generateInvoiceNumber(),
-    date: initialData?.date || new Date().toISOString().split("T")[0],
+    date: initialData?.date || toLocalDateString(new Date()),
     dueDate:
       initialData?.dueDate ||
-      new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-        .toISOString()
-        .split("T")[0],
+      toLocalDateString(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)),
     customerName: initialData?.customer.name || "",
     customerEmail: initialData?.customer.email || "",
     customerAddress: initialData?.customer.address || "",
