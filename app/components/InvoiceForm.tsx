@@ -61,7 +61,7 @@ export default function InvoiceForm({
     customerCity: initialData?.customer.city || "",
     customerState: initialData?.customer.state || "",
     customerZipCode: initialData?.customer.zipCode || "",
-    currency: initialData?.currency || "USD",
+    currency: initialData?.currency || "GBP",
     notes: initialData?.notes || "",
     taxRate: initialData?.taxRate || 0,
   });
