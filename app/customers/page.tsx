@@ -6,6 +6,19 @@
  */
 
 import { useEffect, useState } from "react";
+import {
+  User,
+  Mail,
+  MapPin,
+  Map,
+  Hash,
+  Globe,
+  UserPlus,
+  UserCheck,
+  X,
+  Pencil,
+  Trash2,
+} from "lucide-react";
 import Button from "@/app/components/shared/Button";
 import { InputWithRef as Input } from "@/app/components/shared/Input";
 import Card, {
@@ -36,9 +49,11 @@ export default function CustomersPage() {
   });
 
   useEffect(() => {
-    const data = getCustomers();
-    setCustomers(data);
-    setIsLoading(false);
+    (async () => {
+      const data = await getCustomers();
+      setCustomers(data);
+      setIsLoading(false);
+    })();
   }, []);
 
   const resetForm = () => {
@@ -77,16 +92,16 @@ export default function CustomersPage() {
     });
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this customer?")) return;
-    deleteCustomer(id);
+    await deleteCustomer(id);
     setCustomers((prev) => prev.filter((customer) => customer.id !== id));
     if (editingId === id) {
       resetForm();
     }
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!formData.name.trim() || !formData.email.trim()) {
@@ -95,7 +110,7 @@ export default function CustomersPage() {
     }
 
     if (editingId) {
-      const updated = updateCustomer(editingId, formData);
+      const updated = await updateCustomer(editingId, formData);
       if (updated) {
         setCustomers((prev) =>
           prev.map((customer) =>
@@ -108,7 +123,7 @@ export default function CustomersPage() {
         id: String(Date.now()),
         ...formData,
       };
-      const created = createCustomer(newCustomer);
+      const created = await createCustomer(newCustomer);
       setCustomers((prev) => [...prev, created]);
     }
 
@@ -152,6 +167,7 @@ export default function CustomersPage() {
                     name="name"
                     value={formData.name}
                     onChange={handleInputChange}
+                    leadingIcon={<User className="h-4 w-4" />}
                     required
                   />
                   <Input
@@ -160,6 +176,7 @@ export default function CustomersPage() {
                     type="email"
                     value={formData.email}
                     onChange={handleInputChange}
+                    leadingIcon={<Mail className="h-4 w-4" />}
                     required
                   />
                 </div>
@@ -168,6 +185,7 @@ export default function CustomersPage() {
                   name="address"
                   value={formData.address}
                   onChange={handleInputChange}
+                  leadingIcon={<MapPin className="h-4 w-4" />}
                 />
                 <div className="grid gap-4 sm:grid-cols-3">
                   <Input
@@ -175,18 +193,21 @@ export default function CustomersPage() {
                     name="city"
                     value={formData.city}
                     onChange={handleInputChange}
+                    leadingIcon={<Map className="h-4 w-4" />}
                   />
                   <Input
                     label="State"
                     name="state"
                     value={formData.state}
                     onChange={handleInputChange}
+                    leadingIcon={<Map className="h-4 w-4" />}
                   />
                   <Input
                     label="Zip Code"
                     name="zipCode"
                     value={formData.zipCode}
                     onChange={handleInputChange}
+                    leadingIcon={<Hash className="h-4 w-4" />}
                   />
                 </div>
                 <Input
@@ -194,11 +215,22 @@ export default function CustomersPage() {
                   name="country"
                   value={formData.country}
                   onChange={handleInputChange}
+                  leadingIcon={<Globe className="h-4 w-4" />}
                 />
 
                 <div className="flex gap-3">
                   <Button type="submit">
-                    {editingId ? "Update Customer" : "Add Customer"}
+                    {editingId ? (
+                      <>
+                        <UserCheck className="h-4 w-4 text-green-400" />
+                        Update Customer
+                      </>
+                    ) : (
+                      <>
+                        <UserPlus className="h-4 w-4 text-green-400" />
+                        Add Customer
+                      </>
+                    )}
                   </Button>
                   {editingId && (
                     <Button
@@ -206,6 +238,7 @@ export default function CustomersPage() {
                       variant="secondary"
                       onClick={resetForm}
                     >
+                      <X className="h-4 w-4 text-red-500" />
                       Cancel
                     </Button>
                   )}
@@ -251,17 +284,19 @@ export default function CustomersPage() {
                     <div className="flex gap-2 border-t border-gray-200 pt-3 dark:border-gray-800">
                       <Button
                         size="sm"
-                        variant="secondary"
+                        variant="ghost"
+                        className="w-9 px-0"
                         onClick={() => handleEdit(customer)}
                       >
-                        Edit
+                        <Pencil className="h-4 w-4 text-blue-500" />
                       </Button>
                       <Button
                         size="sm"
-                        variant="danger"
+                        variant="ghost"
+                        className="w-9 px-0"
                         onClick={() => handleDelete(customer.id)}
                       >
-                        Delete
+                        <Trash2 className="h-4 w-4 text-red-500" />
                       </Button>
                     </div>
                   </CardContent>
