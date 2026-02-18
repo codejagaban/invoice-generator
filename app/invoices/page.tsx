@@ -10,13 +10,14 @@ import Link from "next/link";
 import Button from "@/app/components/shared/Button";
 import Card from "@/app/components/shared/Card";
 import type { Invoice } from "@/app/lib/types";
-import { getInvoices } from "@/app/lib/storage";
+import { getInvoices, getDefaultCompanyDetails } from "@/app/lib/storage";
 import {
   formatDate,
   formatCurrency,
   isOverdue,
   isDueSoon,
 } from "@/app/lib/invoice";
+import { downloadInvoicePDF } from "@/app/lib/pdf";
 
 export default function InvoicesDashboardPage() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -26,11 +27,28 @@ export default function InvoicesDashboardPage() {
     "all" | "draft" | "sent" | "paid" | "cancelled"
   >("all");
   const [sortBy, setSortBy] = useState<"date" | "amount" | "name">("date");
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
   useEffect(() => {
     const data = getInvoices();
     setInvoices(data);
   }, []);
+
+  const handleDownloadPDF = async (e: React.MouseEvent, invoice: Invoice) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    try {
+      setDownloadingId(invoice.id);
+      const company = getDefaultCompanyDetails();
+      await downloadInvoicePDF(invoice, company || undefined);
+    } catch (error) {
+      alert("Failed to download PDF. Please try again.");
+      console.error(error);
+    } finally {
+      setDownloadingId(null);
+    }
+  };
 
   useEffect(() => {
     let filtered = invoices;
@@ -229,9 +247,9 @@ export default function InvoicesDashboardPage() {
                 return (
                   <Link key={invoice.id} href={`/invoices/${invoice.id}`}>
                     <Card className="hover:border-black dark:hover:border-white cursor-pointer transition-colors">
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1 space-y-2">
-                          <div className="flex items-center gap-3">
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="flex-1 space-y-2 min-w-0">
+                          <div className="flex items-center gap-3 flex-wrap">
                             <h3 className="font-semibold text-black dark:text-white">
                               {invoice.invoiceNumber}
                             </h3>
@@ -251,18 +269,27 @@ export default function InvoicesDashboardPage() {
                               </span>
                             )}
                           </div>
-                          <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+                          <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400 flex-wrap">
                             <span>{invoice.customer.name}</span>
                             <span>{formatDate(invoice.date)}</span>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <p className="font-semibold text-black dark:text-white">
-                            {formatCurrency(amount, invoice.currency)}
-                          </p>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">
-                            Due: {formatDate(invoice.dueDate)}
-                          </p>
+                        <div className="flex items-end gap-3 flex-shrink-0">
+                          <button
+                            onClick={(e) => handleDownloadPDF(e, invoice)}
+                            disabled={downloadingId === invoice.id}
+                            className="px-3 py-1 text-xs font-medium rounded border border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-900 disabled:opacity-50 transition-colors"
+                          >
+                            {downloadingId === invoice.id ? "..." : "PDF"}
+                          </button>
+                          <div className="text-right">
+                            <p className="font-semibold text-black dark:text-white">
+                              {formatCurrency(amount, invoice.currency)}
+                            </p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                              Due: {formatDate(invoice.dueDate)}
+                            </p>
+                          </div>
                         </div>
                       </div>
                     </Card>

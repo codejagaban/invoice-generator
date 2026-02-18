@@ -15,7 +15,11 @@ import Card, {
   CardTitle,
 } from "@/app/components/shared/Card";
 import type { Invoice } from "@/app/lib/types";
-import { getInvoiceById, deleteInvoice } from "@/app/lib/storage";
+import {
+  getInvoiceById,
+  deleteInvoice,
+  getDefaultCompanyDetails,
+} from "@/app/lib/storage";
 import {
   formatDate,
   formatCurrency,
@@ -23,6 +27,7 @@ import {
   isOverdue,
   isDueSoon,
 } from "@/app/lib/invoice";
+import { downloadInvoicePDF } from "@/app/lib/pdf";
 
 export default function InvoiceDetailPage() {
   const params = useParams();
@@ -30,12 +35,27 @@ export default function InvoiceDetailPage() {
   const id = params.id as string;
   const [invoice, setInvoice] = useState<Invoice | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isDownloadingPDF, setIsDownloadingPDF] = useState(false);
 
   useEffect(() => {
     const inv = getInvoiceById(id);
     setInvoice(inv);
     setIsLoading(false);
   }, [id]);
+
+  const handleDownloadPDF = async () => {
+    if (!invoice) return;
+    try {
+      setIsDownloadingPDF(true);
+      const company = getDefaultCompanyDetails();
+      await downloadInvoicePDF(invoice, company || undefined);
+    } catch (error) {
+      alert("Failed to download PDF. Please try again.");
+      console.error(error);
+    } finally {
+      setIsDownloadingPDF(false);
+    }
+  };
 
   const handleDelete = async () => {
     if (!confirm("Are you sure you want to delete this invoice?")) return;
@@ -101,6 +121,13 @@ export default function InvoiceDetailPage() {
               </p>
             </div>
             <div className="flex gap-2">
+              <Button
+                variant="secondary"
+                onClick={handleDownloadPDF}
+                disabled={isDownloadingPDF}
+              >
+                {isDownloadingPDF ? "Generating PDF..." : "Download PDF"}
+              </Button>
               <Link href={`/invoices/${id}/edit`}>
                 <Button variant="secondary">Edit</Button>
               </Link>
