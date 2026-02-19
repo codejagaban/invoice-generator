@@ -15,6 +15,7 @@ import Card, {
 } from "@/app/components/shared/Card";
 import CompanyForm from "@/app/components/CompanyForm";
 import type { CompanyDetails } from "@/app/lib/types";
+import { Pencil, Trash2, Star } from "lucide-react";
 import {
   getCompanyDetails,
   createCompany,
@@ -209,29 +210,35 @@ export default function CompanyPage() {
                       </div>
                     </div>
 
-                    <div className="flex gap-2 pt-4 border-t [border-color:var(--border)]">
+                    <div className="flex gap-1 pt-4 border-t [border-color:var(--border)]">
                       {!company.isDefault && companies.length > 0 && (
                         <Button
-                          variant="secondary"
+                          variant="ghost"
                           size="sm"
+                          className="w-9 px-0"
                           onClick={() => handleSetDefault(company.id)}
+                          title="Set as Default"
                         >
-                          Set as Default
+                          <Star className="h-4 w-4 text-yellow-500" />
                         </Button>
                       )}
                       <Button
-                        variant="secondary"
+                        variant="ghost"
                         size="sm"
+                        className="w-9 px-0"
                         onClick={() => handleEdit(company)}
+                        title="Edit"
                       >
-                        Edit
+                        <Pencil className="h-4 w-4 text-blue-500" />
                       </Button>
                       <Button
-                        variant="danger"
+                        variant="ghost"
                         size="sm"
+                        className="w-9 px-0"
                         onClick={() => handleDelete(company.id)}
+                        title="Delete"
                       >
-                        Delete
+                        <Trash2 className="h-4 w-4 text-red-500" />
                       </Button>
                     </div>
                   </CardContent>
