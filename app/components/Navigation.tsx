@@ -37,7 +37,7 @@ export default function Navigation() {
           <div className="text-xl font-bold text-black dark:text-white">
             Invoice
           </div>
-          <div className="text-xl font-light text-gray-500 dark:text-gray-400">
+          <div className="text-xl font-light text-[var(--muted)]">
             Generator
           </div>
         </Link>
@@ -51,7 +51,7 @@ export default function Navigation() {
               className={`px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 isActive(item.href)
                   ? "bg-[var(--surface-raised)] text-black dark:text-white"
-                  : "text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white hover:bg-[var(--surface-raised)]"
+                  : "text-[var(--muted)] hover:text-black dark:hover:text-white hover:bg-[var(--surface-raised)]"
               }`}
             >
               <span className="inline-flex items-center gap-2">

@@ -90,21 +90,21 @@ export default function CompanyPage() {
     return (
       <div className="min-h-screen bg-[var(--background)] p-6">
         <div className="max-w-6xl mx-auto">
-          <p className="text-gray-600 dark:text-gray-400">Loading...</p>
+          <p className="text-[var(--muted)]">Loading...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[var(--background)] p-6">
+    <div className="min-h-screen bg-(--background) p-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-black dark:text-white mb-2">
             Company Settings
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-[var(--muted)]">
             Manage your company or freelancing details
           </p>
         </div>
@@ -125,7 +125,7 @@ export default function CompanyPage() {
           {companies.length === 0 && !showForm ? (
             <Card>
               <CardContent className="py-12 text-center">
-                <p className="text-gray-600 dark:text-gray-400 mb-4">
+                <p className="text-[var(--muted)] mb-4">
                   No company profiles yet. Create one to get started.
                 </p>
                 <Button onClick={() => setShowForm(true)}>
@@ -149,7 +149,7 @@ export default function CompanyPage() {
                     <div className="flex items-start justify-between">
                       <div>
                         <CardTitle>{company.name}</CardTitle>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                        <p className="text-sm text-[var(--muted)] mt-1">
                           {company.email}
                         </p>
                       </div>
@@ -163,7 +163,7 @@ export default function CompanyPage() {
                   <CardContent className="space-y-3">
                     <div className="grid gap-4 sm:grid-cols-2 text-sm">
                       <div>
-                        <p className="text-gray-600 dark:text-gray-400">
+                        <p className="text-[var(--muted)]">
                           Phone
                         </p>
                         <p className="text-black dark:text-white">
@@ -171,7 +171,7 @@ export default function CompanyPage() {
                         </p>
                       </div>
                       <div>
-                        <p className="text-gray-600 dark:text-gray-400">
+                        <p className="text-[var(--muted)]">
                           Website
                         </p>
                         <p className="text-black dark:text-white truncate">
@@ -179,7 +179,7 @@ export default function CompanyPage() {
                         </p>
                       </div>
                       <div>
-                        <p className="text-gray-600 dark:text-gray-400">
+                        <p className="text-[var(--muted)]">
                           Address
                         </p>
                         <p className="text-black dark:text-white">
@@ -187,7 +187,7 @@ export default function CompanyPage() {
                         </p>
                       </div>
                       <div>
-                        <p className="text-gray-600 dark:text-gray-400">
+                        <p className="text-[var(--muted)]">
                           Tax ID
                         </p>
                         <p className="text-black dark:text-white">
@@ -195,13 +195,13 @@ export default function CompanyPage() {
                         </p>
                       </div>
                       <div>
-                        <p className="text-gray-600 dark:text-gray-400">City</p>
+                        <p className="text-[var(--muted)]">City</p>
                         <p className="text-black dark:text-white">
                           {company.city}
                         </p>
                       </div>
                       <div>
-                        <p className="text-gray-600 dark:text-gray-400">
+                        <p className="text-[var(--muted)]">
                           Country
                         </p>
                         <p className="text-black dark:text-white">

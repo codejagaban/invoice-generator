@@ -46,7 +46,7 @@ export default function TemplatesPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white dark:bg-black">
-        <p className="text-gray-600 dark:text-gray-400">Loading templates...</p>
+        <p className="text-[var(--muted)]">Loading templates...</p>
       </div>
     );
   }
@@ -66,7 +66,7 @@ export default function TemplatesPage() {
           {templates.length === 0 ? (
             <Card>
               <div className="py-12 text-center">
-                <p className="mb-4 text-gray-600 dark:text-gray-400">
+                <p className="mb-4 text-[var(--muted)]">
                   No templates yet. Create an invoice and save it as a template
                   to reuse it.
                 </p>
@@ -87,13 +87,13 @@ export default function TemplatesPage() {
                   </CardHeader>
                   <CardContent className="space-y-3">
                     {template.description && (
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                      <p className="text-sm text-[var(--muted)]">
                         {template.description}
                       </p>
                     )}
                     <div className="space-y-2 border-t pt-3 [border-color:var(--border)]">
                       <div>
-                        <p className="text-xs text-gray-600 dark:text-gray-400">
+                        <p className="text-xs text-[var(--muted)]">
                           Customer
                         </p>
                         <p className="font-medium text-black dark:text-white">
@@ -102,7 +102,7 @@ export default function TemplatesPage() {
                       </div>
                       {template.items && template.items.length > 0 && (
                         <div>
-                          <p className="text-xs text-gray-600 dark:text-gray-400">
+                          <p className="text-xs text-[var(--muted)]">
                             Items
                           </p>
                           <p className="font-medium text-black dark:text-white">
@@ -112,7 +112,7 @@ export default function TemplatesPage() {
                         </div>
                       )}
                       <div>
-                        <p className="text-xs text-gray-600 dark:text-gray-400">
+                        <p className="text-xs text-[var(--muted)]">
                           Created
                         </p>
                         <p className="text-sm text-black dark:text-white">

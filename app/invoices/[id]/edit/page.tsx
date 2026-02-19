@@ -43,7 +43,7 @@ export default function EditInvoicePage() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white dark:bg-black">
-        <p className="text-gray-600 dark:text-gray-400">Loading...</p>
+        <p className="text-[var(--muted)]">Loading...</p>
       </div>
     );
   }
@@ -59,7 +59,7 @@ export default function EditInvoicePage() {
           </div>
         </header>
         <main className="mx-auto max-w-7xl px-6 py-12">
-          <p className="text-gray-600 dark:text-gray-400">{error}</p>
+          <p className="text-[var(--muted)]">{error}</p>
         </main>
       </div>
     );

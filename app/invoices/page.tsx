@@ -92,11 +92,11 @@ export default function InvoicesDashboardPage() {
       case "sent":
         return "bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400";
       case "draft":
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400";
+        return "bg-gray-100 text-gray-800 dark:bg-gray-900/20";
       case "cancelled":
         return "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400";
       default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400";
+        return "bg-gray-100 text-gray-800 dark:bg-gray-900/20";
     }
   };
 
@@ -134,7 +134,7 @@ export default function InvoicesDashboardPage() {
           <div className="grid gap-4 sm:grid-cols-4">
             <Card>
               <div className="space-y-2">
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                <p className="text-sm font-medium text-[var(--muted)]">
                   Total Invoices
                 </p>
                 <p className="text-2xl font-bold text-black dark:text-white">
@@ -144,7 +144,7 @@ export default function InvoicesDashboardPage() {
             </Card>
             <Card>
               <div className="space-y-2">
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                <p className="text-sm font-medium text-[var(--muted)]">
                   Total Amount
                 </p>
                 <p className="text-2xl font-bold text-black dark:text-white">
@@ -154,7 +154,7 @@ export default function InvoicesDashboardPage() {
             </Card>
             <Card>
               <div className="space-y-2">
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                <p className="text-sm font-medium text-[var(--muted)]">
                   Paid
                 </p>
                 <p className="text-2xl font-bold text-green-600">
@@ -164,7 +164,7 @@ export default function InvoicesDashboardPage() {
             </Card>
             <Card>
               <div className="space-y-2">
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                <p className="text-sm font-medium text-[var(--muted)]">
                   Overdue
                 </p>
                 <p className="text-2xl font-bold text-red-600">
@@ -225,7 +225,7 @@ export default function InvoicesDashboardPage() {
           {filteredInvoices.length === 0 ? (
             <Card>
               <div className="py-12 text-center">
-                <p className="text-gray-600 dark:text-gray-400">
+                <p className="text-[var(--muted)]">
                   No invoices found.
                 </p>
                 <Link href="/invoices/create">
@@ -270,7 +270,7 @@ export default function InvoicesDashboardPage() {
                               </span>
                             )}
                           </div>
-                          <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400 flex-wrap">
+                          <div className="flex items-center gap-4 text-sm text-[var(--muted)] flex-wrap">
                             <span>{invoice.customer.name}</span>
                             <span>{formatDate(invoice.date)}</span>
                           </div>
@@ -279,7 +279,7 @@ export default function InvoicesDashboardPage() {
                           <p className="font-semibold text-black dark:text-white">
                             {formatCurrency(amount, invoice.currency)}
                           </p>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                          <p className="text-sm text-[var(--muted)]">
                             Due: {formatDate(invoice.dueDate)}
                           </p>
                         </div>

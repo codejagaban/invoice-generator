@@ -69,7 +69,7 @@ export default function InvoiceDetailPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white dark:bg-black">
-        <p className="text-gray-600 dark:text-gray-400">Loading...</p>
+        <p className="text-[var(--muted)]">Loading...</p>
       </div>
     );
   }
@@ -85,7 +85,7 @@ export default function InvoiceDetailPage() {
           </div>
         </header>
         <main className="mx-auto max-w-7xl px-6 py-12">
-          <p className="mb-4 text-gray-600 dark:text-gray-400">
+          <p className="mb-4 text-[var(--muted)]">
             The invoice you&apos;re looking for doesn&apos;t exist.
           </p>
           <Link
@@ -119,7 +119,7 @@ export default function InvoiceDetailPage() {
               <h1 className="text-3xl font-bold text-black dark:text-white">
                 {invoice.invoiceNumber}
               </h1>
-              <p className="mt-1 text-gray-600 dark:text-gray-400">
+              <p className="mt-1 text-[var(--muted)]">
                 {formatDate(invoice.date, "long")}
               </p>
             </div>
@@ -176,7 +176,7 @@ export default function InvoiceDetailPage() {
             </CardHeader>
             <CardContent className="space-y-1 text-black dark:text-white">
               <p className="font-semibold">{invoice.customer.name}</p>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="text-sm text-[var(--muted)]">
                 {invoice.customer.email}
               </p>
               {invoice.customer.address && (
@@ -196,17 +196,13 @@ export default function InvoiceDetailPage() {
             <Card>
               <CardContent className="space-y-3">
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Invoice Date
-                  </p>
+                  <p className="text-sm text-[var(--muted)]">Invoice Date</p>
                   <p className="font-semibold text-black dark:text-white">
                     {formatDate(invoice.date, "long")}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Due Date
-                  </p>
+                  <p className="text-sm text-[var(--muted)]">Due Date</p>
                   <p className="font-semibold text-black dark:text-white">
                     {formatDate(invoice.dueDate, "long")}
                   </p>
@@ -216,17 +212,13 @@ export default function InvoiceDetailPage() {
             <Card>
               <CardContent className="space-y-3">
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Invoice Number
-                  </p>
+                  <p className="text-sm text-[var(--muted)]">Invoice Number</p>
                   <p className="font-semibold text-black dark:text-white">
                     {invoice.invoiceNumber}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Currency
-                  </p>
+                  <p className="text-sm text-[var(--muted)]">Currency</p>
                   <p className="font-semibold text-black dark:text-white">
                     {invoice.currency}
                   </p>
@@ -251,7 +243,7 @@ export default function InvoiceDetailPage() {
                       <p className="font-medium text-black dark:text-white">
                         {item.description}
                       </p>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                      <p className="text-sm text-[var(--muted)]">
                         {item.quantity} ×{" "}
                         {formatCurrency(item.rate, invoice.currency)}
                       </p>
@@ -272,16 +264,14 @@ export default function InvoiceDetailPage() {
           <Card>
             <CardContent className="space-y-3">
               <div className="flex justify-between text-sm">
-                <span className="text-gray-600 dark:text-gray-400">
-                  Subtotal
-                </span>
+                <span className="text-[var(--muted)]">Subtotal</span>
                 <span className="font-medium text-black dark:text-white">
                   {formatCurrency(total, invoice.currency)}
                 </span>
               </div>
               {invoice.taxRate! > 0 && (
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600 dark:text-gray-400">
+                  <span className="text-[var(--muted)]">
                     Tax ({invoice.taxRate!}%)
                   </span>
                   <span className="font-medium text-black dark:text-white">
@@ -305,7 +295,7 @@ export default function InvoiceDetailPage() {
                 <CardTitle>Notes</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="whitespace-pre-wrap text-gray-700 dark:text-gray-300">
+                <p className="whitespace-pre-wrap text-[var(--muted)]">
                   {invoice.notes}
                 </p>
               </CardContent>
@@ -327,9 +317,7 @@ export default function InvoiceDetailPage() {
             <Button variant="secondary" disabled>
               <Mail className="h-4 w-4" />
               Send Email{" "}
-              <span className="text-xs text-gray-400 dark:text-gray-500">
-                (Coming Soon)
-              </span>
+              <span className="text-xs text-[var(--muted)]">(Coming Soon)</span>
             </Button>
           </div>
         </div>

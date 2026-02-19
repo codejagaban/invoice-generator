@@ -347,11 +347,11 @@ export default function InvoiceForm({
               leadingIcon={<Hash className="h-4 w-4" />}
             />
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-[var(--muted)] mb-1">
                 Currency
               </label>
               <div className="relative">
-                <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">
+                <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted)]">
                   <DollarSign className="h-4 w-4" />
                 </span>
                 <Select
@@ -401,11 +401,11 @@ export default function InvoiceForm({
         <CardContent className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-[var(--muted)] mb-1">
                 Select Customer
               </label>
               <div className="relative">
-                <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">
+                <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted)]">
                   <User className="h-4 w-4" />
                 </span>
                 <Select
@@ -512,7 +512,7 @@ export default function InvoiceForm({
                   />
                   <div className="grid gap-2 sm:grid-cols-[96px_1fr_auto]">
                     <div>
-                      <span className="block text-xs text-gray-500 dark:text-gray-400">
+                      <span className="block text-xs text-[var(--muted)]">
                         Qty
                       </span>
                       <Input
@@ -534,7 +534,7 @@ export default function InvoiceForm({
                       />
                     </div>
                     <div>
-                      <span className="block text-xs text-gray-500 dark:text-gray-400">
+                      <span className="block text-xs text-[var(--muted)]">
                         Rate
                       </span>
                       <Input
@@ -605,7 +605,7 @@ export default function InvoiceForm({
           </div>
           <div className="space-y-2 border-t pt-4 [border-color:var(--border)]">
             <div className="flex justify-between text-sm">
-              <span className="text-gray-600 dark:text-gray-400">
+              <span className="text-[var(--muted)]">
                 Subtotal:
               </span>
               <span className="font-medium">
@@ -614,7 +614,7 @@ export default function InvoiceForm({
             </div>
             {summary.itemDiscount > 0 && (
               <div className="flex justify-between text-sm">
-                <span className="text-gray-600 dark:text-gray-400">
+                <span className="text-[var(--muted)]">
                   Discount:
                 </span>
                 <span className="font-medium">
@@ -624,7 +624,7 @@ export default function InvoiceForm({
             )}
             {summary.taxAmount > 0 && (
               <div className="flex justify-between text-sm">
-                <span className="text-gray-600 dark:text-gray-400">
+                <span className="text-[var(--muted)]">
                   Tax ({formData.taxRate}%):
                 </span>
                 <span className="font-medium">
@@ -705,7 +705,7 @@ export default function InvoiceForm({
               leadingIcon={<FileText className="h-4 w-4" />}
             />
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-[var(--muted)] mb-1">
                 Description (Optional)
               </label>
               <Textarea

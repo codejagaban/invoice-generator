@@ -11,7 +11,7 @@ export default function Home() {
               <h2 className="text-4xl font-bold tracking-tight text-black dark:text-white sm:text-5xl">
                 Create Professional Invoices
               </h2>
-              <p className="mt-4 text-lg text-gray-600 dark:text-gray-400">
+              <p className="mt-4 text-lg text-[var(--muted)]">
                 Simple, fast invoice creation for small businesses and
                 freelancers. No unnecessary complexity.
               </p>
@@ -75,7 +75,7 @@ export default function Home() {
                   <h4 className="font-semibold text-black dark:text-white">
                     {feature.title}
                   </h4>
-                  <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                  <p className="mt-2 text-sm text-[var(--muted)]">
                     {feature.description}
                   </p>
                 </div>
@@ -89,7 +89,7 @@ export default function Home() {
               <h3 className="text-2xl font-bold text-black dark:text-white">
                 Ready to create your first invoice?
               </h3>
-              <p className="text-gray-600 dark:text-gray-400">
+              <p className="text-[var(--muted)]">
                 Get started now with our simple invoice generator. No signup
                 required.
               </p>
@@ -108,7 +108,7 @@ export default function Home() {
 
       <footer className="border-t bg-[var(--surface)] [border-color:var(--border)]">
         <div className="mx-auto max-w-7xl px-6 py-8">
-          <p className="text-center text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-center text-sm text-[var(--muted)]">
             © 2026 Invoice Generator. Simple invoicing for everyone.
           </p>
         </div>

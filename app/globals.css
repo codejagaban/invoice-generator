@@ -12,6 +12,7 @@
     --surface: #ffffff;
     --surface-raised: #f9f9f9;
     --border: #e2e2e2;
+    --muted: #6b7280;
   }
 
   @media (prefers-color-scheme: dark) {
@@ -21,6 +22,7 @@
       --surface: #1a1a1a;
       --surface-raised: #222222;
       --border: #2c2c2c;
+      --muted: #9ca3af;
     }
   }
 

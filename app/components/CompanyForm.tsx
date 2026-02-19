@@ -195,7 +195,7 @@ export default function CompanyForm({
               onChange={handleInputChange}
               className="rounded [border-color:var(--border)]"
             />
-            <span className="text-gray-700 dark:text-gray-300">
+            <span className="text-[var(--muted)]">
               Set as default company profile
             </span>
           </label>

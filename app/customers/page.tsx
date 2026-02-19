@@ -133,7 +133,7 @@ export default function CustomersPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white dark:bg-black">
-        <p className="text-gray-600 dark:text-gray-400">Loading...</p>
+        <p className="text-[var(--muted)]">Loading...</p>
       </div>
     );
   }
@@ -145,7 +145,7 @@ export default function CustomersPage() {
           <h1 className="text-3xl font-bold text-black dark:text-white">
             Customers
           </h1>
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+          <p className="mt-2 text-sm text-[var(--muted)]">
             Create and manage your customer list for faster invoice creation.
           </p>
         </div>
@@ -251,7 +251,7 @@ export default function CustomersPage() {
             {customers.length === 0 ? (
               <Card>
                 <div className="py-12 text-center">
-                  <p className="text-gray-600 dark:text-gray-400">
+                  <p className="text-[var(--muted)]">
                     No customers yet. Add your first customer to get started.
                   </p>
                 </div>
@@ -264,11 +264,11 @@ export default function CustomersPage() {
                       <p className="font-semibold text-black dark:text-white">
                         {customer.name}
                       </p>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                      <p className="text-sm text-[var(--muted)]">
                         {customer.email}
                       </p>
                     </div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                    <div className="text-sm text-[var(--muted)]">
                       {customer.address && <p>{customer.address}</p>}
                       {(customer.city ||
                         customer.state ||
