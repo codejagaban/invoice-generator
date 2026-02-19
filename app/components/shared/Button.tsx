@@ -16,14 +16,14 @@ const buttonVariants = cva(
         primary:
           "bg-black text-white hover:bg-gray-900 dark:bg-white dark:text-black dark:hover:bg-gray-100",
         secondary:
-          "bg-[var(--surface-raised)] text-black hover:bg-[var(--border)] dark:text-white",
+          "bg-(--surface-raised) text-black hover:bg-(--border) dark:text-white",
         danger: "bg-red-600 text-white hover:bg-red-700 dark:hover:bg-red-500",
         "danger-soft":
           "border border-red-300 bg-red-50 text-black hover:bg-red-100 [&>svg]:text-red-500 dark:border-red-800 dark:bg-red-950/40 dark:text-white dark:hover:bg-red-950/70 dark:[&>svg]:text-red-400",
         ghost:
-          "bg-transparent text-black hover:bg-[var(--surface-raised)] dark:text-white",
+          "bg-transparent text-black hover:bg-(--surface-raised) dark:text-white",
         outline:
-          "border border-black bg-transparent text-black hover:bg-[var(--surface-raised)] dark:border-white dark:text-white",
+          "border border-black bg-transparent text-black hover:bg-(--surface-raised) dark:border-white dark:text-white",
       },
       size: {
         sm: "h-9 px-3",

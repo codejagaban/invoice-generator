@@ -206,7 +206,7 @@ export default function InvoiceForm({
   const handleItemChange = (
     index: number,
     field: keyof InvoiceItem,
-    value: any,
+    value: string | number,
   ) => {
     const newItems = [...items];
     newItems[index] = { ...newItems[index], [field]: value };
@@ -347,11 +347,11 @@ export default function InvoiceForm({
               leadingIcon={<Hash className="h-4 w-4" />}
             />
             <div>
-              <label className="block text-sm font-medium text-[var(--muted)] mb-1">
+              <label className="block text-sm font-medium text-(--muted) mb-1">
                 Currency
               </label>
               <div className="relative">
-                <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted)]">
+                <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-(--muted)">
                   <DollarSign className="h-4 w-4" />
                 </span>
                 <Select
@@ -401,11 +401,11 @@ export default function InvoiceForm({
         <CardContent className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className="block text-sm font-medium text-[var(--muted)] mb-1">
+              <label className="block text-sm font-medium text-(--muted) mb-1">
                 Select Customer
               </label>
               <div className="relative">
-                <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted)]">
+                <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-(--muted)">
                   <User className="h-4 w-4" />
                 </span>
                 <Select
@@ -498,7 +498,7 @@ export default function InvoiceForm({
             {items.map((item, index) => (
               <div
                 key={item.id}
-                className="grid gap-3 rounded-lg border p-4 sm:grid-cols-[1fr_auto] [border-color:var(--border)]"
+                className="grid gap-3 rounded-lg border p-4 sm:grid-cols-[1fr_auto] border-(--border)"
               >
                 <div className="space-y-2">
                   <Input
@@ -512,9 +512,7 @@ export default function InvoiceForm({
                   />
                   <div className="grid gap-2 sm:grid-cols-[96px_1fr_auto]">
                     <div>
-                      <span className="block text-xs text-[var(--muted)]">
-                        Qty
-                      </span>
+                      <span className="block text-xs text-(--muted)">Qty</span>
                       <Input
                         type="number"
                         placeholder="0"
@@ -534,9 +532,7 @@ export default function InvoiceForm({
                       />
                     </div>
                     <div>
-                      <span className="block text-xs text-[var(--muted)]">
-                        Rate
-                      </span>
+                      <span className="block text-xs text-(--muted)">Rate</span>
                       <Input
                         type="number"
                         placeholder="0.00"
@@ -603,20 +599,16 @@ export default function InvoiceForm({
               leadingIcon={<Percent className="h-4 w-4" />}
             />
           </div>
-          <div className="space-y-2 border-t pt-4 [border-color:var(--border)]">
+          <div className="space-y-2 border-t pt-4 border-(--border)">
             <div className="flex justify-between text-sm">
-              <span className="text-[var(--muted)]">
-                Subtotal:
-              </span>
+              <span className="text-(--muted)">Subtotal:</span>
               <span className="font-medium">
                 {formatCurrency(summary.subtotal, formData.currency)}
               </span>
             </div>
             {summary.itemDiscount > 0 && (
               <div className="flex justify-between text-sm">
-                <span className="text-[var(--muted)]">
-                  Discount:
-                </span>
+                <span className="text-(--muted)">Discount:</span>
                 <span className="font-medium">
                   -{formatCurrency(summary.itemDiscount, formData.currency)}
                 </span>
@@ -624,7 +616,7 @@ export default function InvoiceForm({
             )}
             {summary.taxAmount > 0 && (
               <div className="flex justify-between text-sm">
-                <span className="text-[var(--muted)]">
+                <span className="text-(--muted)">
                   Tax ({formData.taxRate}%):
                 </span>
                 <span className="font-medium">
@@ -632,7 +624,7 @@ export default function InvoiceForm({
                 </span>
               </div>
             )}
-            <div className="flex justify-between border-t pt-2 text-lg font-bold [border-color:var(--border)]">
+            <div className="flex justify-between border-t pt-2 text-lg font-bold border-(--border)">
               <span>Total:</span>
               <span>{formatCurrency(summary.total, formData.currency)}</span>
             </div>
@@ -705,7 +697,7 @@ export default function InvoiceForm({
               leadingIcon={<FileText className="h-4 w-4" />}
             />
             <div>
-              <label className="block text-sm font-medium text-[var(--muted)] mb-1">
+              <label className="block text-sm font-medium text-(--muted) mb-1">
                 Description (Optional)
               </label>
               <Textarea
@@ -716,7 +708,7 @@ export default function InvoiceForm({
               />
             </div>
           </div>
-          <DialogFooter className="border-t pt-4 [border-color:var(--border)]">
+          <DialogFooter className="border-t pt-4 border-(--border)">
             <Button
               type="button"
               onClick={handleSaveAsTemplate}

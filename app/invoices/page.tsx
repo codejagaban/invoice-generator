@@ -111,8 +111,8 @@ export default function InvoicesDashboardPage() {
   }, 0);
 
   return (
-    <div className="min-h-screen bg-[var(--background)]">
-      <header className="border-b border-b-[var(--border)] bg-[var(--surface)]">
+    <div className="min-h-screen bg-(--background)">
+      <header className="border-b border-b-(--border) bg-(--surface)">
         <div className="mx-auto max-w-7xl px-6 py-6">
           <div className="flex items-center justify-between">
             <h1 className="text-3xl font-bold text-black dark:text-white">
@@ -134,7 +134,7 @@ export default function InvoicesDashboardPage() {
           <div className="grid gap-4 sm:grid-cols-4">
             <Card>
               <div className="space-y-2">
-                <p className="text-sm font-medium text-[var(--muted)]">
+                <p className="text-sm font-medium text-(--muted)">
                   Total Invoices
                 </p>
                 <p className="text-2xl font-bold text-black dark:text-white">
@@ -144,7 +144,7 @@ export default function InvoicesDashboardPage() {
             </Card>
             <Card>
               <div className="space-y-2">
-                <p className="text-sm font-medium text-[var(--muted)]">
+                <p className="text-sm font-medium text-(--muted)">
                   Total Amount
                 </p>
                 <p className="text-2xl font-bold text-black dark:text-white">
@@ -154,9 +154,7 @@ export default function InvoicesDashboardPage() {
             </Card>
             <Card>
               <div className="space-y-2">
-                <p className="text-sm font-medium text-[var(--muted)]">
-                  Paid
-                </p>
+                <p className="text-sm font-medium text-(--muted)">Paid</p>
                 <p className="text-2xl font-bold text-green-600">
                   {invoices.filter((inv) => inv.status === "paid").length}
                 </p>
@@ -164,7 +162,7 @@ export default function InvoicesDashboardPage() {
             </Card>
             <Card>
               <div className="space-y-2">
-                <p className="text-sm font-medium text-[var(--muted)]">
+                <p className="text-sm font-medium text-(--muted)">
                   Overdue
                 </p>
                 <p className="text-2xl font-bold text-red-600">
@@ -225,9 +223,7 @@ export default function InvoicesDashboardPage() {
           {filteredInvoices.length === 0 ? (
             <Card>
               <div className="py-12 text-center">
-                <p className="text-[var(--muted)]">
-                  No invoices found.
-                </p>
+                <p className="text-(--muted)">No invoices found.</p>
                 <Link href="/invoices/create">
                   <Button variant="secondary" className="mt-4">
                     Create Your First Invoice
@@ -270,7 +266,7 @@ export default function InvoicesDashboardPage() {
                               </span>
                             )}
                           </div>
-                          <div className="flex items-center gap-4 text-sm text-[var(--muted)] flex-wrap">
+                          <div className="flex items-center gap-4 text-sm text-(--muted) flex-wrap">
                             <span>{invoice.customer.name}</span>
                             <span>{formatDate(invoice.date)}</span>
                           </div>
@@ -279,7 +275,7 @@ export default function InvoicesDashboardPage() {
                           <p className="font-semibold text-black dark:text-white">
                             {formatCurrency(amount, invoice.currency)}
                           </p>
-                          <p className="text-sm text-[var(--muted)]">
+                          <p className="text-sm text-(--muted)">
                             Due: {formatDate(invoice.dueDate)}
                           </p>
                         </div>

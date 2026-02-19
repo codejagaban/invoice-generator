@@ -61,7 +61,7 @@ export default function Calendar({
         ),
         selected: "",
         today: "bg-gray-100 text-black dark:bg-gray-900 dark:text-white",
-        outside: "text-[var(--muted)] opacity-50",
+        outside: "text-(--muted) opacity-50",
         disabled: "text-gray-400 opacity-50",
         range_middle:
           "aria-selected:bg-gray-100 aria-selected:text-black dark:aria-selected:bg-gray-900 dark:aria-selected:text-white",

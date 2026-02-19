@@ -11,7 +11,7 @@ export default function Home() {
               <h2 className="text-4xl font-bold tracking-tight text-black dark:text-white sm:text-5xl">
                 Create Professional Invoices
               </h2>
-              <p className="mt-4 text-lg text-[var(--muted)]">
+              <p className="mt-4 text-lg text-(--muted)">
                 Simple, fast invoice creation for small businesses and
                 freelancers. No unnecessary complexity.
               </p>
@@ -26,7 +26,7 @@ export default function Home() {
               </Link>
               <Link
                 href="/invoices"
-                className="rounded-lg border px-6 py-3 font-medium text-black transition-colors hover:bg-[var(--surface-raised)] dark:text-white [border-color:var(--border)]"
+                className="rounded-lg border px-6 py-3 font-medium text-black transition-colors hover:bg-(--surface-raised) dark:text-white [border-color:var(--border)]"
               >
                 View Invoices
               </Link>
@@ -70,12 +70,12 @@ export default function Home() {
               ].map((feature) => (
                 <div
                   key={feature.title}
-                  className="rounded-lg border bg-[var(--surface-raised)] p-6 [border-color:var(--border)]"
+                  className="rounded-lg border bg-(--surface-raised) p-6 [border-color:var(--border)]"
                 >
                   <h4 className="font-semibold text-black dark:text-white">
                     {feature.title}
                   </h4>
-                  <p className="mt-2 text-sm text-[var(--muted)]">
+                  <p className="mt-2 text-sm text-(--muted)">
                     {feature.description}
                   </p>
                 </div>
@@ -84,12 +84,12 @@ export default function Home() {
           </section>
 
           {/* CTA Section */}
-          <section className="mt-16 rounded-lg bg-[var(--surface-raised)] p-8 sm:p-12">
+          <section className="mt-16 rounded-lg bg-(--surface-raised) p-8 sm:p-12">
             <div className="space-y-4">
               <h3 className="text-2xl font-bold text-black dark:text-white">
                 Ready to create your first invoice?
               </h3>
-              <p className="text-[var(--muted)]">
+              <p className="text-(--muted)">
                 Get started now with our simple invoice generator. No signup
                 required.
               </p>
@@ -106,9 +106,9 @@ export default function Home() {
         </div>
       </main>
 
-      <footer className="border-t bg-[var(--surface)] [border-color:var(--border)]">
+      <footer className="border-t bg-(--surface) [border-color:var(--border)]">
         <div className="mx-auto max-w-7xl px-6 py-8">
-          <p className="text-center text-sm text-[var(--muted)]">
+          <p className="text-center text-sm text-(--muted)">
             © 2026 Invoice Generator. Simple invoicing for everyone.
           </p>
         </div>

@@ -69,15 +69,15 @@ export default function InvoiceDetailPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white dark:bg-black">
-        <p className="text-[var(--muted)]">Loading...</p>
+        <p className="text-(--muted)">Loading...</p>
       </div>
     );
   }
 
   if (!invoice) {
     return (
-      <div className="min-h-screen bg-[var(--background)]">
-        <header className="border-b border-b-[var(--border)] bg-[var(--surface)]">
+      <div className="min-h-screen bg-(--background)">
+        <header className="border-b border-b-(--border) bg-(--surface)">
           <div className="mx-auto max-w-7xl px-6 py-6">
             <h1 className="text-3xl font-bold text-black dark:text-white">
               Invoice Not Found
@@ -85,7 +85,7 @@ export default function InvoiceDetailPage() {
           </div>
         </header>
         <main className="mx-auto max-w-7xl px-6 py-12">
-          <p className="mb-4 text-[var(--muted)]">
+          <p className="mb-4 text-(--muted)">
             The invoice you&apos;re looking for doesn&apos;t exist.
           </p>
           <Link
@@ -111,15 +111,15 @@ export default function InvoiceDetailPage() {
   const totalWithTax = total + taxAmount;
 
   return (
-    <div className="min-h-screen bg-[var(--background)]">
-      <header className="border-b border-b-[var(--border)] bg-[var(--surface)]">
+    <div className="min-h-screen bg-(--background)">
+      <header className="border-b border-b-(--border) bg-(--surface)">
         <div className="mx-auto max-w-7xl px-6 py-6">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-black dark:text-white">
                 {invoice.invoiceNumber}
               </h1>
-              <p className="mt-1 text-[var(--muted)]">
+              <p className="mt-1 text-(--muted)">
                 {formatDate(invoice.date, "long")}
               </p>
             </div>
@@ -176,7 +176,7 @@ export default function InvoiceDetailPage() {
             </CardHeader>
             <CardContent className="space-y-1 text-black dark:text-white">
               <p className="font-semibold">{invoice.customer.name}</p>
-              <p className="text-sm text-[var(--muted)]">
+              <p className="text-sm text-(--muted)">
                 {invoice.customer.email}
               </p>
               {invoice.customer.address && (
@@ -196,13 +196,13 @@ export default function InvoiceDetailPage() {
             <Card>
               <CardContent className="space-y-3">
                 <div>
-                  <p className="text-sm text-[var(--muted)]">Invoice Date</p>
+                  <p className="text-sm text-(--muted)">Invoice Date</p>
                   <p className="font-semibold text-black dark:text-white">
                     {formatDate(invoice.date, "long")}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-[var(--muted)]">Due Date</p>
+                  <p className="text-sm text-(--muted)">Due Date</p>
                   <p className="font-semibold text-black dark:text-white">
                     {formatDate(invoice.dueDate, "long")}
                   </p>
@@ -212,13 +212,13 @@ export default function InvoiceDetailPage() {
             <Card>
               <CardContent className="space-y-3">
                 <div>
-                  <p className="text-sm text-[var(--muted)]">Invoice Number</p>
+                  <p className="text-sm text-(--muted)">Invoice Number</p>
                   <p className="font-semibold text-black dark:text-white">
                     {invoice.invoiceNumber}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-[var(--muted)]">Currency</p>
+                  <p className="text-sm text-(--muted)">Currency</p>
                   <p className="font-semibold text-black dark:text-white">
                     {invoice.currency}
                   </p>
@@ -243,7 +243,7 @@ export default function InvoiceDetailPage() {
                       <p className="font-medium text-black dark:text-white">
                         {item.description}
                       </p>
-                      <p className="text-sm text-[var(--muted)]">
+                      <p className="text-sm text-(--muted)">
                         {item.quantity} ×{" "}
                         {formatCurrency(item.rate, invoice.currency)}
                       </p>
@@ -264,14 +264,14 @@ export default function InvoiceDetailPage() {
           <Card>
             <CardContent className="space-y-3">
               <div className="flex justify-between text-sm">
-                <span className="text-[var(--muted)]">Subtotal</span>
+                <span className="text-(--muted)">Subtotal</span>
                 <span className="font-medium text-black dark:text-white">
                   {formatCurrency(total, invoice.currency)}
                 </span>
               </div>
               {invoice.taxRate! > 0 && (
                 <div className="flex justify-between text-sm">
-                  <span className="text-[var(--muted)]">
+                  <span className="text-(--muted)">
                     Tax ({invoice.taxRate!}%)
                   </span>
                   <span className="font-medium text-black dark:text-white">
@@ -295,7 +295,7 @@ export default function InvoiceDetailPage() {
                 <CardTitle>Notes</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="whitespace-pre-wrap text-[var(--muted)]">
+                <p className="whitespace-pre-wrap text-(--muted)">
                   {invoice.notes}
                 </p>
               </CardContent>
@@ -317,7 +317,7 @@ export default function InvoiceDetailPage() {
             <Button variant="secondary" disabled>
               <Mail className="h-4 w-4" />
               Send Email{" "}
-              <span className="text-xs text-[var(--muted)]">(Coming Soon)</span>
+              <span className="text-xs text-(--muted)">(Coming Soon)</span>
             </Button>
           </div>
         </div>

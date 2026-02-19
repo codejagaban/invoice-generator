@@ -28,13 +28,13 @@ export default function CreateInvoicePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--background)]">
-      <header className="border-b border-b-[var(--border)] bg-[var(--surface)]">
+    <div className="min-h-screen bg-(--background)">
+      <header className="border-b border-b-(--border) bg-(--surface)">
         <div className="mx-auto max-w-7xl px-6 py-6">
           <h1 className="text-3xl font-bold text-black dark:text-white">
             Create Invoice
           </h1>
-          <p className="mt-2 text-sm text-[var(--muted)]">
+          <p className="mt-2 text-sm text-(--muted)">
             Fill out the form below to create a new invoice. You can{" "}
             <Link href="/templates" className="font-medium hover:underline">
               load a template

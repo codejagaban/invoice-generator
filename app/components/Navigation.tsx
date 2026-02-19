@@ -30,14 +30,14 @@ export default function Navigation() {
   ] as const;
 
   return (
-    <header className="border-b border-b-[var(--border)] bg-[var(--surface)] sticky top-0 z-50">
+    <header className="border-b border-b-(--border) bg-(--surface) sticky top-0 z-50">
       <nav className="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
           <div className="text-xl font-bold text-black dark:text-white">
             Invoice
           </div>
-          <div className="text-xl font-light text-[var(--muted)]">
+          <div className="text-xl font-light text-(--muted)">
             Generator
           </div>
         </Link>
@@ -50,8 +50,8 @@ export default function Navigation() {
               href={item.href}
               className={`px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 isActive(item.href)
-                  ? "bg-[var(--surface-raised)] text-black dark:text-white"
-                  : "text-[var(--muted)] hover:text-black dark:hover:text-white hover:bg-[var(--surface-raised)]"
+                  ? "bg-(--surface-raised) text-black dark:text-white"
+                  : "text-(--muted) hover:text-black dark:hover:text-white hover:bg-(--surface-raised)"
               }`}
             >
               <span className="inline-flex items-center gap-2">

@@ -47,7 +47,7 @@ export default function DatePicker({
             data-empty={!date}
             className={cn(
               "w-full justify-start text-left font-normal",
-              !date && "text-[var(--muted)]",
+              !date && "text-(--muted)",
             )}
             disabled={disabled}
           >

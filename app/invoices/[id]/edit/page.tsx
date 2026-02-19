@@ -43,15 +43,15 @@ export default function EditInvoicePage() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white dark:bg-black">
-        <p className="text-[var(--muted)]">Loading...</p>
+        <p className="text-(--muted)">Loading...</p>
       </div>
     );
   }
 
   if (!invoice) {
     return (
-      <div className="min-h-screen bg-[var(--background)]">
-        <header className="border-b border-b-[var(--border)] bg-[var(--surface)]">
+      <div className="min-h-screen bg-(--background)">
+        <header className="border-b border-b-(--border) bg-(--surface)">
           <div className="mx-auto max-w-7xl px-6 py-6">
             <h1 className="text-3xl font-bold text-black dark:text-white">
               Invoice Not Found
@@ -59,15 +59,15 @@ export default function EditInvoicePage() {
           </div>
         </header>
         <main className="mx-auto max-w-7xl px-6 py-12">
-          <p className="text-[var(--muted)]">{error}</p>
+          <p className="text-(--muted)">{error}</p>
         </main>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[var(--background)]">
-      <header className="border-b border-b-[var(--border)] bg-[var(--surface)]">
+    <div className="min-h-screen bg-(--background)">
+      <header className="border-b border-b-(--border) bg-(--surface)">
         <div className="mx-auto max-w-7xl px-6 py-6">
           <h1 className="text-3xl font-bold text-black dark:text-white">
             Edit Invoice {invoice.invoiceNumber}

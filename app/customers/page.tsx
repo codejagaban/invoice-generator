@@ -133,19 +133,19 @@ export default function CustomersPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white dark:bg-black">
-        <p className="text-[var(--muted)]">Loading...</p>
+        <p className="text-(--muted)">Loading...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[var(--background)]">
-      <header className="border-b border-b-[var(--border)] bg-[var(--surface)]">
+    <div className="min-h-screen bg-(--background)">
+      <header className="border-b border-b-(--border) bg-(--surface)">
         <div className="mx-auto max-w-7xl px-6 py-6">
           <h1 className="text-3xl font-bold text-black dark:text-white">
             Customers
           </h1>
-          <p className="mt-2 text-sm text-[var(--muted)]">
+          <p className="mt-2 text-sm text-(--muted)">
             Create and manage your customer list for faster invoice creation.
           </p>
         </div>
@@ -251,7 +251,7 @@ export default function CustomersPage() {
             {customers.length === 0 ? (
               <Card>
                 <div className="py-12 text-center">
-                  <p className="text-[var(--muted)]">
+                  <p className="text-(--muted)">
                     No customers yet. Add your first customer to get started.
                   </p>
                 </div>
@@ -264,11 +264,11 @@ export default function CustomersPage() {
                       <p className="font-semibold text-black dark:text-white">
                         {customer.name}
                       </p>
-                      <p className="text-sm text-[var(--muted)]">
+                      <p className="text-sm text-(--muted)">
                         {customer.email}
                       </p>
                     </div>
-                    <div className="text-sm text-[var(--muted)]">
+                    <div className="text-sm text-(--muted)">
                       {customer.address && <p>{customer.address}</p>}
                       {(customer.city ||
                         customer.state ||

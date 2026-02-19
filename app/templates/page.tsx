@@ -46,14 +46,14 @@ export default function TemplatesPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white dark:bg-black">
-        <p className="text-[var(--muted)]">Loading templates...</p>
+        <p className="text-(--muted)">Loading templates...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[var(--background)]">
-      <header className="border-b border-b-[var(--border)] bg-[var(--surface)]">
+    <div className="min-h-screen bg-(--background)">
+      <header className="border-b border-b-(--border) bg-(--surface)">
         <div className="mx-auto max-w-7xl px-6 py-6">
           <h1 className="text-3xl font-bold text-black dark:text-white">
             Invoice Templates
@@ -66,7 +66,7 @@ export default function TemplatesPage() {
           {templates.length === 0 ? (
             <Card>
               <div className="py-12 text-center">
-                <p className="mb-4 text-[var(--muted)]">
+                <p className="mb-4 text-(--muted)">
                   No templates yet. Create an invoice and save it as a template
                   to reuse it.
                 </p>
@@ -87,24 +87,20 @@ export default function TemplatesPage() {
                   </CardHeader>
                   <CardContent className="space-y-3">
                     {template.description && (
-                      <p className="text-sm text-[var(--muted)]">
+                      <p className="text-sm text-(--muted)">
                         {template.description}
                       </p>
                     )}
-                    <div className="space-y-2 border-t pt-3 [border-color:var(--border)]">
+                    <div className="space-y-2 border-t pt-3 border-(--border)">
                       <div>
-                        <p className="text-xs text-[var(--muted)]">
-                          Customer
-                        </p>
+                        <p className="text-xs text-(--muted)">Customer</p>
                         <p className="font-medium text-black dark:text-white">
                           {template.customer.name || "Template"}
                         </p>
                       </div>
                       {template.items && template.items.length > 0 && (
                         <div>
-                          <p className="text-xs text-[var(--muted)]">
-                            Items
-                          </p>
+                          <p className="text-xs text-(--muted)">Items</p>
                           <p className="font-medium text-black dark:text-white">
                             {template.items.length} item
                             {template.items.length !== 1 ? "s" : ""}
@@ -112,15 +108,13 @@ export default function TemplatesPage() {
                         </div>
                       )}
                       <div>
-                        <p className="text-xs text-[var(--muted)]">
-                          Created
-                        </p>
+                        <p className="text-xs text-(--muted)">Created</p>
                         <p className="text-sm text-black dark:text-white">
                           {formatDate(template.createdAt)}
                         </p>
                       </div>
                     </div>
-                    <div className="flex gap-2 border-t pt-3 [border-color:var(--border)]">
+                    <div className="flex gap-2 border-t pt-3 border-(--border)">
                       <Button
                         size="sm"
                         className="flex-1"
