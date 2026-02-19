@@ -176,9 +176,7 @@ export default function InvoiceDetailPage() {
             </CardHeader>
             <CardContent className="space-y-1 text-black dark:text-white">
               <p className="font-semibold">{invoice.customer.name}</p>
-              <p className="text-sm text-(--muted)">
-                {invoice.customer.email}
-              </p>
+              <p className="text-sm text-(--muted)">{invoice.customer.email}</p>
               {invoice.customer.address && (
                 <>
                   <p className="text-sm">{invoice.customer.address}</p>
@@ -237,7 +235,7 @@ export default function InvoiceDetailPage() {
                 {invoice.items.map((item) => (
                   <div
                     key={item.id}
-                    className="flex items-center justify-between border-b py-2 [border-color:var(--border)]"
+                    className="flex items-center justify-between border-b py-2 border-(--border)"
                   >
                     <div>
                       <p className="font-medium text-black dark:text-white">
@@ -279,7 +277,7 @@ export default function InvoiceDetailPage() {
                   </span>
                 </div>
               )}
-              <div className="flex justify-between border-t pt-3 text-lg font-bold [border-color:var(--border)]">
+              <div className="flex justify-between border-t pt-3 text-lg font-bold border-(--border)">
                 <span className="text-black dark:text-white">Total</span>
                 <span className="text-black dark:text-white">
                   {formatCurrency(totalWithTax, invoice.currency)}

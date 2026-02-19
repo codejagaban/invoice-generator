@@ -193,7 +193,7 @@ export default function CompanyForm({
               name="isDefault"
               checked={formData.isDefault}
               onChange={handleInputChange}
-              className="rounded [border-color:var(--border)]"
+              className="rounded border-(--border)"
             />
             <span className="text-(--muted)">
               Set as default company profile

@@ -162,9 +162,7 @@ export default function InvoicesDashboardPage() {
             </Card>
             <Card>
               <div className="space-y-2">
-                <p className="text-sm font-medium text-(--muted)">
-                  Overdue
-                </p>
+                <p className="text-sm font-medium text-(--muted)">Overdue</p>
                 <p className="text-2xl font-bold text-red-600">
                   {invoices.filter((inv) => isOverdue(inv.dueDate)).length}
                 </p>
@@ -190,7 +188,7 @@ export default function InvoicesDashboardPage() {
                   )
                 }
               >
-                <SelectTrigger className="sm:w-[180px]">
+                <SelectTrigger className="sm:w-45">
                   <SelectValue placeholder="All Status" />
                 </SelectTrigger>
                 <SelectContent>
@@ -207,7 +205,7 @@ export default function InvoicesDashboardPage() {
                   setSortBy(value as "date" | "amount" | "name")
                 }
               >
-                <SelectTrigger className="sm:w-[180px]">
+                <SelectTrigger className="sm:w-45">
                   <SelectValue placeholder="Sort by Date" />
                 </SelectTrigger>
                 <SelectContent>

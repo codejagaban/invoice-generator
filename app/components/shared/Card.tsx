@@ -12,7 +12,7 @@ const Card = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "rounded-lg border bg-(--surface) p-6 text-black dark:text-white [border-color:var(--border)]",
+      "rounded-lg border bg-(--surface) p-6 text-black dark:text-white border-(--border)",
       className,
     )}
     {...props}
@@ -59,7 +59,7 @@ const CardFooter = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "mt-6 flex items-center justify-between border-t pt-4 [border-color:var(--border)]",
+      "mt-6 flex items-center justify-between border-t pt-4 border-(--border)",
       className,
     )}
     {...props}

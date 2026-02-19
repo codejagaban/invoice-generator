@@ -264,9 +264,7 @@ export default function CustomersPage() {
                       <p className="font-semibold text-black dark:text-white">
                         {customer.name}
                       </p>
-                      <p className="text-sm text-(--muted)">
-                        {customer.email}
-                      </p>
+                      <p className="text-sm text-(--muted)">{customer.email}</p>
                     </div>
                     <div className="text-sm text-(--muted)">
                       {customer.address && <p>{customer.address}</p>}
@@ -281,7 +279,7 @@ export default function CustomersPage() {
                       )}
                       {customer.country && <p>{customer.country}</p>}
                     </div>
-                    <div className="flex gap-2 border-t pt-3 [border-color:var(--border)]">
+                    <div className="flex gap-2 border-t pt-3 border-(--border)">
                       <Button
                         size="sm"
                         variant="ghost"

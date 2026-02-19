@@ -37,7 +37,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
               leadingIcon ? "pl-9" : "",
               error
                 ? "border-red-500 focus-visible:ring-red-500"
-                : "[border-color:var(--border)]",
+                : "border-(--border)",
               className,
             )}
             ref={ref}
