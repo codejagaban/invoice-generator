@@ -347,11 +347,14 @@ export default function Home() {
             {/* Single dashed line behind all three steps */}
             <div
               className="absolute inset-x-0 top-7.5 hidden -z-10 sm:block"
-              style={{ borderTop: "2px solid var(--border)" }}
+              style={{ borderTop: "2px dashed var(--border)", width: "69%" }}
             />
             <div className="grid gap-8 sm:grid-cols-3">
               {steps.map((step) => (
-                <div key={step.number} className="relative z-10 flex flex-col gap-3">
+                <div
+                  key={step.number}
+                  className="relative z-10 flex flex-col gap-3"
+                >
                   <span className="inline-block w-fit select-none bg-white pr-3 text-6xl font-black leading-none tracking-tight text-(--border) dark:bg-black">
                     {step.number}
                   </span>
@@ -368,7 +371,6 @@ export default function Home() {
         </section>
 
         {/* ── Perks ───────────────────────────────────────────── */}
-        <div className="border-t border-(--border)" />
         <section className="mx-auto max-w-5xl px-6 py-20 sm:py-24">
           <div className="flex flex-col gap-10 sm:flex-row sm:items-start sm:justify-between">
             <div className="max-w-xs">
