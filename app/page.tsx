@@ -1,273 +1,393 @@
 import Link from "next/link";
+import {
+  FileText,
+  FileDown,
+  LayoutTemplate,
+  Mail,
+  ArrowRight,
+  Check,
+} from "lucide-react";
 
 const features = [
   {
-    title: "Quick Creation",
+    icon: FileText,
+    title: "Create in minutes",
     description:
-      "Build polished invoices in under 2 minutes with our streamlined form — no accounting background needed.",
-    iconColor: "text-violet-600 dark:text-violet-400",
-    iconBg:
-      "bg-violet-50 ring-1 ring-violet-200 dark:bg-violet-950/40 dark:ring-violet-800",
-    hoverBg:
-      "hover:bg-linear-to-br hover:from-white hover:to-violet-50/50 hover:border-violet-100 dark:hover:from-[#1a1a1a] dark:hover:to-violet-900/20 dark:hover:border-violet-800",
-    glow: "bg-violet-400 dark:bg-violet-500",
-    icon: (
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        className="h-6 w-6"
-        stroke="currentColor"
-        strokeWidth={1.75}
-      >
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-      </svg>
-    ),
-  },
-  {
-    title: "PDF Export",
-    description:
-      "Generate pixel-perfect, client-ready PDFs with a single click — ready to share or archive.",
+      "Fill in the essentials — customer, line items, due date. A polished invoice ready to share in under two minutes.",
     iconColor: "text-blue-600 dark:text-blue-400",
-    iconBg:
-      "bg-blue-50 ring-1 ring-blue-200 dark:bg-blue-950/40 dark:ring-blue-800",
-    hoverBg:
-      "hover:bg-linear-to-br hover:from-white hover:to-blue-50/50 hover:border-blue-100 dark:hover:from-[#1a1a1a] dark:hover:to-blue-900/20 dark:hover:border-blue-800",
-    glow: "bg-blue-400 dark:bg-blue-500",
-    icon: (
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        className="h-6 w-6"
-        stroke="currentColor"
-        strokeWidth={1.75}
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M12 10v6m0 0-3-3m3 3 3-3M3 17V7a2 2 0 0 1 2-2h6l2 2h6a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"
-        />
-      </svg>
-    ),
+    iconBg: "bg-blue-50 dark:bg-blue-950/40",
+    iconBorder: "border-blue-200 dark:border-blue-800",
+    glow: "bg-blue-400",
   },
   {
-    title: "Smart Templates",
+    icon: FileDown,
+    title: "Export to PDF",
     description:
-      "Save your frequently-used invoice layouts as templates and launch recurring invoices in seconds.",
+      "One-click PDF generation. Your company logo, contact details, and itemised totals — formatted precisely.",
+    iconColor: "text-violet-600 dark:text-violet-400",
+    iconBg: "bg-violet-50 dark:bg-violet-950/40",
+    iconBorder: "border-violet-200 dark:border-violet-800",
+    glow: "bg-violet-400",
+  },
+  {
+    icon: LayoutTemplate,
+    title: "Reusable templates",
+    description:
+      "Save any invoice as a template. Pre-fill recurring work in a single click — no re-typing, no repetition.",
     iconColor: "text-emerald-600 dark:text-emerald-400",
-    iconBg:
-      "bg-emerald-50 ring-1 ring-emerald-200 dark:bg-emerald-950/40 dark:ring-emerald-800",
-    hoverBg:
-      "hover:bg-linear-to-br hover:from-white hover:to-emerald-50/50 hover:border-emerald-100 dark:hover:from-[#1a1a1a] dark:hover:to-emerald-900/20 dark:hover:border-emerald-800",
-    glow: "bg-emerald-400 dark:bg-emerald-500",
-    icon: (
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        className="h-6 w-6"
-        stroke="currentColor"
-        strokeWidth={1.75}
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25Z"
-        />
-      </svg>
-    ),
+    iconBg: "bg-emerald-50 dark:bg-emerald-950/40",
+    iconBorder: "border-emerald-200 dark:border-emerald-800",
+    glow: "bg-emerald-400",
   },
   {
-    title: "Email Integration",
+    icon: Mail,
+    title: "Email delivery",
     description:
-      "Send invoices straight to your clients' inboxes without ever leaving the app.",
+      "Send invoices straight to your client's inbox from inside the app. No downloads, no file attachments.",
     iconColor: "text-rose-600 dark:text-rose-400",
-    iconBg:
-      "bg-rose-50 ring-1 ring-rose-200 dark:bg-rose-950/40 dark:ring-rose-800",
-    hoverBg:
-      "hover:bg-linear-to-br hover:from-white hover:to-rose-50/50 hover:border-rose-100 dark:hover:from-[#1a1a1a] dark:hover:to-rose-900/20 dark:hover:border-rose-800",
-    glow: "bg-rose-400 dark:bg-rose-500",
-    icon: (
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        className="h-6 w-6"
-        stroke="currentColor"
-        strokeWidth={1.75}
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75"
-        />
-      </svg>
-    ),
+    iconBg: "bg-rose-50 dark:bg-rose-950/40",
+    iconBorder: "border-rose-200 dark:border-rose-800",
+    glow: "bg-rose-400",
   },
 ];
 
-const stats = [
+const steps = [
   {
-    value: "2 min",
-    label: "Average creation time",
-    gradient: "from-orange-500 to-rose-500",
+    number: "01",
+    title: "Set up your profile",
+    description:
+      "Add your company name, address, and logo once. It auto-fills every invoice you create.",
   },
   {
-    value: "100%",
-    label: "Free to use",
-    gradient: "from-emerald-500 to-teal-500",
+    number: "02",
+    title: "Build your invoice",
+    description:
+      "Choose a customer, add line items and rates, pick a currency and due date.",
   },
   {
-    value: "0",
-    label: "Sign-ups required",
-    gradient: "from-blue-500 to-indigo-600",
+    number: "03",
+    title: "Send or download",
+    description:
+      "Export a clean PDF or send directly to your client. Mark it paid when the money lands.",
   },
 ];
+
+const perks = [
+  "No account or sign-up required",
+  "Data stored locally — fully private",
+  "11 currencies supported",
+  "Customer address book",
+  "Invoice status tracking",
+  "Overdue detection",
+];
+
+const lineItems = [
+  { label: "Web design — 3 hrs", amount: "£900" },
+  { label: "Development — 8 hrs", amount: "£3,200" },
+  { label: "Hosting setup — 1×", amount: "£100" },
+];
+
+function InvoicePreview() {
+  return (
+    <div className="relative flex items-center justify-center py-16 px-6">
+      {/* Glow behind card */}
+      <div className="pointer-events-none absolute h-64 w-64 rounded-full bg-indigo-100 opacity-70 blur-3xl dark:bg-indigo-950/50" />
+
+      {/* Rotated back card (depth effect) */}
+      <div
+        className="absolute z-0 h-[268px] w-72 rounded-2xl border border-(--border) bg-(--surface-raised)"
+        style={{
+          transform: "rotate(4deg) translateY(6px)",
+          animation: "invoice-float 4s ease-in-out 0.4s infinite",
+        }}
+      />
+
+      {/* Main invoice card */}
+      <div
+        className="relative z-10 w-72 rounded-2xl border border-(--border) bg-white p-5 shadow-2xl shadow-black/10 dark:bg-[#1a1a1a]"
+        style={{ animation: "invoice-float 4s ease-in-out infinite" }}
+      >
+        {/* Invoice header */}
+        <div className="mb-5 flex items-start justify-between">
+          <div>
+            <div className="mb-1 flex items-center gap-2">
+              <div className="h-6 w-6 rounded-md bg-black dark:bg-white" />
+              <span className="text-xs font-bold text-black dark:text-white">
+                Acme Studio
+              </span>
+            </div>
+            <p className="text-[11px] text-(--muted)">invoice@acmestudio.co</p>
+          </div>
+          <div className="text-right">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-(--muted)">
+              Invoice
+            </p>
+            <p className="text-sm font-bold text-black dark:text-white">
+              #INV-2841
+            </p>
+          </div>
+        </div>
+
+        {/* Bill to */}
+        <div className="mb-4 rounded-lg bg-(--surface-raised) p-3">
+          <p className="mb-1 text-[10px] font-semibold uppercase tracking-widest text-(--muted)">
+            Bill to
+          </p>
+          <p className="text-sm font-semibold text-black dark:text-white">
+            Bright Digital Ltd
+          </p>
+          <p className="text-[11px] text-(--muted)">billing@brightdigital.com</p>
+        </div>
+
+        {/* Line items */}
+        <div className="mb-4 space-y-2.5">
+          {lineItems.map((item) => (
+            <div
+              key={item.label}
+              className="flex items-center justify-between text-xs"
+            >
+              <span className="text-(--muted)">{item.label}</span>
+              <span className="font-medium text-black dark:text-white">
+                {item.amount}
+              </span>
+            </div>
+          ))}
+        </div>
+
+        {/* Total */}
+        <div className="flex items-center justify-between border-t border-(--border) pt-3">
+          <span className="text-xs font-semibold text-(--muted)">Total due</span>
+          <span className="text-base font-bold text-black dark:text-white">
+            £4,200.00
+          </span>
+        </div>
+      </div>
+
+      {/* Floating pill — Invoice sent */}
+      <div
+        className="absolute right-0 top-10 z-20 flex items-center gap-1.5 rounded-full bg-black px-3 py-1.5 shadow-xl shadow-black/25 dark:bg-white"
+        style={{ animation: "invoice-float 4s ease-in-out 0.8s infinite" }}
+      >
+        <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+        <span className="whitespace-nowrap text-xs font-semibold text-white dark:text-black">
+          Invoice sent
+        </span>
+      </div>
+
+      {/* Floating pill — PDF ready */}
+      <div
+        className="absolute bottom-10 left-0 z-20 flex items-center gap-1.5 rounded-full border border-(--border) bg-white px-3 py-1.5 shadow-lg dark:bg-[#1a1a1a]"
+        style={{ animation: "invoice-float 4s ease-in-out 1.4s infinite" }}
+      >
+        <FileDown className="h-3 w-3 text-(--muted)" />
+        <span className="whitespace-nowrap text-xs font-medium text-(--muted)">
+          PDF ready
+        </span>
+      </div>
+    </div>
+  );
+}
 
 export default function Home() {
   return (
-    <div className="min-h-screen w-full bg-white dark:bg-black">
-      <main className="mx-auto max-w-7xl px-6 py-12 sm:py-20">
-        {/* Hero Section */}
-        <section className="px-8 py-16 text-center sm:px-12 sm:py-24">
-          <div className="mx-auto max-w-3xl space-y-6">
-            <div className="inline-flex items-center gap-2 rounded-full border border-violet-200 bg-violet-50 px-4 py-1.5 text-sm font-medium text-violet-700 dark:border-violet-800 dark:bg-violet-950/40 dark:text-violet-300">
-              <span className="h-1.5 w-1.5 rounded-full bg-violet-500 dark:bg-violet-400" />
-              No sign-up required · Free forever
-            </div>
+    <div className="min-h-screen bg-white dark:bg-black">
+      <main>
+        {/* ── Hero ────────────────────────────────────────────── */}
+        <section className="mx-auto max-w-5xl px-6 pt-20 pb-16 sm:pt-28 sm:pb-24">
+          <div className="lg:grid lg:grid-cols-2 lg:items-center lg:gap-12">
+            {/* Left: copy */}
+            <div>
+              {/* Pill badge */}
+              <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-4 py-1.5 text-sm font-medium text-indigo-700 dark:border-indigo-800 dark:bg-indigo-950/40 dark:text-indigo-300">
+                <span className="h-1.5 w-1.5 rounded-full bg-indigo-500 dark:bg-indigo-400" />
+                Free · No sign-up · Private by default
+              </div>
 
-            <h1 className="text-4xl font-extrabold tracking-tight text-black dark:text-white sm:text-6xl">
-              Invoicing that{" "}
-              <span className="bg-linear-to-r from-orange-500 via-rose-500 to-pink-600 bg-clip-text text-transparent">
-                just works
-              </span>
-            </h1>
+              <h1 className="max-w-xl text-5xl font-bold tracking-tight text-black dark:text-white sm:text-6xl leading-[1.1]">
+                Invoicing that stays
+                <br />
+                <span className="bg-linear-to-r from-blue-700 to-violet-600 bg-clip-text text-transparent dark:from-blue-400 dark:to-violet-400">
+                  out of your way.
+                </span>
+              </h1>
 
-            <p className="mx-auto max-w-xl text-lg leading-relaxed text-(--muted)">
-              Create, send, and manage professional invoices in minutes. Built
-              for freelancers and small businesses who want power without the
-              complexity.
-            </p>
+              <p className="mt-6 max-w-md text-lg leading-relaxed text-(--muted)">
+                Create, manage, and send professional invoices in minutes. Built
+                for freelancers and small businesses who need results, not
+                complexity.
+              </p>
 
-            <div className="flex flex-col items-center gap-3 pt-2 sm:flex-row sm:justify-center">
-              <Link
-                href="/invoices/create"
-                className="inline-flex items-center gap-2 rounded-xl bg-linear-to-br from-gray-800 via-gray-900 to-black px-8 py-3.5 font-semibold text-white shadow-lg shadow-black/20 transition-all hover:scale-105 hover:shadow-black/30 dark:from-white dark:via-gray-100 dark:to-gray-200 dark:text-black dark:shadow-white/10"
-              >
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  className="h-5 w-5"
-                  stroke="currentColor"
-                  strokeWidth={2.5}
+              <div className="mt-8 flex flex-wrap gap-3">
+                <Link
+                  href="/invoices/create"
+                  className="inline-flex items-center gap-2 rounded-xl bg-black px-7 py-3.5 font-semibold text-white transition-colors hover:bg-gray-900 dark:bg-white dark:text-black dark:hover:bg-gray-100"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M12 4v16m8-8H4"
-                  />
-                </svg>
-                Create Invoice
-              </Link>
-              <Link
-                href="/invoices"
-                className="inline-flex items-center gap-2 rounded-xl border border-black/15 bg-linear-to-br from-gray-50 to-gray-100 px-8 py-3.5 font-semibold text-black transition-all hover:scale-105 hover:border-black/25 hover:shadow-md dark:border-white/15 dark:from-white/5 dark:to-white/10 dark:text-white dark:hover:border-white/25"
-              >
-                View Dashboard
-              </Link>
+                  Create an invoice
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+                <Link
+                  href="/invoices"
+                  className="inline-flex items-center gap-2 rounded-xl border border-(--border) px-7 py-3.5 font-semibold text-black transition-colors hover:bg-(--surface-raised) dark:text-white"
+                >
+                  View dashboard
+                </Link>
+              </div>
+            </div>
+
+            {/* Right: animated invoice preview */}
+            <div className="hidden lg:block">
+              <InvoicePreview />
             </div>
           </div>
         </section>
 
-        {/* Stats Bar */}
-        <section className="mt-8 grid grid-cols-3 divide-x rounded-xl border border-(--border) divide-(--border) bg-white shadow-sm dark:bg-[#111]">
-          {stats.map((stat) => (
-            <div key={stat.label} className="px-6 py-5 text-center">
-              <p
-                className={`bg-linear-to-r ${stat.gradient} bg-clip-text text-2xl font-extrabold text-transparent sm:text-3xl`}
-              >
-                {stat.value}
-              </p>
-              <p className="mt-1 text-xs font-medium text-(--muted) sm:text-sm">
-                {stat.label}
-              </p>
-            </div>
-          ))}
-        </section>
-
-        {/* Features Section */}
-        <section className="mt-20 space-y-10">
-          <div className="text-center">
-            <h2 className="text-3xl font-bold tracking-tight text-black dark:text-white sm:text-4xl">
-              Everything you need to get paid
-            </h2>
-            <p className="mt-3 text-base text-(--muted)">
-              All the essentials — none of the bloat.
-            </p>
+        {/* ── Stats strip ─────────────────────────────────────── */}
+        <div className="border-y border-(--border) bg-(--surface)">
+          <div className="mx-auto max-w-5xl px-6 grid grid-cols-3 divide-x divide-(--border)">
+            {[
+              { value: "< 2 min", label: "To create an invoice" },
+              { value: "100%", label: "Free, forever" },
+              { value: "0", label: "Sign-ups required" },
+            ].map((stat) => (
+              <div key={stat.label} className="py-6 px-4 text-center sm:px-8">
+                <p className="text-2xl font-bold text-black dark:text-white sm:text-3xl">
+                  {stat.value}
+                </p>
+                <p className="mt-1 text-xs text-(--muted) sm:text-sm">
+                  {stat.label}
+                </p>
+              </div>
+            ))}
           </div>
+        </div>
 
-          <div className="mx-auto grid max-w-4xl gap-6 sm:grid-cols-2">
+        {/* ── Features grid ───────────────────────────────────── */}
+        <section className="mx-auto max-w-5xl px-6 py-20 sm:py-24">
+          <h2 className="text-2xl font-bold text-black dark:text-white">
+            Everything you need. Nothing you don&apos;t.
+          </h2>
+          <p className="mt-2 text-(--muted)">
+            Core invoicing tools, thoughtfully assembled.
+          </p>
+
+          <div className="mt-10 grid grid-cols-2 gap-4 lg:grid-cols-4">
             {features.map((feature) => (
-              <div
-                key={feature.title}
-                className={`group relative flex min-h-72 flex-col overflow-hidden rounded-2xl border border-(--border) bg-white p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl dark:bg-(--surface-raised) ${feature.hoverBg}`}
-              >
-                {/* Blurred glow blob */}
+              <div key={feature.title} className="group relative">
+                {/* Glowing border layer — sits behind the card */}
                 <div
-                  className={`pointer-events-none absolute -right-10 -bottom-10 h-40 w-40 rounded-full blur-2xl opacity-0 transition-opacity duration-500 group-hover:opacity-[0.08] ${feature.glow}`}
+                  className={`pointer-events-none absolute -inset-0.5 rounded-2xl opacity-0 blur-md transition-opacity duration-300 group-hover:opacity-50 ${feature.glow}`}
                 />
-                <div
-                  className={`mb-5 inline-flex h-14 w-14 items-center justify-center rounded-xl ${feature.iconColor} ${feature.iconBg}`}
-                >
-                  {feature.icon}
+
+                {/* Card */}
+                <div className="relative z-10 flex min-h-80 flex-col overflow-hidden rounded-2xl border border-(--border) bg-white p-6 transition-all duration-300 hover:-translate-y-0.5 dark:bg-black">
+                  {/* Inner corner glow blob */}
+                  <div
+                    className={`pointer-events-none absolute -bottom-8 -right-8 h-28 w-28 rounded-full blur-2xl transition-opacity duration-500 opacity-0 group-hover:opacity-20 ${feature.glow}`}
+                  />
+
+                  {/* Icon — pinned to top */}
+                  <div
+                    className={`inline-flex h-11 w-11 items-center justify-center rounded-xl border ${feature.iconBorder} ${feature.iconBg} ${feature.iconColor} self-start`}
+                  >
+                    <feature.icon className="h-5 w-5" />
+                  </div>
+
+                  {/* Spacer pushes text to the bottom */}
+                  <div className="flex-1" />
+
+                  {/* Text — anchored to bottom */}
+                  <div>
+                    <h3 className="text-sm font-semibold text-black dark:text-white">
+                      {feature.title}
+                    </h3>
+                    <p className="mt-1.5 text-sm leading-relaxed text-(--muted)">
+                      {feature.description}
+                    </p>
+                  </div>
                 </div>
-                <h3 className="text-lg font-bold text-black dark:text-white">
-                  {feature.title}
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ── How it works ────────────────────────────────────── */}
+        <div className="border-t border-(--border)" />
+        <section className="mx-auto max-w-5xl px-6 py-20 sm:py-24">
+          <h2 className="text-2xl font-bold text-black dark:text-white">
+            Up and running in three steps.
+          </h2>
+          <p className="mt-2 text-(--muted)">
+            No tutorials, no onboarding flows — just open and go.
+          </p>
+
+          <div className="mt-10 grid gap-8 sm:grid-cols-3">
+            {steps.map((step) => (
+              <div key={step.number} className="flex flex-col gap-3">
+                <span className="select-none text-4xl font-bold leading-none text-(--border)">
+                  {step.number}
+                </span>
+                <h3 className="font-semibold text-black dark:text-white">
+                  {step.title}
                 </h3>
-                <p className="mt-2 flex-1 text-base leading-relaxed text-(--muted)">
-                  {feature.description}
+                <p className="text-sm leading-relaxed text-(--muted)">
+                  {step.description}
                 </p>
               </div>
             ))}
           </div>
         </section>
 
-        {/* CTA Section */}
-        <section className="relative mt-20 overflow-hidden rounded-2xl border border-(--border) bg-(--surface-raised) p-8 text-center sm:p-14">
-          <div className="pointer-events-none absolute -top-16 -right-16 h-56 w-56 rounded-full bg-black/5 blur-3xl dark:bg-white/5" />
-          <div className="pointer-events-none absolute -bottom-16 -left-16 h-56 w-56 rounded-full bg-black/5 blur-3xl dark:bg-white/5" />
-          <div className="relative z-10 mx-auto max-w-xl space-y-4">
-            <h3 className="text-2xl font-extrabold text-black dark:text-white sm:text-3xl">
-              Ready to get paid faster?
+        {/* ── Perks ───────────────────────────────────────────── */}
+        <div className="border-t border-(--border)" />
+        <section className="mx-auto max-w-5xl px-6 py-20 sm:py-24">
+          <div className="flex flex-col gap-10 sm:flex-row sm:items-start sm:justify-between">
+            <div className="max-w-xs">
+              <h2 className="text-2xl font-bold text-black dark:text-white">
+                Built to respect your time.
+              </h2>
+              <p className="mt-3 text-sm leading-relaxed text-(--muted)">
+                No subscriptions. No databases. Your data lives in your browser,
+                private and always accessible.
+              </p>
+            </div>
+            <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              {perks.map((perk) => (
+                <li
+                  key={perk}
+                  className="flex items-center gap-2.5 text-sm text-black dark:text-white"
+                >
+                  <Check className="h-4 w-4 shrink-0 text-(--muted)" />
+                  {perk}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+
+        {/* ── CTA ─────────────────────────────────────────────── */}
+        <div className="mx-auto max-w-5xl px-6 pb-20">
+          <div className="rounded-2xl bg-black px-8 py-14 text-center dark:bg-white sm:px-14">
+            <h3 className="text-2xl font-bold text-white dark:text-black sm:text-3xl">
+              Ready to send your first invoice?
             </h3>
-            <p className="text-(--muted)">
-              Join thousands of freelancers and small businesses who send
-              professional invoices in minutes.
+            <p className="mt-3 text-sm text-gray-400 dark:text-gray-600">
+              No sign-up needed. Open the app, fill in the details, and go.
             </p>
-            <div className="pt-2">
+            <div className="mt-7">
               <Link
                 href="/invoices/create"
-                className="inline-flex items-center gap-2 rounded-xl bg-linear-to-br from-gray-800 via-gray-900 to-black px-8 py-3.5 font-semibold text-white shadow-lg shadow-black/20 transition-all hover:scale-105 hover:shadow-black/30 dark:from-white dark:via-gray-100 dark:to-gray-200 dark:text-black dark:shadow-white/10"
+                className="inline-flex items-center gap-2 rounded-xl bg-white px-7 py-3.5 font-semibold text-black transition-colors hover:bg-gray-100 dark:bg-black dark:text-white dark:hover:bg-gray-900"
               >
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  className="h-5 w-5"
-                  stroke="currentColor"
-                  strokeWidth={2.5}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M12 4v16m8-8H4"
-                  />
-                </svg>
-                Create Your First Invoice
+                Create invoice
+                <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
           </div>
-        </section>
+        </div>
       </main>
 
-      <footer className="mt-12 border-t border-(--border) bg-(--surface)">
-        <div className="mx-auto max-w-7xl px-6 py-8">
+      <footer className="border-t border-(--border) bg-(--surface)">
+        <div className="mx-auto max-w-5xl px-6 py-8">
           <p className="text-center text-sm text-(--muted)">
             © 2026 Invoice Generator. Simple invoicing for everyone.
           </p>
