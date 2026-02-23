@@ -146,15 +146,24 @@ export default function CompanyPage() {
               {companies.map((company) => (
                 <Card key={company.id}>
                   <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <CardTitle>{company.name}</CardTitle>
-                        <p className="text-sm text-(--muted) mt-1">
-                          {company.email}
-                        </p>
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex items-center gap-3">
+                        {company.logo && (
+                          <img
+                            src={company.logo}
+                            alt={`${company.name} logo`}
+                            className="h-12 w-12 rounded-lg object-contain border border-(--border) bg-(--surface-raised) p-1 shrink-0"
+                          />
+                        )}
+                        <div>
+                          <CardTitle>{company.name}</CardTitle>
+                          <p className="text-sm text-(--muted) mt-1">
+                            {company.email}
+                          </p>
+                        </div>
                       </div>
                       {company.isDefault && (
-                        <span className="inline-block bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs px-2 py-1 rounded">
+                        <span className="inline-block bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs px-2 py-1 rounded shrink-0">
                           Default
                         </span>
                       )}

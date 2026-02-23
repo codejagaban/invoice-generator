@@ -5,7 +5,8 @@
  * Form for creating and editing company/freelancer details
  */
 
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { ImagePlus, X } from "lucide-react";
 import Button from "@/app/components/shared/Button";
 import { InputWithRef as Input } from "@/app/components/shared/Input";
 import Card, {
@@ -28,6 +29,8 @@ export default function CompanyForm({
 }: CompanyFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [logo, setLogo] = useState<string | undefined>(initialData?.logo);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
     name: initialData?.name || "",
@@ -42,6 +45,32 @@ export default function CompanyForm({
     taxId: initialData?.taxId || "",
     isDefault: initialData?.isDefault || false,
   });
+
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      setErrors((prev) => ({ ...prev, logo: "Please upload a valid image file" }));
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      setErrors((prev) => ({ ...prev, logo: "Image must be smaller than 2MB" }));
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      setLogo(ev.target?.result as string);
+      setErrors((prev) => { const { logo: _, ...rest } = prev; return rest; });
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const removeLogo = () => {
+    setLogo(undefined);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -75,6 +104,7 @@ export default function CompanyForm({
       const company: CompanyDetails = {
         id: initialData?.id || String(Date.now()),
         ...formData,
+        logo,
         createdAt: initialData?.createdAt || new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -103,6 +133,61 @@ export default function CompanyForm({
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* Logo Upload */}
+          <div>
+            <label className="block text-sm font-medium text-(--muted) mb-2">
+              Company Logo
+            </label>
+            <div className="flex items-start gap-4">
+              {logo ? (
+                <div className="relative shrink-0">
+                  <img
+                    src={logo}
+                    alt="Company logo preview"
+                    className="h-20 w-20 rounded-lg object-contain border border-(--border) bg-(--surface-raised) p-1"
+                  />
+                  <button
+                    type="button"
+                    onClick={removeLogo}
+                    className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600 transition-colors"
+                    title="Remove logo"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              ) : (
+                <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-lg border-2 border-dashed border-(--border) bg-(--surface-raised) text-(--muted)">
+                  <ImagePlus className="h-6 w-6" />
+                </div>
+              )}
+              <div className="flex flex-col gap-2">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleLogoChange}
+                  className="hidden"
+                  id="logo-upload"
+                />
+                <label
+                  htmlFor="logo-upload"
+                  className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-(--border) bg-(--surface-raised) px-3 py-2 text-sm font-medium text-black hover:bg-(--border) dark:text-white transition-colors"
+                >
+                  <ImagePlus className="h-4 w-4" />
+                  {logo ? "Change Logo" : "Upload Logo"}
+                </label>
+                <p className="text-xs text-(--muted)">
+                  PNG, JPG, SVG · Max 2MB
+                </p>
+                {errors.logo && (
+                  <p className="text-xs text-red-600 dark:text-red-400">
+                    {errors.logo}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
           <div className="grid gap-4 sm:grid-cols-2">
             <Input
               label="Company/Freelance Name"
