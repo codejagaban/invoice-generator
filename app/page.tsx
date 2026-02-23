@@ -345,9 +345,15 @@ export default function Home() {
           </p>
 
           <div className="mt-10 grid gap-8 sm:grid-cols-3">
-            {steps.map((step) => (
-              <div key={step.number} className="flex flex-col gap-3">
-                <span className="select-none text-4xl font-bold leading-none text-(--border)">
+            {steps.map((step, index) => (
+              <div key={step.number} className="relative flex flex-col gap-3">
+                {/* Connector line — spans exactly the gap-8 (2rem) to the next column */}
+                {index < steps.length - 1 && (
+                  <div className="absolute top-7.5 left-full hidden w-8 sm:block">
+                    <div className="border-t-2 border-dashed border-(--border)" />
+                  </div>
+                )}
+                <span className="select-none text-6xl font-black leading-none tracking-tight text-(--border)">
                   {step.number}
                 </span>
                 <h3 className="font-semibold text-black dark:text-white">
@@ -380,7 +386,7 @@ export default function Home() {
                   key={perk}
                   className="flex items-center gap-2.5 text-sm text-black dark:text-white"
                 >
-                  <Check className="h-4 w-4 shrink-0 text-(--muted)" />
+                  <Check className="h-4 w-4 shrink-0 text-emerald-500" />
                   {perk}
                 </li>
               ))}
