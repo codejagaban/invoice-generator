@@ -41,6 +41,7 @@ export default function CustomersPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [logo, setLogo] = useState<string | undefined>(undefined);
   const [logoError, setLogoError] = useState<string | undefined>(undefined);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     name: "",
@@ -90,6 +91,7 @@ export default function CustomersPage() {
     setEditingId(null);
     setLogo(undefined);
     setLogoError(undefined);
+    setErrors({});
     if (fileInputRef.current) fileInputRef.current.value = "";
     setFormData({
       name: "",
@@ -106,10 +108,14 @@ export default function CustomersPage() {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    // Clear this field's error as the user types
+    if (errors[name]) {
+      setErrors((prev) => {
+        const { [name]: _, ...rest } = prev;
+        return rest;
+      });
+    }
   };
 
   const handleEdit = (customer: Customer) => {
@@ -139,10 +145,22 @@ export default function CustomersPage() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (!formData.name.trim() || !formData.email.trim()) {
-      alert("Customer name and email are required.");
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const newErrors: Record<string, string> = {};
+
+    if (!formData.name.trim()) newErrors.name = "Name is required";
+    if (!formData.email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!emailRegex.test(formData.email)) {
+      newErrors.email = "Enter a valid email address";
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       return;
     }
+
+    setErrors({});
 
     if (editingId) {
       const updated = await updateCustomer(editingId, { ...formData, logo });
@@ -257,6 +275,7 @@ export default function CustomersPage() {
                     value={formData.name}
                     onChange={handleInputChange}
                     leadingIcon={<User className="h-4 w-4" />}
+                    error={errors.name}
                     required
                   />
                   <Input
@@ -266,6 +285,7 @@ export default function CustomersPage() {
                     value={formData.email}
                     onChange={handleInputChange}
                     leadingIcon={<Mail className="h-4 w-4" />}
+                    error={errors.email}
                     required
                   />
                 </div>

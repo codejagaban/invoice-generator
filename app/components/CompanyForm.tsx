@@ -81,6 +81,13 @@ export default function CompanyForm({
       [name]:
         type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
     }));
+    // Clear the error for this field as the user types
+    if (errors[name]) {
+      setErrors((prev) => {
+        const { [name]: _, ...rest } = prev;
+        return rest;
+      });
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -88,12 +95,21 @@ export default function CompanyForm({
     setIsLoading(true);
 
     try {
-      // Validate required fields
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       const newErrors: Record<string, string> = {};
+
       if (!formData.name.trim()) newErrors.name = "Company name is required";
-      if (!formData.email.trim()) newErrors.email = "Email is required";
+      if (!formData.email.trim()) {
+        newErrors.email = "Email is required";
+      } else if (!emailRegex.test(formData.email)) {
+        newErrors.email = "Enter a valid email address";
+      }
       if (!formData.address.trim()) newErrors.address = "Address is required";
       if (!formData.city.trim()) newErrors.city = "City is required";
+      if (!formData.country.trim()) newErrors.country = "Country is required";
+      if (formData.website && !/^https?:\/\/.+/.test(formData.website)) {
+        newErrors.website = "Website must start with http:// or https://";
+      }
 
       if (Object.keys(newErrors).length > 0) {
         setErrors(newErrors);
@@ -222,6 +238,7 @@ export default function CompanyForm({
               type="url"
               value={formData.website}
               onChange={handleInputChange}
+              error={errors.website}
             />
           </div>
 
@@ -263,6 +280,8 @@ export default function CompanyForm({
               name="country"
               value={formData.country}
               onChange={handleInputChange}
+              error={errors.country}
+              required
             />
             <Input
               label="Tax ID (Optional)"
