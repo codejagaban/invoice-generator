@@ -99,7 +99,7 @@ function InvoicePreview() {
 
       {/* Rotated back card (depth effect) */}
       <div
-        className="absolute z-0 h-[268px] w-72 rounded-2xl border border-(--border) bg-(--surface-raised)"
+        className="absolute z-0 h-67 w-72 rounded-2xl border border-(--border) bg-(--surface-raised)"
         style={{
           transform: "rotate(4deg) translateY(6px)",
           animation: "invoice-float 4s ease-in-out 0.4s infinite",
@@ -140,7 +140,9 @@ function InvoicePreview() {
           <p className="text-sm font-semibold text-black dark:text-white">
             Bright Digital Ltd
           </p>
-          <p className="text-[11px] text-(--muted)">billing@brightdigital.com</p>
+          <p className="text-[11px] text-(--muted)">
+            billing@brightdigital.com
+          </p>
         </div>
 
         {/* Line items */}
@@ -160,7 +162,9 @@ function InvoicePreview() {
 
         {/* Total */}
         <div className="flex items-center justify-between border-t border-(--border) pt-3">
-          <span className="text-xs font-semibold text-(--muted)">Total due</span>
+          <span className="text-xs font-semibold text-(--muted)">
+            Total due
+          </span>
           <span className="text-base font-bold text-black dark:text-white">
             £4,200.00
           </span>
@@ -274,9 +278,12 @@ export default function Home() {
             Core invoicing tools, thoughtfully assembled.
           </p>
 
-          <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="mt-10 grid grid-cols-1 gap-10 sm:grid-cols-2">
             {features.map((feature) => (
-              <div key={feature.title} className="group relative transition-transform duration-300 hover:-translate-y-0.5">
+              <div
+                key={feature.title}
+                className="group relative transition-transform  duration-300 hover:-translate-y-0.5"
+              >
                 {/* 1px border wrapper — clips the rotating beam */}
                 <div className="relative overflow-hidden rounded-2xl p-px">
                   {/* Static border background */}
@@ -284,40 +291,39 @@ export default function Home() {
 
                   {/* Rotating beam — fades in on hover */}
                   <div
-                    className="pointer-events-none absolute opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+                    className="pointer-events-none absolute opacity-0 transition-opacity duration-500 group-hover:opacity-100 "
                     style={{
                       width: "200%",
                       height: "200%",
                       top: "-50%",
                       left: "-50%",
                       animation: "border-rotate 2.5s linear infinite",
-                      background: `conic-gradient(transparent 340deg, ${feature.beamColor} 352deg, ${feature.beamColor} 358deg, transparent 360deg)`,
+                      background: `conic-gradient(transparent 240deg, ${feature.beamColor} 290deg, ${feature.beamColor} 345deg, transparent 360deg)`,
                     }}
                   />
 
                   {/* Card content */}
-                  <div className="relative z-10 flex min-h-80 flex-col overflow-hidden rounded-[15px] bg-white p-6 dark:bg-black">
+                  <div className="relative z-10 overflow-hidden rounded-[15px] bg-white dark:bg-black px-10 py-5">
                     {/* Inner corner glow blob */}
                     <div
                       className={`pointer-events-none absolute -bottom-8 -right-8 h-28 w-28 rounded-full blur-2xl transition-opacity duration-500 opacity-0 group-hover:opacity-20 ${feature.glow}`}
                     />
 
-                    {/* Icon — pinned to top */}
-                    <div
-                      className={`inline-flex h-11 w-11 items-center justify-center rounded-xl border ${feature.iconBorder} ${feature.iconBg} ${feature.iconColor} self-start`}
-                    >
-                      <feature.icon className="h-5 w-5" />
+                    {/* Icon */}
+                    <div className="pt-6 pb-4">
+                      <div
+                        className={`inline-flex h-11 w-11 items-center justify-center rounded-xl border ${feature.iconBorder} ${feature.iconBg} ${feature.iconColor}`}
+                      >
+                        <feature.icon className="h-5 w-5" />
+                      </div>
                     </div>
 
-                    {/* Spacer pushes text to the bottom */}
-                    <div className="flex-1" />
-
-                    {/* Text — anchored to bottom */}
-                    <div>
-                      <h3 className="text-sm font-semibold text-black dark:text-white">
+                    {/* Text */}
+                    <div className="pb-6">
+                      <h3 className="text-sm font-semibold text-black dark:text-white py-2">
                         {feature.title}
                       </h3>
-                      <p className="mt-1.5 text-sm leading-relaxed text-(--muted)">
+                      <p className="mt-1.5 text-sm leading-relaxed text-(--muted) py-2">
                         {feature.description}
                       </p>
                     </div>
