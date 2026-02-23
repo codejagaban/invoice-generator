@@ -17,6 +17,7 @@ const features = [
     iconColor: "text-blue-600 dark:text-blue-400",
     iconBg: "bg-blue-50 dark:bg-blue-950/40",
     iconBorder: "border-blue-200 dark:border-blue-800",
+    beamColor: "#60a5fa",
     glow: "bg-blue-400",
   },
   {
@@ -27,6 +28,7 @@ const features = [
     iconColor: "text-violet-600 dark:text-violet-400",
     iconBg: "bg-violet-50 dark:bg-violet-950/40",
     iconBorder: "border-violet-200 dark:border-violet-800",
+    beamColor: "#a78bfa",
     glow: "bg-violet-400",
   },
   {
@@ -37,6 +39,7 @@ const features = [
     iconColor: "text-emerald-600 dark:text-emerald-400",
     iconBg: "bg-emerald-50 dark:bg-emerald-950/40",
     iconBorder: "border-emerald-200 dark:border-emerald-800",
+    beamColor: "#34d399",
     glow: "bg-emerald-400",
   },
   {
@@ -47,6 +50,7 @@ const features = [
     iconColor: "text-rose-600 dark:text-rose-400",
     iconBg: "bg-rose-50 dark:bg-rose-950/40",
     iconBorder: "border-rose-200 dark:border-rose-800",
+    beamColor: "#fb7185",
     glow: "bg-rose-400",
   },
 ];
@@ -272,32 +276,51 @@ export default function Home() {
 
           <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2">
             {features.map((feature) => (
-              <div key={feature.title} className="group relative">
-                {/* Card */}
-                <div className="relative flex min-h-80 flex-col overflow-hidden rounded-2xl border border-(--border) bg-white p-6 transition-all duration-300 hover:-translate-y-0.5 dark:bg-black">
-                  {/* Inner corner glow blob */}
+              <div key={feature.title} className="group relative transition-transform duration-300 hover:-translate-y-0.5">
+                {/* 1px border wrapper — clips the rotating beam */}
+                <div className="relative overflow-hidden rounded-2xl p-px">
+                  {/* Static border background */}
+                  <div className="absolute inset-0 bg-(--border)" />
+
+                  {/* Rotating beam — fades in on hover */}
                   <div
-                    className={`pointer-events-none absolute -bottom-8 -right-8 h-28 w-28 rounded-full blur-2xl transition-opacity duration-500 opacity-0 group-hover:opacity-20 ${feature.glow}`}
+                    className="pointer-events-none absolute opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+                    style={{
+                      width: "200%",
+                      height: "200%",
+                      top: "-50%",
+                      left: "-50%",
+                      animation: "border-rotate 2.5s linear infinite",
+                      background: `conic-gradient(transparent 340deg, ${feature.beamColor} 352deg, ${feature.beamColor} 358deg, transparent 360deg)`,
+                    }}
                   />
 
-                  {/* Icon — pinned to top */}
-                  <div
-                    className={`inline-flex h-11 w-11 items-center justify-center rounded-xl border ${feature.iconBorder} ${feature.iconBg} ${feature.iconColor} self-start`}
-                  >
-                    <feature.icon className="h-5 w-5" />
-                  </div>
+                  {/* Card content */}
+                  <div className="relative z-10 flex min-h-80 flex-col overflow-hidden rounded-[15px] bg-white p-6 dark:bg-black">
+                    {/* Inner corner glow blob */}
+                    <div
+                      className={`pointer-events-none absolute -bottom-8 -right-8 h-28 w-28 rounded-full blur-2xl transition-opacity duration-500 opacity-0 group-hover:opacity-20 ${feature.glow}`}
+                    />
 
-                  {/* Spacer pushes text to the bottom */}
-                  <div className="flex-1" />
+                    {/* Icon — pinned to top */}
+                    <div
+                      className={`inline-flex h-11 w-11 items-center justify-center rounded-xl border ${feature.iconBorder} ${feature.iconBg} ${feature.iconColor} self-start`}
+                    >
+                      <feature.icon className="h-5 w-5" />
+                    </div>
 
-                  {/* Text — anchored to bottom */}
-                  <div>
-                    <h3 className="text-sm font-semibold text-black dark:text-white">
-                      {feature.title}
-                    </h3>
-                    <p className="mt-1.5 text-sm leading-relaxed text-(--muted)">
-                      {feature.description}
-                    </p>
+                    {/* Spacer pushes text to the bottom */}
+                    <div className="flex-1" />
+
+                    {/* Text — anchored to bottom */}
+                    <div>
+                      <h3 className="text-sm font-semibold text-black dark:text-white">
+                        {feature.title}
+                      </h3>
+                      <p className="mt-1.5 text-sm leading-relaxed text-(--muted)">
+                        {feature.description}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>

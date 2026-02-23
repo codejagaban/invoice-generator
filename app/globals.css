@@ -60,6 +60,11 @@
   50%       { transform: translateY(-12px); }
 }
 
+@keyframes border-rotate {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: reduce) {
 
