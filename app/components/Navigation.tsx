@@ -9,6 +9,7 @@ import {
   LayoutTemplate,
   Settings2,
   FilePlus2,
+  Landmark,
 } from "lucide-react";
 
 export default function Navigation() {
@@ -26,6 +27,7 @@ export default function Navigation() {
     { href: "/invoices", label: "Invoices", icon: FileText },
     { href: "/customers", label: "Customers", icon: Users },
     { href: "/templates", label: "Templates", icon: LayoutTemplate },
+    { href: "/account", label: "Account", icon: Landmark },
     { href: "/company", label: "Settings", icon: Settings2 },
   ] as const;
 
