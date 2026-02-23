@@ -3,7 +3,7 @@
  * Functions for generating and downloading invoice PDFs
  */
 
-import type { Invoice, CompanyDetails } from "./types";
+import type { Invoice, CompanyDetails, AccountDetails } from "./types";
 import { formatCurrency, formatDate } from "./invoice";
 
 /**
@@ -12,6 +12,7 @@ import { formatCurrency, formatDate } from "./invoice";
 export function generateInvoiceHTML(
   invoice: Invoice,
   company?: CompanyDetails,
+  account?: AccountDetails,
 ): string {
   const subtotal = invoice.items.reduce(
     (sum, item) => sum + item.quantity * item.rate,
@@ -296,6 +297,29 @@ export function generateInvoiceHTML(
               : ""
           }
 
+          <!-- Payment Details -->
+          ${
+            account
+              ? `
+            <section style="margin-top: 30px; padding-top: 20px; border-top: 0.5px solid #ddd;">
+              <div class="section-title" style="font-size: 12px; font-weight: 600; text-transform: uppercase; color: #333; margin-bottom: 12px;">Payment Details</div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 12px;">
+                <div><span style="color:#666;">Account Holder</span><br><strong>${account.accountHolderName}</strong></div>
+                <div><span style="color:#666;">Bank Name</span><br><strong>${account.bankName}</strong></div>
+                <div><span style="color:#666;">Account Number</span><br><strong>${account.accountNumber}</strong></div>
+                ${account.sortCode ? `<div><span style="color:#666;">Sort Code</span><br><strong>${account.sortCode}</strong></div>` : ""}
+                ${account.routingNumber ? `<div><span style="color:#666;">Routing Number</span><br><strong>${account.routingNumber}</strong></div>` : ""}
+                ${account.iban ? `<div><span style="color:#666;">IBAN</span><br><strong>${account.iban}</strong></div>` : ""}
+                ${account.swiftBic ? `<div><span style="color:#666;">SWIFT / BIC</span><br><strong>${account.swiftBic}</strong></div>` : ""}
+                ${account.currency ? `<div><span style="color:#666;">Currency</span><br><strong>${account.currency}</strong></div>` : ""}
+                ${account.paymentReference ? `<div style="grid-column: span 2;"><span style="color:#666;">Payment Reference</span><br><strong>${account.paymentReference}</strong></div>` : ""}
+              </div>
+              ${account.notes ? `<div style="margin-top:10px; font-size:12px; color:#666;">${account.notes.replace(/\n/g, "<br>")}</div>` : ""}
+            </section>
+          `
+              : ""
+          }
+
           <!-- Footer -->
           <div style="margin-top: 60px; padding-top: 20px; border-top: 1px solid #ddd; font-size: 12px; color: #999; text-align: center;">
             <p>Thank you for patronizing us!</p>
@@ -312,11 +336,12 @@ export function generateInvoiceHTML(
 export async function downloadInvoicePDF(
   invoice: Invoice,
   company?: CompanyDetails,
+  account?: AccountDetails,
 ): Promise<void> {
   // Dynamically import html2pdf to ensure it's loaded client-side
   const html2pdf = (await import("html2pdf.js")).default;
 
-  const htmlContent = generateInvoiceHTML(invoice, company);
+  const htmlContent = generateInvoiceHTML(invoice, company, account);
 
   const options = {
     margin: [10, 10, 10, 10] as [number, number, number, number],

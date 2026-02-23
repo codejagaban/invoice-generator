@@ -20,6 +20,7 @@ import {
   getInvoiceById,
   deleteInvoice,
   getDefaultCompanyDetails,
+  getDefaultAccountDetails,
 } from "@/app/lib/storage";
 import {
   formatDate,
@@ -50,8 +51,11 @@ export default function InvoiceDetailPage() {
     if (!invoice) return;
     try {
       setIsDownloadingPDF(true);
-      const company = await getDefaultCompanyDetails();
-      await downloadInvoicePDF(invoice, company || undefined);
+      const [company, account] = await Promise.all([
+        getDefaultCompanyDetails(),
+        getDefaultAccountDetails(),
+      ]);
+      await downloadInvoicePDF(invoice, company || undefined, account || undefined);
     } catch (error) {
       alert("Failed to download PDF. Please try again.");
       console.error(error);

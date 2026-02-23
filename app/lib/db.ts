@@ -4,13 +4,14 @@
  */
 
 const DB_NAME = "invoice_generator_db";
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 export const STORES = {
   invoices: "invoices",
   templates: "templates",
   customers: "customers",
   company_details: "company_details",
+  account_details: "account_details",
 } as const;
 
 let dbInstance: IDBDatabase | null = null;
