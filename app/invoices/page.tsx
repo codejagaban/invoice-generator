@@ -19,7 +19,7 @@ import {
   SelectValue,
 } from "@/app/components/shared/Select";
 import type { Invoice } from "@/app/lib/types";
-import { getInvoices } from "@/app/lib/storage";
+import { getInvoices, getSettings } from "@/app/lib/storage";
 import {
   formatDate,
   formatCurrency,
@@ -35,11 +35,13 @@ export default function InvoicesDashboardPage() {
     "all" | "draft" | "sent" | "paid" | "cancelled"
   >("all");
   const [sortBy, setSortBy] = useState<"date" | "amount" | "name">("date");
+  const [defaultCurrency, setDefaultCurrency] = useState("GBP");
 
   useEffect(() => {
     (async () => {
-      const data = await getInvoices();
+      const [data, settings] = await Promise.all([getInvoices(), getSettings()]);
       setInvoices(data);
+      setDefaultCurrency(settings.defaultCurrency);
     })();
   }, []);
   useEffect(() => {
@@ -148,7 +150,7 @@ export default function InvoicesDashboardPage() {
                   Total Amount
                 </p>
                 <p className="font-mono text-4xl font-bold tabular-nums tracking-tight text-black dark:text-white">
-                  {formatCurrency(totalAmount, "USD")}
+                  {formatCurrency(totalAmount, defaultCurrency)}
                 </p>
               </div>
             </Card>
