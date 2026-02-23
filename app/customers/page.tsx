@@ -5,7 +5,7 @@
  * Route: /customers
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   User,
   Mail,
@@ -13,6 +13,7 @@ import {
   Map,
   Hash,
   Globe,
+  ImagePlus,
   UserPlus,
   UserCheck,
   X,
@@ -38,6 +39,9 @@ export default function CustomersPage() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [logo, setLogo] = useState<string | undefined>(undefined);
+  const [logoError, setLogoError] = useState<string | undefined>(undefined);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -47,6 +51,32 @@ export default function CustomersPage() {
     zipCode: "",
     country: "",
   });
+
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      setLogoError("Please upload a valid image file");
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      setLogoError("Image must be smaller than 2MB");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      setLogo(ev.target?.result as string);
+      setLogoError(undefined);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const removeLogo = () => {
+    setLogo(undefined);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
 
   useEffect(() => {
     (async () => {
@@ -58,6 +88,9 @@ export default function CustomersPage() {
 
   const resetForm = () => {
     setEditingId(null);
+    setLogo(undefined);
+    setLogoError(undefined);
+    if (fileInputRef.current) fileInputRef.current.value = "";
     setFormData({
       name: "",
       email: "",
@@ -81,6 +114,8 @@ export default function CustomersPage() {
 
   const handleEdit = (customer: Customer) => {
     setEditingId(customer.id);
+    setLogo(customer.logo);
+    setLogoError(undefined);
     setFormData({
       name: customer.name,
       email: customer.email,
@@ -110,7 +145,7 @@ export default function CustomersPage() {
     }
 
     if (editingId) {
-      const updated = await updateCustomer(editingId, formData);
+      const updated = await updateCustomer(editingId, { ...formData, logo });
       if (updated) {
         setCustomers((prev) =>
           prev.map((customer) =>
@@ -122,6 +157,7 @@ export default function CustomersPage() {
       const newCustomer: Customer = {
         id: String(Date.now()),
         ...formData,
+        logo,
       };
       const created = await createCustomer(newCustomer);
       setCustomers((prev) => [...prev, created]);
@@ -161,6 +197,59 @@ export default function CustomersPage() {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
+                {/* Logo Upload */}
+                <div>
+                  <label className="block text-sm font-medium text-(--muted) mb-2">
+                    Customer Logo
+                  </label>
+                  <div className="flex items-start gap-4">
+                    {logo ? (
+                      <div className="relative shrink-0">
+                        <img
+                          src={logo}
+                          alt="Customer logo preview"
+                          className="h-16 w-16 rounded-lg object-contain border border-(--border) bg-(--surface-raised) p-1"
+                        />
+                        <button
+                          type="button"
+                          onClick={removeLogo}
+                          className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600 transition-colors"
+                          title="Remove logo"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg border-2 border-dashed border-(--border) bg-(--surface-raised) text-(--muted)">
+                        <ImagePlus className="h-5 w-5" />
+                      </div>
+                    )}
+                    <div className="flex flex-col gap-2">
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleLogoChange}
+                        className="hidden"
+                        id="customer-logo-upload"
+                      />
+                      <label
+                        htmlFor="customer-logo-upload"
+                        className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-(--border) bg-(--surface-raised) px-3 py-2 text-sm font-medium text-black hover:bg-(--border) dark:text-white transition-colors"
+                      >
+                        <ImagePlus className="h-4 w-4" />
+                        {logo ? "Change Logo" : "Upload Logo"}
+                      </label>
+                      <p className="text-xs text-(--muted)">PNG, JPG, SVG · Max 2MB</p>
+                      {logoError && (
+                        <p className="text-xs text-red-600 dark:text-red-400">
+                          {logoError}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
                 <div className="grid gap-4 sm:grid-cols-2">
                   <Input
                     label="Name"
@@ -260,11 +349,20 @@ export default function CustomersPage() {
               customers.map((customer) => (
                 <Card key={customer.id}>
                   <CardContent className="space-y-3">
-                    <div>
-                      <p className="font-semibold text-black dark:text-white">
-                        {customer.name}
-                      </p>
-                      <p className="text-sm text-(--muted)">{customer.email}</p>
+                    <div className="flex items-center gap-3">
+                      {customer.logo && (
+                        <img
+                          src={customer.logo}
+                          alt={`${customer.name} logo`}
+                          className="h-10 w-10 rounded-lg object-contain border border-(--border) bg-(--surface-raised) p-0.5 shrink-0"
+                        />
+                      )}
+                      <div>
+                        <p className="font-semibold text-black dark:text-white">
+                          {customer.name}
+                        </p>
+                        <p className="text-sm text-(--muted)">{customer.email}</p>
+                      </div>
                     </div>
                     <div className="text-sm text-(--muted)">
                       {customer.address && <p>{customer.address}</p>}
