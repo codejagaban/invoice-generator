@@ -213,7 +213,7 @@ export default function Home() {
 
               <h1 className="max-w-xl text-5xl font-bold tracking-tight text-black dark:text-white sm:text-6xl leading-[1.1]">
                 <span className="block">Invoicing that stays</span>
-                <span className="bg-linear-to-r from-orange-500 to-pink-600 bg-clip-text text-transparent dark:from-orange-400 dark:to-pink-400">
+                <span className="bg-linear-to-r from-blue-500 to-violet-600 bg-clip-text text-transparent dark:from-blue-400 dark:to-violet-500">
                   out of your way.
                 </span>
               </h1>

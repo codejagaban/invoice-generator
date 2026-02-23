@@ -133,37 +133,37 @@ export default function InvoicesDashboardPage() {
           {/* Stats */}
           <div className="grid gap-4 sm:grid-cols-4">
             <Card>
-              <div className="space-y-2">
-                <p className="text-sm font-medium text-(--muted)">
+              <div className="space-y-1">
+                <p className="text-xs font-medium uppercase tracking-widest text-(--muted)">
                   Total Invoices
                 </p>
-                <p className="text-2xl font-bold text-black dark:text-white">
+                <p className="font-mono text-4xl font-bold tabular-nums tracking-tight text-black dark:text-white">
                   {invoices.length}
                 </p>
               </div>
             </Card>
             <Card>
-              <div className="space-y-2">
-                <p className="text-sm font-medium text-(--muted)">
+              <div className="space-y-1">
+                <p className="text-xs font-medium uppercase tracking-widest text-(--muted)">
                   Total Amount
                 </p>
-                <p className="text-2xl font-bold text-black dark:text-white">
+                <p className="font-mono text-4xl font-bold tabular-nums tracking-tight text-black dark:text-white">
                   {formatCurrency(totalAmount, "USD")}
                 </p>
               </div>
             </Card>
             <Card>
-              <div className="space-y-2">
-                <p className="text-sm font-medium text-(--muted)">Paid</p>
-                <p className="text-2xl font-bold text-green-600">
+              <div className="space-y-1">
+                <p className="text-xs font-medium uppercase tracking-widest text-(--muted)">Paid</p>
+                <p className="font-mono text-4xl font-bold tabular-nums tracking-tight text-green-600 dark:text-green-400">
                   {invoices.filter((inv) => inv.status === "paid").length}
                 </p>
               </div>
             </Card>
             <Card>
-              <div className="space-y-2">
-                <p className="text-sm font-medium text-(--muted)">Overdue</p>
-                <p className="text-2xl font-bold text-red-600">
+              <div className="space-y-1">
+                <p className="text-xs font-medium uppercase tracking-widest text-(--muted)">Overdue</p>
+                <p className="font-mono text-4xl font-bold tabular-nums tracking-tight text-red-600 dark:text-red-400">
                   {invoices.filter((inv) => isOverdue(inv.dueDate)).length}
                 </p>
               </div>
