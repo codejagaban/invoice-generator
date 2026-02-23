@@ -51,18 +51,27 @@ export default function CompanyForm({
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      setErrors((prev) => ({ ...prev, logo: "Please upload a valid image file" }));
+      setErrors((prev) => ({
+        ...prev,
+        logo: "Please upload a valid image file",
+      }));
       return;
     }
     if (file.size > 2 * 1024 * 1024) {
-      setErrors((prev) => ({ ...prev, logo: "Image must be smaller than 2MB" }));
+      setErrors((prev) => ({
+        ...prev,
+        logo: "Image must be smaller than 2MB",
+      }));
       return;
     }
 
     const reader = new FileReader();
     reader.onload = (ev) => {
       setLogo(ev.target?.result as string);
-      setErrors((prev) => { const { logo: _, ...rest } = prev; return rest; });
+      setErrors((prev) => {
+        const { logo, ...rest } = prev;
+        return rest;
+      });
     };
     reader.readAsDataURL(file);
   };
