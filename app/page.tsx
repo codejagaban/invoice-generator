@@ -202,7 +202,7 @@ export default function Home() {
       <main>
         {/* ── Hero ────────────────────────────────────────────── */}
         <section className="mx-auto max-w-5xl px-6 pt-20 pb-16 sm:pt-28 sm:pb-24">
-          <div className="lg:grid lg:grid-cols-2 lg:items-center lg:gap-12">
+          <div className="lg:grid lg:grid-cols-[3fr_2fr] lg:items-center lg:gap-12">
             {/* Left: copy */}
             <div>
               {/* Pill badge */}
@@ -212,9 +212,8 @@ export default function Home() {
               </div>
 
               <h1 className="max-w-xl text-5xl font-bold tracking-tight text-black dark:text-white sm:text-6xl leading-[1.1]">
-                Invoicing that stays
-                <br />
-                <span className="bg-linear-to-r from-blue-700 to-violet-600 bg-clip-text text-transparent dark:from-blue-400 dark:to-violet-400">
+                <span className="block">Invoicing that stays</span>
+                <span className="bg-linear-to-r from-orange-500 to-pink-600 bg-clip-text text-transparent dark:from-orange-400 dark:to-pink-400">
                   out of your way.
                 </span>
               </h1>

@@ -28,7 +28,7 @@ export default function CompanyForm({
   onCancel,
 }: CompanyFormProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [logo, setLogo] = useState<string | undefined>(initialData?.logo);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -50,28 +50,9 @@ export default function CompanyForm({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (!file.type.startsWith("image/")) {
-      setErrors((prev) => ({
-        ...prev,
-        logo: "Please upload a valid image file",
-      }));
-      return;
-    }
-    if (file.size > 2 * 1024 * 1024) {
-      setErrors((prev) => ({
-        ...prev,
-        logo: "Image must be smaller than 2MB",
-      }));
-      return;
-    }
-
     const reader = new FileReader();
     reader.onload = (ev) => {
       setLogo(ev.target?.result as string);
-      setErrors((prev) => {
-        const { logo, ...rest } = prev;
-        return rest;
-      });
     };
     reader.readAsDataURL(file);
   };
@@ -90,42 +71,14 @@ export default function CompanyForm({
       [name]:
         type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
     }));
-    // Clear the error for this field as the user types
-    if (errors[name]) {
-      setErrors((prev) => {
-        const { [name]: _, ...rest } = prev;
-        return rest;
-      });
-    }
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
+    setSubmitError(null);
 
     try {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      const newErrors: Record<string, string> = {};
-
-      if (!formData.name.trim()) newErrors.name = "Company name is required";
-      if (!formData.email.trim()) {
-        newErrors.email = "Email is required";
-      } else if (!emailRegex.test(formData.email)) {
-        newErrors.email = "Enter a valid email address";
-      }
-      if (!formData.address.trim()) newErrors.address = "Address is required";
-      if (!formData.city.trim()) newErrors.city = "City is required";
-      if (!formData.country.trim()) newErrors.country = "Country is required";
-      if (formData.website && !/^https?:\/\/.+/.test(formData.website)) {
-        newErrors.website = "Website must start with http:// or https://";
-      }
-
-      if (Object.keys(newErrors).length > 0) {
-        setErrors(newErrors);
-        setIsLoading(false);
-        return;
-      }
-
       const company: CompanyDetails = {
         id: initialData?.id || String(Date.now()),
         ...formData,
@@ -135,14 +88,10 @@ export default function CompanyForm({
       };
 
       await onSubmit(company);
-      setErrors({});
     } catch (error) {
-      setErrors({
-        submit:
-          error instanceof Error
-            ? error.message
-            : "Failed to save company details",
-      });
+      setSubmitError(
+        error instanceof Error ? error.message : "Failed to save company details",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -204,11 +153,6 @@ export default function CompanyForm({
                 <p className="text-xs text-(--muted)">
                   PNG, JPG, SVG · Max 2MB
                 </p>
-                {errors.logo && (
-                  <p className="text-xs text-red-600 dark:text-red-400">
-                    {errors.logo}
-                  </p>
-                )}
               </div>
             </div>
           </div>
@@ -219,8 +163,6 @@ export default function CompanyForm({
               name="name"
               value={formData.name}
               onChange={handleInputChange}
-              error={errors.name}
-              required
             />
             <Input
               label="Email"
@@ -228,8 +170,6 @@ export default function CompanyForm({
               type="email"
               value={formData.email}
               onChange={handleInputChange}
-              error={errors.email}
-              required
             />
           </div>
 
@@ -247,7 +187,6 @@ export default function CompanyForm({
               type="url"
               value={formData.website}
               onChange={handleInputChange}
-              error={errors.website}
             />
           </div>
 
@@ -256,8 +195,6 @@ export default function CompanyForm({
             name="address"
             value={formData.address}
             onChange={handleInputChange}
-            error={errors.address}
-            required
           />
 
           <div className="grid gap-4 sm:grid-cols-3">
@@ -266,8 +203,6 @@ export default function CompanyForm({
               name="city"
               value={formData.city}
               onChange={handleInputChange}
-              error={errors.city}
-              required
             />
             <Input
               label="State/Province"
@@ -289,8 +224,6 @@ export default function CompanyForm({
               name="country"
               value={formData.country}
               onChange={handleInputChange}
-              error={errors.country}
-              required
             />
             <Input
               label="Tax ID (Optional)"
@@ -313,9 +246,9 @@ export default function CompanyForm({
             </span>
           </label>
 
-          {errors.submit && (
+          {submitError && (
             <div className="text-red-600 dark:text-red-400 text-sm">
-              {errors.submit}
+              {submitError}
             </div>
           )}
         </CardContent>

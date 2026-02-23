@@ -16,6 +16,7 @@ import Card, {
 import CompanyForm from "@/app/components/CompanyForm";
 import type { CompanyDetails } from "@/app/lib/types";
 import { Pencil, Trash2, Star } from "lucide-react";
+import Image from "next/image";
 import {
   getCompanyDetails,
   createCompany,
@@ -149,10 +150,14 @@ export default function CompanyPage() {
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex items-center gap-3">
                         {company.logo && (
-                          <img
+                          <Image
                             src={company.logo}
                             alt={`${company.name} logo`}
+                            width={48}
+                            height={48}
                             className="h-12 w-12 rounded-lg object-contain border border-(--border) bg-(--surface-raised) p-1 shrink-0"
+                            style={{ objectFit: "contain" }}
+                            priority
                           />
                         )}
                         <div>
