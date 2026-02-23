@@ -270,16 +270,11 @@ export default function Home() {
             Core invoicing tools, thoughtfully assembled.
           </p>
 
-          <div className="mt-10 grid grid-cols-2 gap-4 lg:grid-cols-4">
+          <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2">
             {features.map((feature) => (
               <div key={feature.title} className="group relative">
-                {/* Glowing border layer — sits behind the card */}
-                <div
-                  className={`pointer-events-none absolute -inset-0.5 rounded-2xl opacity-0 blur-md transition-opacity duration-300 group-hover:opacity-50 ${feature.glow}`}
-                />
-
                 {/* Card */}
-                <div className="relative z-10 flex min-h-80 flex-col overflow-hidden rounded-2xl border border-(--border) bg-white p-6 transition-all duration-300 hover:-translate-y-0.5 dark:bg-black">
+                <div className="relative flex min-h-80 flex-col overflow-hidden rounded-2xl border border-(--border) bg-white p-6 transition-all duration-300 hover:-translate-y-0.5 dark:bg-black">
                   {/* Inner corner glow blob */}
                   <div
                     className={`pointer-events-none absolute -bottom-8 -right-8 h-28 w-28 rounded-full blur-2xl transition-opacity duration-500 opacity-0 group-hover:opacity-20 ${feature.glow}`}
