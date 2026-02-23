@@ -6,7 +6,6 @@
  */
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import Button from "@/app/components/shared/Button";
 import Card, {
   CardContent,
