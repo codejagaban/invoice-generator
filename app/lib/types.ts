@@ -78,6 +78,12 @@ export interface AccountDetails {
   updatedAt: string;
 }
 
+export interface Settings {
+  id: "default";
+  defaultCurrency: string;
+  updatedAt: string;
+}
+
 export interface CompanyDetails {
   id: string;
   name: string;

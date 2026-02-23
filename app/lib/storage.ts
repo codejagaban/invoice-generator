@@ -9,6 +9,7 @@ import type {
   CompanyDetails,
   Customer,
   AccountDetails,
+  Settings,
 } from "./types";
 import { STORES, dbGetAll, dbGetOne, dbPut, dbDelete } from "./db";
 
@@ -214,4 +215,23 @@ export async function setDefaultAccount(id: string): Promise<boolean> {
     ),
   );
   return true;
+}
+
+// ============ SETTINGS STORAGE ============
+
+export async function getSettings(): Promise<Settings> {
+  const settings = await dbGetOne<Settings>(STORES.settings, "default");
+  return settings ?? { id: "default", defaultCurrency: "GBP", updatedAt: new Date().toISOString() };
+}
+
+export async function saveSettings(
+  updates: Partial<Omit<Settings, "id">>,
+): Promise<Settings> {
+  const existing = await getSettings();
+  const updated: Settings = {
+    ...existing,
+    ...updates,
+    updatedAt: new Date().toISOString(),
+  };
+  return dbPut<Settings>(STORES.settings, updated);
 }
