@@ -343,26 +343,27 @@ export default function Home() {
             No tutorials, no onboarding flows — just open and go.
           </p>
 
-          <div className="mt-10 grid gap-8 sm:grid-cols-3">
-            {steps.map((step, index) => (
-              <div key={step.number} className="relative flex flex-col gap-3">
-                {/* Connector line — spans exactly the gap-8 (2rem) to the next column */}
-                {index < steps.length - 1 && (
-                  <div className="absolute top-7.5 left-full hidden w-8 sm:block">
-                    <div className="border-t-2 border-dashed border-(--border)" />
-                  </div>
-                )}
-                <span className="select-none text-6xl font-black leading-none tracking-tight text-(--border)">
-                  {step.number}
-                </span>
-                <h3 className="font-semibold text-black dark:text-white">
-                  {step.title}
-                </h3>
-                <p className="text-sm leading-relaxed text-(--muted)">
-                  {step.description}
-                </p>
-              </div>
-            ))}
+          <div className="relative mt-10 isolate">
+            {/* Single dashed line behind all three steps */}
+            <div
+              className="absolute inset-x-0 top-7.5 hidden -z-10 sm:block"
+              style={{ borderTop: "2px solid var(--border)" }}
+            />
+            <div className="grid gap-8 sm:grid-cols-3">
+              {steps.map((step) => (
+                <div key={step.number} className="relative z-10 flex flex-col gap-3">
+                  <span className="inline-block w-fit select-none bg-white pr-3 text-6xl font-black leading-none tracking-tight text-(--border) dark:bg-black">
+                    {step.number}
+                  </span>
+                  <h3 className="font-semibold text-black dark:text-white">
+                    {step.title}
+                  </h3>
+                  <p className="text-sm leading-relaxed text-(--muted)">
+                    {step.description}
+                  </p>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 
