@@ -210,6 +210,7 @@ export function generateInvoiceHTML(
               </div>
             </div>
                 <div class="company-info">
+              ${company && company.logo ? `<img src="${company.logo}" alt="${company.name} logo" style="max-height: 60px; max-width: 160px; object-fit: contain; align-self: flex-end; margin-bottom: 8px;" />` : ""}
               ${company ? `<div class="company-name">${company.name}</div>` : ""}
               <div class="company-detail">
                 ${company ? `<div>${company.email}</div>` : ""}

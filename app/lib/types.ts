@@ -12,6 +12,7 @@ export interface Customer {
   state: string;
   zipCode: string;
   country: string;
+  logo?: string;
 }
 
 export interface InvoiceItem {
