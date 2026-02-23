@@ -58,7 +58,7 @@ import {
   generateInvoiceNumber,
   formatCurrency,
 } from "@/app/lib/invoice";
-import { createTemplate, getCustomers } from "@/app/lib/storage";
+import { createTemplate, getCustomers, getSettings } from "@/app/lib/storage";
 
 const CURRENCIES = [
   { code: "USD", label: "US Dollar" },
@@ -124,8 +124,14 @@ export default function InvoiceForm({
 
   useEffect(() => {
     (async () => {
-      const storedCustomers = await getCustomers();
+      const [storedCustomers, settings] = await Promise.all([
+        getCustomers(),
+        getSettings(),
+      ]);
       setCustomers(storedCustomers);
+      if (!initialData) {
+        setFormData((prev) => ({ ...prev, currency: settings.defaultCurrency }));
+      }
     })();
   }, []);
 

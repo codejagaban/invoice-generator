@@ -17,12 +17,35 @@ import type { CompanyDetails } from "@/app/lib/types";
 import { Pencil, Trash2, Star } from "lucide-react";
 import Image from "next/image";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/app/components/shared/Select";
+import {
   getCompanyDetails,
   createCompany,
   updateCompany,
   deleteCompany,
   setDefaultCompany,
+  getSettings,
+  saveSettings,
 } from "@/app/lib/storage";
+
+const CURRENCIES = [
+  { code: "USD", label: "US Dollar" },
+  { code: "EUR", label: "Euro" },
+  { code: "GBP", label: "British Pound" },
+  { code: "CAD", label: "Canadian Dollar" },
+  { code: "AUD", label: "Australian Dollar" },
+  { code: "JPY", label: "Japanese Yen" },
+  { code: "CHF", label: "Swiss Franc" },
+  { code: "CNY", label: "Chinese Yuan" },
+  { code: "INR", label: "Indian Rupee" },
+  { code: "MXN", label: "Mexican Peso" },
+  { code: "NGN", label: "Nigerian Naira" },
+];
 
 export default function CompanyPage() {
   const [companies, setCompanies] = useState<CompanyDetails[]>([]);
@@ -30,14 +53,29 @@ export default function CompanyPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingData, setEditingData] = useState<CompanyDetails | undefined>();
+  const [defaultCurrency, setDefaultCurrency] = useState("GBP");
+  const [isSavingCurrency, setIsSavingCurrency] = useState(false);
+  const [currencySaved, setCurrencySaved] = useState(false);
 
   useEffect(() => {
     (async () => {
-      const companies = await getCompanyDetails();
+      const [companies, settings] = await Promise.all([
+        getCompanyDetails(),
+        getSettings(),
+      ]);
       setCompanies(companies);
+      setDefaultCurrency(settings.defaultCurrency);
       setIsLoading(false);
     })();
   }, []);
+
+  const handleSaveCurrency = async () => {
+    setIsSavingCurrency(true);
+    await saveSettings({ defaultCurrency });
+    setIsSavingCurrency(false);
+    setCurrencySaved(true);
+    setTimeout(() => setCurrencySaved(false), 2000);
+  };
 
   const handleSubmit = async (company: CompanyDetails) => {
     if (editingId) {
@@ -119,6 +157,35 @@ export default function CompanyPage() {
             />
           </div>
         )}
+
+        {/* Default Currency */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle>Default Currency</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="mb-4 text-sm text-(--muted)">
+              Used as the default currency when creating new invoices.
+            </p>
+            <div className="flex items-center gap-3">
+              <Select value={defaultCurrency} onValueChange={setDefaultCurrency}>
+                <SelectTrigger className="w-64">
+                  <SelectValue placeholder="Select currency" />
+                </SelectTrigger>
+                <SelectContent>
+                  {CURRENCIES.map((c) => (
+                    <SelectItem key={c.code} value={c.code}>
+                      {c.label} ({c.code})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button onClick={handleSaveCurrency} disabled={isSavingCurrency}>
+                {currencySaved ? "Saved!" : isSavingCurrency ? "Saving..." : "Save"}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Companies List */}
         <div className="space-y-4">
