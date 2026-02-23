@@ -8,6 +8,7 @@ import type {
   InvoiceTemplate,
   CompanyDetails,
   Customer,
+  AccountDetails,
 } from "./types";
 import { STORES, dbGetAll, dbGetOne, dbPut, dbDelete } from "./db";
 
@@ -153,6 +154,62 @@ export async function setDefaultCompany(id: string): Promise<boolean> {
       dbPut<CompanyDetails>(STORES.company_details, {
         ...c,
         isDefault: c.id === id,
+      }),
+    ),
+  );
+  return true;
+}
+
+// ============ ACCOUNT DETAILS STORAGE ============
+
+export async function getAccountDetails(): Promise<AccountDetails[]> {
+  return dbGetAll<AccountDetails>(STORES.account_details);
+}
+
+export async function getDefaultAccountDetails(): Promise<AccountDetails | null> {
+  const accounts = await getAccountDetails();
+  return accounts.find((a) => a.isDefault) ?? null;
+}
+
+export async function getAccountById(
+  id: string,
+): Promise<AccountDetails | null> {
+  return dbGetOne<AccountDetails>(STORES.account_details, id);
+}
+
+export async function createAccount(
+  account: AccountDetails,
+): Promise<AccountDetails> {
+  return dbPut<AccountDetails>(STORES.account_details, account);
+}
+
+export async function updateAccount(
+  id: string,
+  updates: Partial<AccountDetails>,
+): Promise<AccountDetails | null> {
+  const existing = await getAccountById(id);
+  if (!existing) return null;
+  const updated: AccountDetails = {
+    ...existing,
+    ...updates,
+    updatedAt: new Date().toISOString(),
+  };
+  return dbPut<AccountDetails>(STORES.account_details, updated);
+}
+
+export async function deleteAccount(id: string): Promise<boolean> {
+  return dbDelete(STORES.account_details, id);
+}
+
+export async function setDefaultAccount(id: string): Promise<boolean> {
+  const accounts = await getAccountDetails();
+  const target = accounts.find((a) => a.id === id);
+  if (!target) return false;
+  await Promise.all(
+    accounts.map((a) =>
+      dbPut<AccountDetails>(STORES.account_details, {
+        ...a,
+        isDefault: a.id === id,
       }),
     ),
   );

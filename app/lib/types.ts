@@ -61,6 +61,23 @@ export interface InvoiceSummary {
   total: number;
 }
 
+export interface AccountDetails {
+  id: string;
+  accountHolderName: string;
+  bankName: string;
+  accountNumber: string;
+  sortCode?: string;
+  routingNumber?: string;
+  iban?: string;
+  swiftBic?: string;
+  currency?: string;
+  paymentReference?: string;
+  notes?: string;
+  isDefault: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface CompanyDetails {
   id: string;
   name: string;
