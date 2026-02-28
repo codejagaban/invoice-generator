@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import pool from "@/app/lib/mysql";
+import pool from "@/app/lib/postgres";
 
 export async function POST(request: NextRequest) {
   try {
@@ -25,11 +25,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const [existing] = await pool.execute(
-      "SELECT id FROM users WHERE email = ? LIMIT 1",
+    const existing = await pool.query(
+      "SELECT id FROM users WHERE email = $1 LIMIT 1",
       [email],
     );
-    if ((existing as unknown[]).length > 0) {
+    if (existing.rows.length > 0) {
       return NextResponse.json(
         { error: "An account with this email already exists." },
         { status: 409 },
@@ -39,9 +39,9 @@ export async function POST(request: NextRequest) {
     const hashedPassword = await bcrypt.hash(password, 12);
     const id = crypto.randomUUID();
 
-    await pool.execute(
+    await pool.query(
       `INSERT INTO users (id, name, email, password, created_at)
-       VALUES (?, ?, ?, ?, NOW())`,
+       VALUES ($1, $2, $3, $4, NOW())`,
       [id, name, email, hashedPassword],
     );
 
