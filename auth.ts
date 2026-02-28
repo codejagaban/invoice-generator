@@ -62,24 +62,26 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         if (account.provider === "google") {
           // Find or create MySQL user for Google sign-in
           const [existing] = await pool.execute(
-            "SELECT id FROM users WHERE email = ? LIMIT 1",
-            [user.email],
+            "SELECT id, name, image FROM users WHERE email = ? LIMIT 1",
+            [user.email ?? null],
           );
-          const users = existing as Array<{ id: string }>;
+          const users = existing as Array<{ id: string; name: string | null; image: string | null }>;
 
           if (users.length === 0) {
+            // New user — create from Google data
             const id = crypto.randomUUID();
             await pool.execute(
               `INSERT INTO users (id, name, email, emailVerified, image, password, created_at)
                VALUES (?, ?, ?, NOW(), ?, NULL, NOW())`,
-              [id, user.name, user.email, user.image],
+              [id, user.name ?? null, user.email ?? null, user.image ?? null],
             );
             token.id = id;
           } else {
+            // Existing user — only fill in missing name/image, don't overwrite
             token.id = users[0].id;
             await pool.execute(
-              "UPDATE users SET name = ?, image = ? WHERE id = ?",
-              [user.name, user.image, users[0].id],
+              "UPDATE users SET name = COALESCE(name, ?), image = COALESCE(image, ?) WHERE id = ?",
+              [user.name ?? null, user.image ?? null, users[0].id],
             );
           }
         } else {
