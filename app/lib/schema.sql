@@ -95,3 +95,15 @@ CREATE TABLE IF NOT EXISTS settings (
 -- Seed default settings row
 INSERT IGNORE INTO settings (id, default_currency, updated_at)
 VALUES ('default', 'GBP', NOW());
+
+-- ── Auth: users ──────────────────────────────────────────────────────────────
+-- Stores both credentials users (password set) and OAuth users (password NULL).
+CREATE TABLE IF NOT EXISTS users (
+  id            VARCHAR(36)  NOT NULL PRIMARY KEY,
+  name          VARCHAR(255),
+  email         VARCHAR(255) UNIQUE,
+  emailVerified DATETIME,
+  image         TEXT,
+  password      VARCHAR(255),
+  created_at    DATETIME     NOT NULL DEFAULT NOW()
+);
