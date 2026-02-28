@@ -19,7 +19,7 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Protect all routes except: static files, images, favicon, home page, auth pages
-    "/((?!_next/static|_next/image|favicon\\.ico|$|sign-in|sign-up).*)",
+    // Protect all routes except: static files, images, favicon, home page, auth pages, auth API
+    "/((?!_next/static|_next/image|favicon\\.ico|$|sign-in|sign-up|api/auth).*)",
   ],
 };
