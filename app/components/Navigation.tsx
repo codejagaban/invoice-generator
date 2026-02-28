@@ -24,9 +24,6 @@ export default function Navigation() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Hide on auth pages
-  if (pathname === "/sign-in" || pathname === "/sign-up") return null;
-
   const isActive = (href: string) => {
     if (href === "/") return pathname === "/";
     return pathname.startsWith(href);
@@ -41,7 +38,7 @@ export default function Navigation() {
     { href: "/company", label: "Settings", icon: Settings2 },
   ] as const;
 
-  // Close dropdown on outside click
+  // Close dropdown on outside click — must be before any early returns
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (
@@ -54,6 +51,9 @@ export default function Navigation() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  // Hide on auth pages — after all hooks
+  if (pathname === "/sign-in" || pathname === "/sign-up") return null;
 
   const user = session?.user;
   const initials = user?.name
