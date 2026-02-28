@@ -4,7 +4,7 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: ".",
   },
-  serverExternalPackages: ["mysql2", "bcryptjs"],
+  serverExternalPackages: ["pg", "bcryptjs"],
 };
 
 export default nextConfig;
