@@ -3,10 +3,12 @@ import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
 import db from "@/app/lib/turso";
+import { authConfig } from "./auth.config";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  session: { strategy: "jwt" },
+  ...authConfig,
 
+  // Override providers with full implementations
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -41,11 +43,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     }),
   ],
 
-  pages: {
-    signIn: "/sign-in",
-  },
-
+  // Override callbacks — add jwt + session on top of authorized from authConfig
   callbacks: {
+    ...authConfig.callbacks,
+
     async jwt({ token, user, account }) {
       if (user && account) {
         if (account.provider === "google") {
@@ -59,7 +60,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             | undefined;
 
           if (!existing) {
-            // New user — create from Google data
             const id = crypto.randomUUID();
             await db.execute({
               sql: `INSERT INTO users (id, name, email, emailVerified, image, password, created_at)
@@ -68,7 +68,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             });
             token.id = id;
           } else {
-            // Existing user — only fill in missing name/image, don't overwrite
             token.id = existing.id;
             await db.execute({
               sql: "UPDATE users SET name = COALESCE(name, ?), image = COALESCE(image, ?) WHERE id = ?",
@@ -76,7 +75,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             });
           }
         } else {
-          // Credentials: id comes directly from authorize()
           token.id = user.id;
         }
       }
