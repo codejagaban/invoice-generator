@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "migrate": "node --env-file=.env.local scripts/migrate.mjs",
+    "migrate:prod": "node --env-file=.env.production scripts/migrate.mjs"
   },
   "dependencies": {
     "@libsql/client": "^0.17.0",
