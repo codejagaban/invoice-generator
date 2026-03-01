@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import pool from "@/app/lib/postgres";
+import db from "@/app/lib/turso";
 
 export async function POST(request: NextRequest) {
   try {
@@ -25,10 +25,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const existing = await pool.query(
-      "SELECT id FROM users WHERE email = $1 LIMIT 1",
-      [email],
-    );
+    const existing = await db.execute({
+      sql: "SELECT id FROM users WHERE email = ? LIMIT 1",
+      args: [email],
+    });
     if (existing.rows.length > 0) {
       return NextResponse.json(
         { error: "An account with this email already exists." },
@@ -39,11 +39,11 @@ export async function POST(request: NextRequest) {
     const hashedPassword = await bcrypt.hash(password, 12);
     const id = crypto.randomUUID();
 
-    await pool.query(
-      `INSERT INTO users (id, name, email, password, created_at)
-       VALUES ($1, $2, $3, $4, NOW())`,
-      [id, name, email, hashedPassword],
-    );
+    await db.execute({
+      sql: `INSERT INTO users (id, name, email, password, created_at)
+            VALUES (?, ?, ?, ?, datetime('now'))`,
+      args: [id, name, email, hashedPassword],
+    });
 
     return NextResponse.json(
       { message: "Account created successfully." },
