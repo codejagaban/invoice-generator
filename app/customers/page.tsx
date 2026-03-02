@@ -22,6 +22,13 @@ import {
 } from "lucide-react";
 import Button from "@/app/components/shared/Button";
 import { InputWithRef as Input } from "@/app/components/shared/Input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/app/components/shared/Select";
 import Card, {
   CardContent,
   CardHeader,
@@ -34,6 +41,31 @@ import {
   updateCustomer,
   deleteCustomer,
 } from "@/app/lib/storage";
+
+const COUNTRIES = [
+  "United Kingdom",
+  "United States",
+  "Afghanistan", "Albania", "Algeria", "Angola", "Argentina", "Armenia",
+  "Australia", "Austria", "Azerbaijan", "Bahrain", "Bangladesh", "Belarus",
+  "Belgium", "Bolivia", "Bosnia and Herzegovina", "Botswana", "Brazil",
+  "Bulgaria", "Cambodia", "Cameroon", "Canada", "Chile", "China", "Colombia",
+  "Costa Rica", "Croatia", "Cuba", "Cyprus", "Czech Republic", "Denmark",
+  "Dominican Republic", "Ecuador", "Egypt", "El Salvador", "Estonia",
+  "Ethiopia", "Finland", "France", "Georgia", "Germany", "Ghana", "Greece",
+  "Guatemala", "Honduras", "Hong Kong", "Hungary", "Iceland", "India",
+  "Indonesia", "Iran", "Iraq", "Ireland", "Israel", "Italy", "Jamaica",
+  "Japan", "Jordan", "Kazakhstan", "Kenya", "Kuwait", "Latvia", "Lebanon",
+  "Libya", "Lithuania", "Luxembourg", "Malaysia", "Malta", "Mexico",
+  "Moldova", "Morocco", "Mozambique", "Myanmar", "Nepal", "Netherlands",
+  "New Zealand", "Nicaragua", "Nigeria", "North Korea", "Norway", "Oman",
+  "Pakistan", "Panama", "Paraguay", "Peru", "Philippines", "Poland",
+  "Portugal", "Qatar", "Romania", "Russia", "Saudi Arabia", "Senegal",
+  "Serbia", "Singapore", "Slovakia", "Slovenia", "Somalia", "South Africa",
+  "South Korea", "Spain", "Sri Lanka", "Sudan", "Sweden", "Switzerland",
+  "Syria", "Taiwan", "Tanzania", "Thailand", "Tunisia", "Turkey",
+  "Uganda", "Ukraine", "United Arab Emirates", "Uruguay", "Uzbekistan",
+  "Venezuela", "Vietnam", "Yemen", "Zambia", "Zimbabwe",
+];
 
 export default function CustomersPage() {
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -50,7 +82,7 @@ export default function CustomersPage() {
     city: "",
     state: "",
     zipCode: "",
-    country: "",
+    country: "United Kingdom",
   });
 
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -100,7 +132,7 @@ export default function CustomersPage() {
       city: "",
       state: "",
       zipCode: "",
-      country: "",
+      country: "United Kingdom",
     });
   };
 
@@ -319,13 +351,33 @@ export default function CustomersPage() {
                     leadingIcon={<Hash className="h-4 w-4" />}
                   />
                 </div>
-                <Input
-                  label="Country"
-                  name="country"
-                  value={formData.country}
-                  onChange={handleInputChange}
-                  leadingIcon={<Globe className="h-4 w-4" />}
-                />
+                <div>
+                  <label className="block text-sm font-medium text-(--muted) mb-1">
+                    Country
+                  </label>
+                  <div className="relative">
+                    <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-(--muted)">
+                      <Globe className="h-4 w-4" />
+                    </span>
+                    <Select
+                      value={formData.country}
+                      onValueChange={(value) =>
+                        setFormData((prev) => ({ ...prev, country: value }))
+                      }
+                    >
+                      <SelectTrigger className="pl-9">
+                        <SelectValue placeholder="Select country" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {COUNTRIES.map((country) => (
+                          <SelectItem key={country} value={country}>
+                            {country}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
 
                 <div className="flex gap-3">
                   <Button type="submit">
