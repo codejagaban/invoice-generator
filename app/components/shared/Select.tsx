@@ -45,7 +45,7 @@ const SelectContent = React.forwardRef<
       position={position}
       {...props}
     >
-      <SelectPrimitive.Viewport className="p-1">
+      <SelectPrimitive.Viewport className="p-1 max-h-60 overflow-y-auto">
         {children}
       </SelectPrimitive.Viewport>
     </SelectPrimitive.Content>
