@@ -106,6 +106,7 @@ export default function InvoiceForm({
     customerCity: initialData?.customer.city || "",
     customerState: initialData?.customer.state || "",
     customerZipCode: initialData?.customer.zipCode || "",
+    customerCountry: initialData?.customer.country || "",
     currency: initialData?.currency || "GBP",
     notes: initialData?.notes || "",
     taxRate: initialData?.taxRate || 0,
@@ -153,6 +154,7 @@ export default function InvoiceForm({
           customerCity: template.customer.city || "",
           customerState: template.customer.state || "",
           customerZipCode: template.customer.zipCode || "",
+          customerCountry: template.customer.country || "",
           currency: template.currency,
           notes: template.notes || "",
           taxRate: template.taxRate || 0,
@@ -191,6 +193,7 @@ export default function InvoiceForm({
       customerCity: selected.city,
       customerState: selected.state,
       customerZipCode: selected.zipCode,
+      customerCountry: selected.country,
     }));
   };
 
@@ -311,7 +314,7 @@ export default function InvoiceForm({
           city: formData.customerCity,
           state: formData.customerState,
           zipCode: formData.customerZipCode,
-          country: "US", // TODO: Make this dynamic
+          country: formData.customerCountry,
         },
         items,
         notes: formData.notes,
@@ -491,6 +494,13 @@ export default function InvoiceForm({
               leadingIcon={<Hash className="h-4 w-4" />}
             />
           </div>
+          <Input
+            label="Country"
+            name="customerCountry"
+            value={formData.customerCountry}
+            onChange={handleInputChange}
+            leadingIcon={<Map className="h-4 w-4" />}
+          />
         </CardContent>
       </Card>
 
