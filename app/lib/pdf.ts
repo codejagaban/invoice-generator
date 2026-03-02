@@ -21,6 +21,13 @@ export function generateInvoiceHTML(
   const tax = (subtotal * (invoice.taxRate || 0)) / 100;
   const total = subtotal + tax;
 
+  // Build "City, State ZIP" line, omitting empty parts
+  const cityLine = (city?: string, state?: string, zip?: string): string => {
+    const stateZip = [state, zip].filter(Boolean).join(" ");
+    const parts = [city, stateZip].filter(Boolean).join(", ");
+    return parts ? `<div>${parts}</div>` : "";
+  };
+
   return `
     <!DOCTYPE html>
     <html>
@@ -215,10 +222,11 @@ export function generateInvoiceHTML(
               ${company ? `<div class="company-name">${company.name}</div>` : ""}
               <div class="company-detail">
                 ${company ? `<div>${company.email}</div>` : ""}
-                ${company && company.phone ? `<div>${company.phone}</div>` : ""}
-                ${company ? `<div>${company.address}</div>` : ""}
-                ${company ? `<div>${company.city}, ${company.state} ${company.zipCode}</div>` : ""}
-                ${company && company.taxId ? `<div>Tax ID: ${company.taxId}</div>` : ""}
+                ${company?.phone ? `<div>${company.phone}</div>` : ""}
+                ${company?.address ? `<div>${company.address}</div>` : ""}
+                ${company ? cityLine(company.city, company.state, company.zipCode) : ""}
+                ${company?.country ? `<div>${company.country}</div>` : ""}
+                ${company?.taxId ? `<div>Tax ID: ${company.taxId}</div>` : ""}
               </div>
             </div>
           </header>
@@ -228,10 +236,10 @@ export function generateInvoiceHTML(
             <div class="section-title">Bill To:</div>
             <div class="customer-info">
               <div class="customer-label">${invoice.customer.name}</div>
-              <div>${invoice.customer.email}</div>
-              <div>${invoice.customer.address}</div>
-              <div>${invoice.customer.city}, ${invoice.customer.state} ${invoice.customer.zipCode}</div>
-              <div>${invoice.customer.country}</div>
+              ${invoice.customer.email ? `<div>${invoice.customer.email}</div>` : ""}
+              ${invoice.customer.address ? `<div>${invoice.customer.address}</div>` : ""}
+              ${cityLine(invoice.customer.city, invoice.customer.state, invoice.customer.zipCode)}
+              ${invoice.customer.country ? `<div>${invoice.customer.country}</div>` : ""}
             </div>
           </section>
 
