@@ -53,7 +53,7 @@ import {
   User,
   X,
 } from "lucide-react";
-import { validateInvoiceForm, invoiceValidation } from "@/app/lib/validation";
+import { validateInvoiceForm } from "@/app/lib/validation";
 import {
   calculateInvoiceSummary,
   generateInvoiceNumber,
@@ -160,6 +160,7 @@ export default function InvoiceForm({
         setFormData((prev) => ({ ...prev, currency: settings.defaultCurrency }));
       }
     })();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Load template from sessionStorage on mount

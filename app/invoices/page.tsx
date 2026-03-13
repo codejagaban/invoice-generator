@@ -5,7 +5,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { FilePlus2 } from "lucide-react";
 import Button from "@/app/components/shared/Button";
@@ -29,7 +29,6 @@ import {
 
 export default function InvoicesDashboardPage() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
-  const [filteredInvoices, setFilteredInvoices] = useState<Invoice[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<
     "all" | "draft" | "sent" | "paid" | "cancelled"
@@ -44,7 +43,7 @@ export default function InvoicesDashboardPage() {
       setDefaultCurrency(settings.defaultCurrency);
     })();
   }, []);
-  useEffect(() => {
+  const filteredInvoices = useMemo(() => {
     let filtered = invoices;
 
     // Filter by status
@@ -64,12 +63,13 @@ export default function InvoicesDashboardPage() {
     }
 
     // Sort
+    const sorted = [...filtered];
     if (sortBy === "date") {
-      filtered.sort(
+      sorted.sort(
         (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
       );
     } else if (sortBy === "amount") {
-      filtered.sort((a, b) => {
+      sorted.sort((a, b) => {
         const amountA = a.items.reduce(
           (sum, item) => sum + item.quantity * item.rate,
           0,
@@ -81,10 +81,10 @@ export default function InvoicesDashboardPage() {
         return amountB - amountA;
       });
     } else if (sortBy === "name") {
-      filtered.sort((a, b) => a.customer.name.localeCompare(b.customer.name));
+      sorted.sort((a, b) => a.customer.name.localeCompare(b.customer.name));
     }
 
-    setFilteredInvoices(filtered);
+    return sorted;
   }, [invoices, searchTerm, statusFilter, sortBy]);
 
   const getStatusColor = (status: string) => {

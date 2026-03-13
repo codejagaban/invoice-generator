@@ -9,6 +9,7 @@ import { buttonVariants } from "@/app/components/shared/Button";
 export type CalendarProps = React.ComponentProps<typeof DayPicker>;
 
 function CalendarDayButton({
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   day: _day,
   modifiers,
   className,
