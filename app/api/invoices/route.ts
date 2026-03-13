@@ -6,7 +6,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     // This is a simple API endpoint
     // In a real application with a database, you would query it here
