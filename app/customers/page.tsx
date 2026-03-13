@@ -144,7 +144,8 @@ export default function CustomersPage() {
     // Clear this field's error as the user types
     if (errors[name]) {
       setErrors((prev) => {
-        const { [name]: _, ...rest } = prev;
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { [name]: _removed, ...rest } = prev;
         return rest;
       });
     }

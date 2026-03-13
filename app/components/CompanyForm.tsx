@@ -65,7 +65,8 @@ export default function CompanyForm({
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
-    const { name, value, type } = e.target as any;
+    const { name, value } = e.target;
+    const type = (e.target as HTMLInputElement).type;
     setFormData((prev) => ({
       ...prev,
       [name]:
