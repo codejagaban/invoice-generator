@@ -3,7 +3,7 @@
  * Functions for calculating totals, formatting currency, and invoice operations
  */
 
-import type { Invoice, InvoiceItem, InvoiceSummary } from "./types";
+import type { InvoiceItem, InvoiceSummary } from "./types";
 
 /**
  * Calculate invoice totals including subtotal, tax, and final total
@@ -63,7 +63,7 @@ export function formatCurrency(
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     }).format(amount);
-  } catch (error) {
+  } catch {
     // Fallback if currency is invalid
     return `${amount.toFixed(2)} ${currency}`;
   }
