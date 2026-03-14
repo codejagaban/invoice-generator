@@ -6,6 +6,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { FilePlus2, LayoutTemplate, Trash2 } from "lucide-react";
 import Button from "@/app/components/shared/Button";
@@ -19,6 +20,7 @@ import { getTemplates, deleteTemplate } from "@/app/lib/storage";
 import { formatDate } from "@/app/lib/invoice";
 
 export default function TemplatesPage() {
+  const router = useRouter();
   const [templates, setTemplates] = useState<InvoiceTemplate[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -40,7 +42,7 @@ export default function TemplatesPage() {
     // Store template in session for the create form to pick up
     sessionStorage.setItem("selectedTemplate", JSON.stringify(template));
     // Redirect to create invoice page
-    window.location.href = "/invoices/create";
+    router.push("/invoices/create");
   };
 
   if (isLoading) {

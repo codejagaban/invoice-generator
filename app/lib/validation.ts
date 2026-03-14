@@ -69,7 +69,7 @@ export const invoiceValidation = {
 };
 
 export const validateInvoiceForm = (
-  data: Record<string, any>,
+  data: Record<string, unknown>,
 ): Record<string, string> => {
   const errors: Record<string, string> = {};
 
@@ -77,7 +77,7 @@ export const validateInvoiceForm = (
   if (!data.invoiceNumber) errors.invoiceNumber = "Invoice number is required";
   if (!data.customerName) errors.customerName = "Customer name is required";
   if (!data.customerEmail) errors.customerEmail = "Customer email is required";
-  if (!data.items || data.items.length === 0)
+  if (!data.items || (data.items as unknown[]).length === 0)
     errors.items = "At least one item is required";
 
   return errors;

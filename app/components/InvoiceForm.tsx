@@ -125,7 +125,7 @@ export default function InvoiceForm({
     date: initialData?.date || toLocalDateString(new Date()),
     dueDate:
       initialData?.dueDate ||
-      toLocalDateString(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)),
+      toLocalDateString(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)),
     customerName: initialData?.customer.name || "",
     customerEmail: initialData?.customer.email || "",
     customerAddress: initialData?.customer.address || "",

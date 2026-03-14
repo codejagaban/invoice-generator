@@ -9,7 +9,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import InvoiceForm from "@/app/components/InvoiceForm";
-import Card from "@/app/components/shared/Card";
 import type { Invoice } from "@/app/lib/types";
 import { createInvoice } from "@/app/lib/storage";
 
