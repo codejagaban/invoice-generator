@@ -22,8 +22,16 @@ export const authConfig = {
     Credentials({}),
   ],
   callbacks: {
-    authorized({ auth }) {
-      return !!auth?.user;
+    authorized({ auth, request: { nextUrl } }) {
+      const isLoggedIn = !!auth?.user;
+      const path = nextUrl.pathname;
+
+      // Public routes: invoice create & individual invoice view
+      if (path === "/invoices/create" || /^\/invoices\/[^/]+$/.test(path)) {
+        return true;
+      }
+
+      return isLoggedIn;
     },
   },
 } satisfies NextAuthConfig;
