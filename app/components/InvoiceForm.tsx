@@ -34,6 +34,7 @@ import type {
   Invoice,
   InvoiceItem,
   Customer,
+  CompanyDetails,
   InvoiceTemplate,
 } from "@/app/lib/types";
 import {
@@ -59,7 +60,7 @@ import {
   generateInvoiceNumber,
   formatCurrency,
 } from "@/app/lib/invoice";
-import { createTemplate, getCustomers, getSettings } from "@/app/lib/storage";
+import { createTemplate, getCustomers, getCompanyDetails, getSettings } from "@/app/lib/storage";
 
 const COUNTRIES = [
   "United Kingdom",
@@ -119,6 +120,8 @@ export default function InvoiceForm({
   const [isSavingTemplate, setIsSavingTemplate] = useState(false);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [selectedCustomerId, setSelectedCustomerId] = useState<string>("");
+  const [companies, setCompanies] = useState<CompanyDetails[]>([]);
+  const [selectedCompanyId, setSelectedCompanyId] = useState<string>("");
 
   const [formData, setFormData] = useState({
     invoiceNumber: initialData?.invoiceNumber || generateInvoiceNumber(),
@@ -134,6 +137,16 @@ export default function InvoiceForm({
     customerZipCode: initialData?.customer.zipCode || "",
     customerCountry: initialData?.customer.country || "United Kingdom",
     customerLogo: initialData?.customer.logo || "",
+    companyName: initialData?.company?.name || "",
+    companyEmail: initialData?.company?.email || "",
+    companyPhone: initialData?.company?.phone || "",
+    companyAddress: initialData?.company?.address || "",
+    companyCity: initialData?.company?.city || "",
+    companyState: initialData?.company?.state || "",
+    companyZipCode: initialData?.company?.zipCode || "",
+    companyCountry: initialData?.company?.country || "",
+    companyLogo: initialData?.company?.logo || "",
+    companyTaxId: initialData?.company?.taxId || "",
     currency: initialData?.currency || "GBP",
     notes: initialData?.notes || "",
     taxRate: initialData?.taxRate || 0,
@@ -152,13 +165,33 @@ export default function InvoiceForm({
 
   useEffect(() => {
     (async () => {
-      const [storedCustomers, settings] = await Promise.all([
+      const [storedCustomers, storedCompanies, settings] = await Promise.all([
         getCustomers(),
+        getCompanyDetails(),
         getSettings(),
       ]);
       setCustomers(storedCustomers);
+      setCompanies(storedCompanies);
       if (!initialData) {
         setFormData((prev) => ({ ...prev, currency: settings.defaultCurrency }));
+        // Auto-select default company
+        const defaultCompany = storedCompanies.find((c) => c.isDefault);
+        if (defaultCompany) {
+          setSelectedCompanyId(defaultCompany.id);
+          setFormData((prev) => ({
+            ...prev,
+            companyName: defaultCompany.name,
+            companyEmail: defaultCompany.email,
+            companyPhone: defaultCompany.phone || "",
+            companyAddress: defaultCompany.address,
+            companyCity: defaultCompany.city,
+            companyState: defaultCompany.state,
+            companyZipCode: defaultCompany.zipCode,
+            companyCountry: defaultCompany.country,
+            companyLogo: defaultCompany.logo || "",
+            companyTaxId: defaultCompany.taxId || "",
+          }));
+        }
       }
     })();
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -223,6 +256,27 @@ export default function InvoiceForm({
       customerZipCode: selected.zipCode,
       customerCountry: selected.country,
       customerLogo: selected.logo || "",
+    }));
+  };
+
+  const handleCompanySelect = (companyId: string) => {
+    setSelectedCompanyId(companyId);
+
+    const selected = companies.find((c) => c.id === companyId);
+    if (!selected) return;
+
+    setFormData((prev) => ({
+      ...prev,
+      companyName: selected.name,
+      companyEmail: selected.email,
+      companyPhone: selected.phone || "",
+      companyAddress: selected.address,
+      companyCity: selected.city,
+      companyState: selected.state,
+      companyZipCode: selected.zipCode,
+      companyCountry: selected.country,
+      companyLogo: selected.logo || "",
+      companyTaxId: selected.taxId || "",
     }));
   };
 
@@ -346,6 +400,24 @@ export default function InvoiceForm({
           country: formData.customerCountry,
           logo: formData.customerLogo || undefined,
         },
+        company: formData.companyName
+          ? {
+              id: selectedCompanyId || initialData?.company?.id || String(Date.now()),
+              name: formData.companyName,
+              email: formData.companyEmail,
+              phone: formData.companyPhone || undefined,
+              address: formData.companyAddress,
+              city: formData.companyCity,
+              state: formData.companyState,
+              zipCode: formData.companyZipCode,
+              country: formData.companyCountry,
+              logo: formData.companyLogo || undefined,
+              taxId: formData.companyTaxId || undefined,
+              isDefault: false,
+              createdAt: initialData?.company?.createdAt || new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+            }
+          : undefined,
         items,
         notes: formData.notes,
         taxRate: Number(formData.taxRate),
@@ -428,6 +500,138 @@ export default function InvoiceForm({
                 setFormData((prev) => ({ ...prev, dueDate: value }))
               }
             />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Company Information (From) */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Your Company</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label className="block text-sm font-medium text-(--muted) mb-1">
+                Select Company
+              </label>
+              <div className="relative">
+                <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-(--muted)">
+                  <Building2 className="h-4 w-4" />
+                </span>
+                <Select
+                  value={selectedCompanyId || undefined}
+                  onValueChange={(value) => handleCompanySelect(value)}
+                >
+                  <SelectTrigger className="pl-9">
+                    <SelectValue placeholder="Choose a saved company" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {companies.map((company) => (
+                      <SelectItem key={company.id} value={company.id}>
+                        {company.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="flex items-end">
+              <Link
+                href="/company"
+                className="text-sm text-blue-600 hover:underline dark:text-blue-400"
+              >
+                Manage companies
+              </Link>
+            </div>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Input
+              label="Company Name"
+              name="companyName"
+              value={formData.companyName}
+              onChange={handleInputChange}
+              leadingIcon={<Building2 className="h-4 w-4" />}
+            />
+            <Input
+              label="Email"
+              name="companyEmail"
+              type="email"
+              value={formData.companyEmail}
+              onChange={handleInputChange}
+              leadingIcon={<Mail className="h-4 w-4" />}
+            />
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Input
+              label="Phone"
+              name="companyPhone"
+              value={formData.companyPhone}
+              onChange={handleInputChange}
+            />
+            <Input
+              label="Tax ID"
+              name="companyTaxId"
+              value={formData.companyTaxId}
+              onChange={handleInputChange}
+            />
+          </div>
+          <Input
+            label="Address"
+            name="companyAddress"
+            value={formData.companyAddress}
+            onChange={handleInputChange}
+            leadingIcon={<MapPin className="h-4 w-4" />}
+          />
+          <div className="grid gap-4 sm:grid-cols-3">
+            <Input
+              label="City"
+              name="companyCity"
+              value={formData.companyCity}
+              onChange={handleInputChange}
+              leadingIcon={<Building2 className="h-4 w-4" />}
+            />
+            <Input
+              label="State/Province"
+              name="companyState"
+              value={formData.companyState}
+              onChange={handleInputChange}
+              leadingIcon={<Map className="h-4 w-4" />}
+            />
+            <Input
+              label="Zip/Postal Code"
+              name="companyZipCode"
+              value={formData.companyZipCode}
+              onChange={handleInputChange}
+              leadingIcon={<Hash className="h-4 w-4" />}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-(--muted) mb-1">
+              Country
+            </label>
+            <div className="relative">
+              <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-(--muted)">
+                <Globe className="h-4 w-4" />
+              </span>
+              <Select
+                value={formData.companyCountry || undefined}
+                onValueChange={(value) =>
+                  setFormData((prev) => ({ ...prev, companyCountry: value }))
+                }
+              >
+                <SelectTrigger className="pl-9">
+                  <SelectValue placeholder="Select country" />
+                </SelectTrigger>
+                <SelectContent>
+                  {COUNTRIES.map((country) => (
+                    <SelectItem key={country} value={country}>
+                      {country}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </CardContent>
       </Card>
