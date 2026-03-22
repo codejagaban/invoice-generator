@@ -342,6 +342,170 @@ export function generateInvoiceHTML(
 }
 
 /**
+ * Generate email-safe HTML for invoice (inline styles, tables only — no flex/grid/style blocks)
+ */
+export function generateInvoiceEmailHTML(
+  invoice: Invoice,
+  company?: CompanyDetails,
+  account?: AccountDetails,
+): string {
+  const subtotal = invoice.items.reduce(
+    (sum, item) => sum + item.quantity * item.rate,
+    0,
+  );
+  const tax = (subtotal * (invoice.taxRate || 0)) / 100;
+  const total = subtotal + tax;
+
+  const cityLine = (city?: string, state?: string, zip?: string): string => {
+    const stateZip = [state, zip].filter(Boolean).join(" ");
+    const parts = [city, stateZip].filter(Boolean).join(", ");
+    return parts ? `<div style="margin:0;">${parts}</div>` : "";
+  };
+
+  return `
+    <table width="100%" cellpadding="0" cellspacing="0" style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;color:#000;background:#fff;max-width:600px;margin:0 auto;">
+      <tr>
+        <td style="padding:32px 28px;">
+
+          <!-- Header -->
+          <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;border-bottom:1px solid #e5e7eb;padding-bottom:20px;">
+            <tr>
+              <td style="vertical-align:top;width:50%;">
+                <div style="font-size:28px;font-weight:bold;color:#000;margin-bottom:4px;">INVOICE</div>
+                <div style="font-size:13px;color:#666;margin-bottom:12px;">Invoice #${invoice.invoiceNumber}</div>
+                <div style="font-size:12px;margin-bottom:4px;">
+                  <span style="color:#666;font-size:11px;font-weight:600;text-transform:uppercase;">Invoice Date</span><br/>
+                  ${formatDate(invoice.date)}
+                </div>
+                <div style="font-size:12px;">
+                  <span style="color:#666;font-size:11px;font-weight:600;text-transform:uppercase;">Due Date</span><br/>
+                  ${formatDate(invoice.dueDate)}
+                </div>
+              </td>
+              <td style="vertical-align:top;width:50%;text-align:right;">
+                ${company?.logo ? `<img src="${company.logo}" alt="${company.name}" style="max-height:50px;max-width:140px;margin-bottom:8px;" />` : ""}
+                ${company ? `<div style="font-size:16px;font-weight:bold;margin-bottom:4px;">${company.name}</div>` : ""}
+                <div style="font-size:11px;color:#666;line-height:1.5;">
+                  ${company ? `<div>${company.email}</div>` : ""}
+                  ${company?.phone ? `<div>${company.phone}</div>` : ""}
+                  ${company?.address ? `<div>${company.address}</div>` : ""}
+                  ${company ? cityLine(company.city, company.state, company.zipCode) : ""}
+                  ${company?.country ? `<div>${company.country}</div>` : ""}
+                </div>
+              </td>
+            </tr>
+          </table>
+
+          <!-- Bill To -->
+          <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
+            <tr>
+              <td>
+                <div style="font-size:11px;font-weight:600;text-transform:uppercase;color:#333;margin-bottom:8px;">Bill To:</div>
+                <table cellpadding="0" cellspacing="0">
+                  <tr>
+                    ${invoice.customer.logo ? `<td style="vertical-align:top;padding-right:10px;"><img src="${invoice.customer.logo}" alt="" style="width:40px;height:40px;border-radius:4px;object-fit:contain;" /></td>` : ""}
+                    <td style="vertical-align:top;font-size:12px;line-height:1.5;">
+                      <div style="font-weight:600;color:#333;">${invoice.customer.name}</div>
+                      ${invoice.customer.email ? `<div>${invoice.customer.email}</div>` : ""}
+                      ${invoice.customer.address ? `<div>${invoice.customer.address}</div>` : ""}
+                      ${cityLine(invoice.customer.city, invoice.customer.state, invoice.customer.zipCode)}
+                      ${invoice.customer.country ? `<div>${invoice.customer.country}</div>` : ""}
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+
+          <!-- Line Items -->
+          <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;font-size:13px;">
+            <tr style="background:#f7f7f7;">
+              <th style="padding:10px;text-align:left;font-weight:600;font-size:12px;border-bottom:1px solid #999;">Description</th>
+              <th style="padding:10px;text-align:right;font-weight:600;font-size:12px;border-bottom:1px solid #999;width:70px;">Qty</th>
+              <th style="padding:10px;text-align:right;font-weight:600;font-size:12px;border-bottom:1px solid #999;width:80px;">Rate</th>
+              <th style="padding:10px;text-align:right;font-weight:600;font-size:12px;border-bottom:1px solid #999;width:90px;">Amount</th>
+            </tr>
+            ${invoice.items
+              .map(
+                (item) => `
+            <tr>
+              <td style="padding:10px;border-bottom:1px solid #eee;">${item.description}</td>
+              <td style="padding:10px;text-align:right;border-bottom:1px solid #eee;">${item.quantity}</td>
+              <td style="padding:10px;text-align:right;border-bottom:1px solid #eee;">${formatCurrency(item.rate, invoice.currency)}</td>
+              <td style="padding:10px;text-align:right;border-bottom:1px solid #eee;">${formatCurrency(item.quantity * item.rate, invoice.currency)}</td>
+            </tr>`,
+              )
+              .join("")}
+          </table>
+
+          <!-- Totals -->
+          <table width="280" cellpadding="0" cellspacing="0" style="margin-left:auto;margin-bottom:28px;font-size:13px;">
+            <tr>
+              <td style="padding:8px 0;font-weight:600;border-bottom:1px solid #eee;">Subtotal</td>
+              <td style="padding:8px 0;text-align:right;border-bottom:1px solid #eee;">${formatCurrency(subtotal, invoice.currency)}</td>
+            </tr>
+            ${invoice.taxRate ? `
+            <tr>
+              <td style="padding:8px 0;font-weight:600;border-bottom:1px solid #eee;">Tax (${invoice.taxRate}%)</td>
+              <td style="padding:8px 0;text-align:right;border-bottom:1px solid #eee;">${formatCurrency(tax, invoice.currency)}</td>
+            </tr>` : ""}
+            <tr>
+              <td style="padding:12px 0;font-weight:bold;font-size:16px;border-top:1px solid #999;border-bottom:1px solid #999;">Total</td>
+              <td style="padding:12px 0;text-align:right;font-weight:bold;font-size:16px;border-top:1px solid #999;border-bottom:1px solid #999;">${formatCurrency(total, invoice.currency)}</td>
+            </tr>
+          </table>
+
+          ${invoice.notes ? `
+          <!-- Notes -->
+          <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
+            <tr>
+              <td style="padding-top:16px;border-top:1px solid #eee;font-size:12px;color:#666;">
+                <div style="font-weight:600;color:#333;margin-bottom:6px;">Notes</div>
+                <div style="line-height:1.6;">${invoice.notes.replace(/\n/g, "<br/>")}</div>
+              </td>
+            </tr>
+          </table>` : ""}
+
+          ${account ? `
+          <!-- Payment Details -->
+          <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
+            <tr>
+              <td style="padding-top:16px;border-top:1px solid #eee;">
+                <div style="font-size:11px;font-weight:600;text-transform:uppercase;color:#333;margin-bottom:10px;">Payment Details</div>
+                <table cellpadding="0" cellspacing="0" style="font-size:12px;">
+                  <tr>
+                    <td style="padding:4px 20px 4px 0;"><span style="color:#666;">Account Holder</span><br/>${account.accountHolderName}</td>
+                    <td style="padding:4px 0;"><span style="color:#666;">Bank Name</span><br/>${account.bankName}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:4px 20px 4px 0;"><span style="color:#666;">Account Number</span><br/>${account.accountNumber}</td>
+                    ${account.sortCode ? `<td style="padding:4px 0;"><span style="color:#666;">Sort Code</span><br/>${account.sortCode}</td>` : "<td></td>"}
+                  </tr>
+                  ${account.iban || account.swiftBic ? `<tr>
+                    ${account.iban ? `<td style="padding:4px 20px 4px 0;"><span style="color:#666;">IBAN</span><br/>${account.iban}</td>` : "<td></td>"}
+                    ${account.swiftBic ? `<td style="padding:4px 0;"><span style="color:#666;">SWIFT / BIC</span><br/>${account.swiftBic}</td>` : "<td></td>"}
+                  </tr>` : ""}
+                </table>
+              </td>
+            </tr>
+          </table>` : ""}
+
+          <!-- Footer -->
+          <table width="100%" cellpadding="0" cellspacing="0">
+            <tr>
+              <td style="padding-top:20px;border-top:1px solid #e5e7eb;font-size:12px;color:#999;text-align:center;">
+                Thank you for your business!
+              </td>
+            </tr>
+          </table>
+
+        </td>
+      </tr>
+    </table>
+  `;
+}
+
+/**
  * Download invoice as PDF (client-side)
  */
 export async function downloadInvoicePDF(

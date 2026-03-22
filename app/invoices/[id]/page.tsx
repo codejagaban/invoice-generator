@@ -10,11 +10,20 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { Pencil, Trash2, ArrowLeft, FileDown, Mail, CheckCircle2 } from "lucide-react";
 import Button from "@/app/components/shared/Button";
+import { InputWithRef as Input } from "@/app/components/shared/Input";
 import Card, {
   CardContent,
   CardHeader,
   CardTitle,
 } from "@/app/components/shared/Card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/app/components/shared/Dialog";
 import type { Invoice } from "@/app/lib/types";
 import {
   getInvoiceById,
@@ -30,7 +39,7 @@ import {
   isOverdue,
   isDueSoon,
 } from "@/app/lib/invoice";
-import { downloadInvoicePDF } from "@/app/lib/pdf";
+import { downloadInvoicePDF, generateInvoiceEmailHTML } from "@/app/lib/pdf";
 
 export default function InvoiceDetailPage() {
   const params = useParams();
@@ -40,6 +49,14 @@ export default function InvoiceDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isDownloadingPDF, setIsDownloadingPDF] = useState(false);
   const [isMarkingPaid, setIsMarkingPaid] = useState(false);
+  const [emailDialogOpen, setEmailDialogOpen] = useState(false);
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
+  const [emailForm, setEmailForm] = useState({
+    recipientEmail: "",
+    subject: "",
+    message: "",
+  });
+  const [emailResult, setEmailResult] = useState<{ success?: boolean; error?: string } | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -78,6 +95,62 @@ export default function InvoiceDetailPage() {
     const updated = await updateInvoice(id, { status: "paid" });
     if (updated) setInvoice(updated);
     setIsMarkingPaid(false);
+  };
+
+  const openEmailDialog = () => {
+    if (!invoice) return;
+    setEmailForm({
+      recipientEmail: invoice.customer.email || "",
+      subject: `Invoice ${invoice.invoiceNumber}`,
+      message: `Hi ${invoice.customer.name},\n\nPlease find your invoice ${invoice.invoiceNumber} below.\n\nThank you for your business.`,
+    });
+    setEmailResult(null);
+    setEmailDialogOpen(true);
+  };
+
+  const handleSendEmail = async () => {
+    if (!invoice) return;
+    setIsSendingEmail(true);
+    setEmailResult(null);
+
+    try {
+      const [company, account] = await Promise.all([
+        getDefaultCompanyDetails(),
+        getDefaultAccountDetails(),
+      ]);
+      const invoiceHtml = generateInvoiceEmailHTML(invoice, company || undefined, account || undefined);
+
+      const res = await fetch("/api/email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          recipientEmail: emailForm.recipientEmail,
+          subject: emailForm.subject,
+          message: emailForm.message,
+          invoiceHtml,
+          invoiceNumber: invoice.invoiceNumber,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setEmailResult({ error: data.error || "Failed to send email" });
+        return;
+      }
+
+      setEmailResult({ success: true });
+
+      // Mark invoice as sent if it's still a draft
+      if (invoice.status === "draft") {
+        const updated = await updateInvoice(id, { status: "sent" });
+        if (updated) setInvoice(updated);
+      }
+    } catch {
+      setEmailResult({ error: "Network error. Please try again." });
+    } finally {
+      setIsSendingEmail(false);
+    }
   };
 
   if (isLoading) {
@@ -336,14 +409,100 @@ export default function InvoiceDetailPage() {
               <FileDown className="h-4 w-4" />
               {isDownloadingPDF ? "Generating PDF..." : "Download PDF"}
             </Button>
-            <Button variant="secondary" disabled>
+            <Button variant="secondary" onClick={openEmailDialog}>
               <Mail className="h-4 w-4" />
-              Send Email{" "}
-              <span className="text-xs text-(--muted)">(Coming Soon)</span>
+              Send Email
             </Button>
           </div>
         </div>
       </main>
+
+      {/* Send Email Dialog */}
+      <Dialog open={emailDialogOpen} onOpenChange={setEmailDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Send Invoice via Email</DialogTitle>
+            <DialogDescription>
+              Send {invoice.invoiceNumber} to your client.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div>
+              <label className="block text-sm font-medium text-(--muted) mb-1.5">
+                Recipient Email
+              </label>
+              <Input
+                type="email"
+                value={emailForm.recipientEmail}
+                onChange={(e) =>
+                  setEmailForm((prev) => ({ ...prev, recipientEmail: e.target.value }))
+                }
+                placeholder="client@example.com"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-(--muted) mb-1.5">
+                Subject
+              </label>
+              <Input
+                type="text"
+                value={emailForm.subject}
+                onChange={(e) =>
+                  setEmailForm((prev) => ({ ...prev, subject: e.target.value }))
+                }
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-(--muted) mb-1.5">
+                Message (optional)
+              </label>
+              <textarea
+                value={emailForm.message}
+                onChange={(e) =>
+                  setEmailForm((prev) => ({ ...prev, message: e.target.value }))
+                }
+                rows={4}
+                className="w-full rounded-lg border border-(--border) bg-(--surface-raised) px-3 py-2 text-sm text-black dark:text-white placeholder:text-(--muted) focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white resize-none"
+              />
+            </div>
+
+            {emailResult?.error && (
+              <div className="rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
+                {emailResult.error}
+              </div>
+            )}
+            {emailResult?.success && (
+              <div className="rounded-lg border border-green-300 bg-green-50 p-3 text-sm text-green-700 dark:border-green-800 dark:bg-green-900/20 dark:text-green-400">
+                Email sent successfully!
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            {emailResult?.success ? (
+              <Button onClick={() => setEmailDialogOpen(false)}>Done</Button>
+            ) : (
+              <>
+                <Button
+                  variant="secondary"
+                  onClick={() => setEmailDialogOpen(false)}
+                  disabled={isSendingEmail}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleSendEmail}
+                  disabled={isSendingEmail || !emailForm.recipientEmail}
+                >
+                  <Mail className="h-4 w-4" />
+                  {isSendingEmail ? "Sending..." : "Send"}
+                </Button>
+              </>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
