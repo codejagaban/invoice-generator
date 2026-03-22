@@ -80,7 +80,7 @@ export default function Navigation() {
     </svg>
   );
 
-  // Top bar for home page (marketing) or not logged in
+  // Top bar for home page or unauthenticated users
   if (!session || pathname === "/") {
     return (
       <header className="border-b border-b-(--border) bg-(--surface) sticky top-0 z-50">
@@ -88,7 +88,39 @@ export default function Navigation() {
           <Link href="/">
             <div className="h-8 w-8">{LogoIcon}</div>
           </Link>
+
+          {/* Nav links — visible on non-home pages for guests */}
+          {pathname !== "/" && (
+            <div className="hidden sm:flex items-center gap-1">
+              {navItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    isActive(item.href)
+                      ? "bg-(--surface-raised) text-black dark:text-white"
+                      : "text-(--muted) hover:text-black dark:hover:text-white hover:bg-(--surface-raised)"
+                  }`}
+                >
+                  <span className="inline-flex items-center gap-2">
+                    <item.icon className="h-4 w-4" aria-hidden="true" />
+                    {item.label}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          )}
+
           <div className="flex items-center gap-3">
+            {pathname !== "/" && (
+              <Link
+                href="/invoices/create"
+                className="hidden sm:inline-flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg font-medium hover:bg-gray-900 dark:bg-white dark:text-black dark:hover:bg-gray-100 transition-colors text-sm"
+              >
+                <FilePlus2 className="h-4 w-4" />
+                New Invoice
+              </Link>
+            )}
             {status === "loading" ? (
               <div className="h-8 w-8 rounded-full bg-(--surface-raised) animate-pulse" />
             ) : session ? (
@@ -113,7 +145,7 @@ export default function Navigation() {
     );
   }
 
-  // Logged in — sidebar layout
+  // Authenticated — sidebar layout
   return (
     <>
       {/* Mobile top bar */}
@@ -190,49 +222,59 @@ export default function Navigation() {
 
         {/* User section at bottom */}
         <div className="border-t border-(--border) p-3">
-          <div className="relative" ref={dropdownRef}>
-            <button
-              onClick={() => setDropdownOpen((o) => !o)}
-              className="flex items-center gap-3 w-full rounded-lg px-3 py-2.5 hover:bg-(--surface-raised) transition-colors"
-              aria-haspopup="true"
-              aria-expanded={dropdownOpen}
-            >
-              {user?.image ? (
-                <Image
-                  src={user.image}
-                  alt={user.name ?? "User avatar"}
-                  width={32}
-                  height={32}
-                  className="h-8 w-8 rounded-full object-cover shrink-0"
-                />
-              ) : (
-                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-black text-white text-xs font-semibold dark:bg-white dark:text-black shrink-0">
-                  {initials}
-                </span>
-              )}
-              <div className="flex-1 min-w-0 text-left">
-                <p className="text-sm font-medium text-black dark:text-white truncate">
-                  {user?.name ?? "User"}
-                </p>
-                <p className="text-xs text-(--muted) truncate">
-                  {user?.email}
-                </p>
-              </div>
-              <ChevronDown className="h-3.5 w-3.5 text-(--muted) shrink-0" />
-            </button>
+          {session ? (
+            <div className="relative" ref={dropdownRef}>
+              <button
+                onClick={() => setDropdownOpen((o) => !o)}
+                className="flex items-center gap-3 w-full rounded-lg px-3 py-2.5 hover:bg-(--surface-raised) transition-colors"
+                aria-haspopup="true"
+                aria-expanded={dropdownOpen}
+              >
+                {user?.image ? (
+                  <Image
+                    src={user.image}
+                    alt={user.name ?? "User avatar"}
+                    width={32}
+                    height={32}
+                    className="h-8 w-8 rounded-full object-cover shrink-0"
+                  />
+                ) : (
+                  <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-black text-white text-xs font-semibold dark:bg-white dark:text-black shrink-0">
+                    {initials}
+                  </span>
+                )}
+                <div className="flex-1 min-w-0 text-left">
+                  <p className="text-sm font-medium text-black dark:text-white truncate">
+                    {user?.name ?? "User"}
+                  </p>
+                  <p className="text-xs text-(--muted) truncate">
+                    {user?.email}
+                  </p>
+                </div>
+                <ChevronDown className="h-3.5 w-3.5 text-(--muted) shrink-0" />
+              </button>
 
-            {dropdownOpen && (
-              <div className="absolute bottom-full left-0 mb-1.5 w-full rounded-xl border border-(--border) bg-(--surface) shadow-lg z-50 overflow-hidden">
-                <button
-                  onClick={() => signOut({ callbackUrl: "/" })}
-                  className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-black dark:text-white hover:bg-(--surface-raised) transition-colors"
-                >
-                  <LogOut className="h-4 w-4 text-(--muted)" />
-                  Sign out
-                </button>
-              </div>
-            )}
-          </div>
+              {dropdownOpen && (
+                <div className="absolute bottom-full left-0 mb-1.5 w-full rounded-xl border border-(--border) bg-(--surface) shadow-lg z-50 overflow-hidden">
+                  <button
+                    onClick={() => signOut({ callbackUrl: "/" })}
+                    className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-black dark:text-white hover:bg-(--surface-raised) transition-colors"
+                  >
+                    <LogOut className="h-4 w-4 text-(--muted)" />
+                    Sign out
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <Link
+              href="/sign-in"
+              className="flex items-center gap-3 w-full rounded-lg px-3 py-2.5 hover:bg-(--surface-raised) transition-colors text-sm font-medium text-(--muted) hover:text-black dark:hover:text-white"
+            >
+              <LogIn className="h-4 w-4 shrink-0" />
+              Sign in
+            </Link>
+          )}
         </div>
       </aside>
     </>
