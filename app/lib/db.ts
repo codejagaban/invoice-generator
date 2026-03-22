@@ -1,9 +1,10 @@
 /**
  * IndexedDB helper
  * Low-level promise wrappers used by storage.ts
+ * Database is scoped per user to isolate data.
  */
 
-const DB_NAME = "invoice_generator_db";
+const DB_PREFIX = "invoice_generator_db";
 const DB_VERSION = 3;
 
 export const STORES = {
@@ -16,12 +17,35 @@ export const STORES = {
 } as const;
 
 let dbInstance: IDBDatabase | null = null;
+let currentScope: string = "guest";
+
+/**
+ * Set the user scope for the database.
+ * Each user gets their own IndexedDB database.
+ */
+export function setDbScope(userId: string) {
+  const newScope = userId || "guest";
+  if (newScope === currentScope) return;
+
+  // Close existing connection so the next call opens the right DB
+  if (dbInstance) {
+    dbInstance.close();
+    dbInstance = null;
+  }
+  currentScope = newScope;
+}
+
+export function getDbScope(): string {
+  return currentScope;
+}
 
 export function openDB(): Promise<IDBDatabase> {
   if (dbInstance) return Promise.resolve(dbInstance);
 
+  const dbName = `${DB_PREFIX}_${currentScope}`;
+
   return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
+    const request = indexedDB.open(dbName, DB_VERSION);
 
     request.onupgradeneeded = (event) => {
       const db = (event.target as IDBOpenDBRequest).result;
