@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import AppShell from "@/app/components/AppShell";
+import DbScopeProvider from "@/app/components/DbScopeProvider";
 import SessionProviderWrapper from "@/app/components/SessionProviderWrapper";
 import "./globals.css";
 
@@ -23,7 +24,9 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.variable} antialiased`}>
         <SessionProviderWrapper>
-          <AppShell>{children}</AppShell>
+          <DbScopeProvider>
+            <AppShell>{children}</AppShell>
+          </DbScopeProvider>
         </SessionProviderWrapper>
       </body>
     </html>
