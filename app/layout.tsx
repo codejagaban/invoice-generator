@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import Navigation from "@/app/components/Navigation";
+import AppShell from "@/app/components/AppShell";
 import SessionProviderWrapper from "@/app/components/SessionProviderWrapper";
 import "./globals.css";
 
@@ -23,8 +23,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.variable} antialiased`}>
         <SessionProviderWrapper>
-          <Navigation />
-          {children}
+          <AppShell>{children}</AppShell>
         </SessionProviderWrapper>
       </body>
     </html>

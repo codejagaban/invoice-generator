@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
 import {
-  House,
   FileText,
   Users,
   LayoutTemplate,
@@ -16,12 +15,15 @@ import {
   LogIn,
   LogOut,
   ChevronDown,
+  Menu,
+  X,
 } from "lucide-react";
 
 export default function Navigation() {
   const pathname = usePathname();
   const { data: session, status } = useSession();
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const isActive = (href: string) => {
@@ -30,7 +32,6 @@ export default function Navigation() {
   };
 
   const navItems = [
-    { href: "/", label: "Home", icon: House },
     { href: "/invoices", label: "Invoices", icon: FileText },
     { href: "/customers", label: "Customers", icon: Users },
     { href: "/templates", label: "Templates", icon: LayoutTemplate },
@@ -38,7 +39,7 @@ export default function Navigation() {
     { href: "/company", label: "Settings", icon: Settings2 },
   ] as const;
 
-  // Close dropdown on outside click — must be before any early returns
+  // Close dropdown on outside click
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (
@@ -52,7 +53,12 @@ export default function Navigation() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Hide on auth pages — after all hooks
+  // Close mobile sidebar on route change
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
+
+  // Hide on auth pages
   if (pathname === "/sign-in" || pathname === "/sign-up") return null;
 
   const user = session?.user;
@@ -65,110 +71,170 @@ export default function Navigation() {
         .toUpperCase()
     : (user?.email?.[0] ?? "U").toUpperCase();
 
-  return (
-    <header className="border-b border-b-(--border) bg-(--surface) sticky top-0 z-50">
-      <nav className="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between">
-        {/* Logo */}
-        <Link href="/" className="flex items-center gap-2">
-          <div className="text-xl font-bold text-black dark:text-white">
-            Invoice
-          </div>
-          <div className="text-xl font-light text-(--muted)">Generator</div>
-        </Link>
+  const LogoIcon = (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" fill="none" className="h-full w-full">
+      <rect width="40" height="40" rx="10" className="fill-black dark:fill-white"/>
+      <path d="M12 8h10l6 6v18a2 2 0 0 1-2 2H14a2 2 0 0 1-2-2V8z" fill="none" className="stroke-white dark:stroke-black" strokeWidth="1.8" strokeLinejoin="round"/>
+      <path d="M22 8v6h6" fill="none" className="stroke-white dark:stroke-black" strokeWidth="1.8" strokeLinejoin="round"/>
+      <path d="M20 17v10M17 19.5c0-1.1.9-2 2-2h2c1.1 0 2 .9 2 2s-.9 2-2 2h-2c-1.1 0-2 .9-2 2s.9 2 2 2h2c1.1 0 2-.9 2-2" fill="none" className="stroke-white dark:stroke-black" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
 
-        {/* Nav Items */}
-        <div className="flex items-center gap-1 sm:gap-2">
+  // Top bar for home page (marketing) or not logged in
+  if (!session || pathname === "/") {
+    return (
+      <header className="border-b border-b-(--border) bg-(--surface) sticky top-0 z-50">
+        <nav className="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between">
+          <Link href="/">
+            <div className="h-8 w-8">{LogoIcon}</div>
+          </Link>
+          <div className="flex items-center gap-3">
+            {status === "loading" ? (
+              <div className="h-8 w-8 rounded-full bg-(--surface-raised) animate-pulse" />
+            ) : session ? (
+              <Link
+                href="/invoices"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg font-medium hover:bg-gray-900 dark:bg-white dark:text-black dark:hover:bg-gray-100 transition-colors text-sm"
+              >
+                Dashboard
+              </Link>
+            ) : (
+              <Link
+                href="/sign-in"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-(--border) text-sm font-medium text-black dark:text-white hover:bg-(--surface-raised) transition-colors"
+              >
+                <LogIn className="h-4 w-4" />
+                Sign in
+              </Link>
+            )}
+          </div>
+        </nav>
+      </header>
+    );
+  }
+
+  // Logged in — sidebar layout
+  return (
+    <>
+      {/* Mobile top bar */}
+      <header className="lg:hidden border-b border-b-(--border) bg-(--surface) sticky top-0 z-50">
+        <div className="flex items-center justify-between px-4 py-3">
+          <button
+            onClick={() => setMobileOpen(true)}
+            className="p-2 rounded-lg hover:bg-(--surface-raised) transition-colors"
+          >
+            <Menu className="h-5 w-5 text-black dark:text-white" />
+          </button>
+          <Link href="/">
+            <div className="h-7 w-7">{LogoIcon}</div>
+          </Link>
+          <div className="w-9" /> {/* spacer for centering */}
+        </div>
+      </header>
+
+      {/* Mobile overlay */}
+      {mobileOpen && (
+        <div
+          className="lg:hidden fixed inset-0 bg-black/40 z-50"
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside
+        className={`fixed top-0 left-0 z-50 h-full w-64 border-r border-(--border) bg-(--surface) flex flex-col transition-transform duration-200 lg:translate-x-0 ${
+          mobileOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        {/* Sidebar header */}
+        <div className="flex items-center justify-between px-5 py-5 border-b border-(--border)">
+          <Link href="/">
+            <div className="h-8 w-8">{LogoIcon}</div>
+          </Link>
+          <button
+            onClick={() => setMobileOpen(false)}
+            className="lg:hidden p-1.5 rounded-lg hover:bg-(--surface-raised) transition-colors"
+          >
+            <X className="h-4 w-4 text-(--muted)" />
+          </button>
+        </div>
+
+        {/* New Invoice button */}
+        <div className="px-4 pt-5 pb-2">
+          <Link
+            href="/invoices/create"
+            className="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-black text-white rounded-lg font-medium hover:bg-gray-900 dark:bg-white dark:text-black dark:hover:bg-gray-100 transition-colors text-sm"
+          >
+            <FilePlus2 className="h-4 w-4" />
+            New Invoice
+          </Link>
+        </div>
+
+        {/* Nav items */}
+        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
           {navItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className={`px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                 isActive(item.href)
                   ? "bg-(--surface-raised) text-black dark:text-white"
                   : "text-(--muted) hover:text-black dark:hover:text-white hover:bg-(--surface-raised)"
               }`}
             >
-              <span className="inline-flex items-center gap-2">
-                <item.icon className="h-4 w-4" aria-hidden="true" />
-                {item.label}
-              </span>
+              <item.icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+              {item.label}
             </Link>
           ))}
-        </div>
+        </nav>
 
-        {/* Right side */}
-        <div className="flex items-center gap-3">
-          {session && (
-            <Link
-              href="/invoices/create"
-              className="hidden sm:inline-flex items-center gap-2 ml-4 px-4 py-2 bg-black text-white rounded-lg font-medium hover:bg-gray-900 dark:bg-white dark:text-black dark:hover:bg-gray-100 transition-colors text-sm"
+        {/* User section at bottom */}
+        <div className="border-t border-(--border) p-3">
+          <div className="relative" ref={dropdownRef}>
+            <button
+              onClick={() => setDropdownOpen((o) => !o)}
+              className="flex items-center gap-3 w-full rounded-lg px-3 py-2.5 hover:bg-(--surface-raised) transition-colors"
+              aria-haspopup="true"
+              aria-expanded={dropdownOpen}
             >
-              <FilePlus2 className="h-4 w-4" />
-              New Invoice
-            </Link>
-          )}
-
-          {/* User section */}
-          {status === "loading" ? (
-            <div className="h-8 w-8 rounded-full bg-(--surface-raised) animate-pulse" />
-          ) : !session ? (
-            <Link
-              href="/sign-in"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-(--border) text-sm font-medium text-black dark:text-white hover:bg-(--surface-raised) transition-colors"
-            >
-              <LogIn className="h-4 w-4" />
-              Sign in
-            </Link>
-          ) : (
-            <div className="relative" ref={dropdownRef}>
-              <button
-                onClick={() => setDropdownOpen((o) => !o)}
-                className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-(--surface-raised) transition-colors"
-                aria-haspopup="true"
-                aria-expanded={dropdownOpen}
-              >
-                {user?.image ? (
-                  <Image
-                    src={user.image}
-                    alt={user.name ?? "User avatar"}
-                    width={28}
-                    height={28}
-                    className="h-7 w-7 rounded-full object-cover"
-                  />
-                ) : (
-                  <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-black text-white text-xs font-semibold dark:bg-white dark:text-black">
-                    {initials}
-                  </span>
-                )}
-                <span className="hidden sm:block text-sm font-medium text-black dark:text-white max-w-32 truncate">
-                  {user?.name ?? user?.email}
+              {user?.image ? (
+                <Image
+                  src={user.image}
+                  alt={user.name ?? "User avatar"}
+                  width={32}
+                  height={32}
+                  className="h-8 w-8 rounded-full object-cover shrink-0"
+                />
+              ) : (
+                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-black text-white text-xs font-semibold dark:bg-white dark:text-black shrink-0">
+                  {initials}
                 </span>
-                <ChevronDown className="h-3.5 w-3.5 text-(--muted)" />
-              </button>
-
-              {dropdownOpen && (
-                <div className="absolute right-0 mt-1.5 w-52 rounded-xl border border-(--border) bg-(--surface) shadow-lg z-50 overflow-hidden">
-                  <div className="px-4 py-3 border-b border-(--border)">
-                    <p className="text-sm font-medium text-black dark:text-white truncate">
-                      {user?.name}
-                    </p>
-                    <p className="text-xs text-(--muted) truncate">
-                      {user?.email}
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => signOut({ callbackUrl: "/" })}
-                    className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-black dark:text-white hover:bg-(--surface-raised) transition-colors"
-                  >
-                    <LogOut className="h-4 w-4 text-(--muted)" />
-                    Sign out
-                  </button>
-                </div>
               )}
-            </div>
-          )}
+              <div className="flex-1 min-w-0 text-left">
+                <p className="text-sm font-medium text-black dark:text-white truncate">
+                  {user?.name ?? "User"}
+                </p>
+                <p className="text-xs text-(--muted) truncate">
+                  {user?.email}
+                </p>
+              </div>
+              <ChevronDown className="h-3.5 w-3.5 text-(--muted) shrink-0" />
+            </button>
+
+            {dropdownOpen && (
+              <div className="absolute bottom-full left-0 mb-1.5 w-full rounded-xl border border-(--border) bg-(--surface) shadow-lg z-50 overflow-hidden">
+                <button
+                  onClick={() => signOut({ callbackUrl: "/" })}
+                  className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-black dark:text-white hover:bg-(--surface-raised) transition-colors"
+                >
+                  <LogOut className="h-4 w-4 text-(--muted)" />
+                  Sign out
+                </button>
+              </div>
+            )}
+          </div>
         </div>
-      </nav>
-    </header>
+      </aside>
+    </>
   );
 }
