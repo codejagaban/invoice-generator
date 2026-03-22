@@ -70,10 +70,8 @@ export default function InvoiceDetailPage() {
     if (!invoice) return;
     try {
       setIsDownloadingPDF(true);
-      const [company, account] = await Promise.all([
-        getDefaultCompanyDetails(),
-        getDefaultAccountDetails(),
-      ]);
+      const account = await getDefaultAccountDetails();
+      const company = invoice.company || (await getDefaultCompanyDetails());
       await downloadInvoicePDF(invoice, company || undefined, account || undefined);
     } catch (error) {
       alert("Failed to download PDF. Please try again.");
@@ -114,10 +112,8 @@ export default function InvoiceDetailPage() {
     setEmailResult(null);
 
     try {
-      const [company, account] = await Promise.all([
-        getDefaultCompanyDetails(),
-        getDefaultAccountDetails(),
-      ]);
+      const account = await getDefaultAccountDetails();
+      const company = invoice.company || (await getDefaultCompanyDetails());
       const invoiceHtml = generateInvoiceEmailHTML(invoice, company || undefined, account || undefined);
 
       const res = await fetch("/api/email", {

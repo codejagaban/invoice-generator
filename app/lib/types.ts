@@ -33,6 +33,7 @@ export interface Invoice {
   dueDate: string;
   status: InvoiceStatus;
   customer: Customer;
+  company?: CompanyDetails;
   items: InvoiceItem[];
   notes?: string;
   taxRate?: number;
