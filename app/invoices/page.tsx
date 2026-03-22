@@ -5,9 +5,9 @@
 
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { FilePlus2 } from "lucide-react";
+import { FilePlus2, CheckCircle2 } from "lucide-react";
 import Button from "@/app/components/shared/Button";
 import { InputWithRef as Input } from "@/app/components/shared/Input";
 import Card from "@/app/components/shared/Card";
@@ -19,7 +19,7 @@ import {
   SelectValue,
 } from "@/app/components/shared/Select";
 import type { Invoice } from "@/app/lib/types";
-import { getInvoices, getSettings } from "@/app/lib/storage";
+import { getInvoices, getSettings, updateInvoice } from "@/app/lib/storage";
 import {
   formatDate,
   formatCurrency,
@@ -35,6 +35,20 @@ export default function InvoicesDashboardPage() {
   >("all");
   const [sortBy, setSortBy] = useState<"date" | "amount" | "name">("date");
   const [defaultCurrency, setDefaultCurrency] = useState("GBP");
+  const [markingPaidId, setMarkingPaidId] = useState<string | null>(null);
+
+  const handleMarkAsPaid = async (e: React.MouseEvent, invoiceId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setMarkingPaidId(invoiceId);
+    const updated = await updateInvoice(invoiceId, { status: "paid" });
+    if (updated) {
+      setInvoices((prev) =>
+        prev.map((inv) => (inv.id === invoiceId ? updated : inv)),
+      );
+    }
+    setMarkingPaidId(null);
+  };
 
   useEffect(() => {
     (async () => {
@@ -271,13 +285,27 @@ export default function InvoicesDashboardPage() {
                             <span>{formatDate(invoice.date)}</span>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <p className="font-semibold text-black dark:text-white">
-                            {formatCurrency(amount, invoice.currency)}
-                          </p>
-                          <p className="text-sm text-(--muted)">
-                            Due: {formatDate(invoice.dueDate)}
-                          </p>
+                        <div className="flex items-center gap-3">
+                          <div className="text-right">
+                            <p className="font-semibold text-black dark:text-white">
+                              {formatCurrency(amount, invoice.currency)}
+                            </p>
+                            <p className="text-sm text-(--muted)">
+                              Due: {formatDate(invoice.dueDate)}
+                            </p>
+                          </div>
+                          {invoice.status !== "paid" && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="shrink-0 text-green-600 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-900/20"
+                              onClick={(e) => handleMarkAsPaid(e, invoice.id)}
+                              disabled={markingPaidId === invoice.id}
+                              title="Mark as paid"
+                            >
+                              <CheckCircle2 className="h-5 w-5" />
+                            </Button>
+                          )}
                         </div>
                       </div>
                     </Card>

@@ -8,7 +8,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { Pencil, Trash2, ArrowLeft, FileDown, Mail } from "lucide-react";
+import { Pencil, Trash2, ArrowLeft, FileDown, Mail, CheckCircle2 } from "lucide-react";
 import Button from "@/app/components/shared/Button";
 import Card, {
   CardContent,
@@ -19,6 +19,7 @@ import type { Invoice } from "@/app/lib/types";
 import {
   getInvoiceById,
   deleteInvoice,
+  updateInvoice,
   getDefaultCompanyDetails,
   getDefaultAccountDetails,
 } from "@/app/lib/storage";
@@ -38,6 +39,7 @@ export default function InvoiceDetailPage() {
   const [invoice, setInvoice] = useState<Invoice | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isDownloadingPDF, setIsDownloadingPDF] = useState(false);
+  const [isMarkingPaid, setIsMarkingPaid] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -68,6 +70,14 @@ export default function InvoiceDetailPage() {
     if (!confirm("Are you sure you want to delete this invoice?")) return;
     await deleteInvoice(id);
     router.push("/invoices");
+  };
+
+  const handleMarkAsPaid = async () => {
+    if (!invoice) return;
+    setIsMarkingPaid(true);
+    const updated = await updateInvoice(id, { status: "paid" });
+    if (updated) setInvoice(updated);
+    setIsMarkingPaid(false);
   };
 
   if (isLoading) {
@@ -305,13 +315,23 @@ export default function InvoiceDetailPage() {
           )}
 
           {/* Actions */}
-          <div className="flex gap-3">
+          <div className="flex flex-wrap gap-3">
             <Link href="/invoices">
               <Button variant="secondary">
                 <ArrowLeft className="h-4 w-4" />
                 Back to Invoices
               </Button>
             </Link>
+            {invoice.status !== "paid" && (
+              <Button
+                onClick={handleMarkAsPaid}
+                disabled={isMarkingPaid}
+                className="bg-green-600 hover:bg-green-700 text-white"
+              >
+                <CheckCircle2 className="h-4 w-4" />
+                {isMarkingPaid ? "Updating..." : "Mark as Paid"}
+              </Button>
+            )}
             <Button onClick={handleDownloadPDF} disabled={isDownloadingPDF}>
               <FileDown className="h-4 w-4" />
               {isDownloadingPDF ? "Generating PDF..." : "Download PDF"}
