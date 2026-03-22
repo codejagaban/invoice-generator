@@ -18,7 +18,7 @@ function SignInForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
-  async function handleCredentials(e: React.FormEvent) {
+  async function handleCredentials(e: React.SyntheticEvent) {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
