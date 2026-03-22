@@ -100,8 +100,27 @@ export default function CustomersPage() {
 
     const reader = new FileReader();
     reader.onload = (ev) => {
-      setLogo(ev.target?.result as string);
-      setLogoError(undefined);
+      const dataUrl = ev.target?.result as string;
+      // Convert SVG to PNG for html2canvas/PDF compatibility
+      if (file.type === "image/svg+xml") {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          canvas.width = img.naturalWidth || 200;
+          canvas.height = img.naturalHeight || 200;
+          const ctx = canvas.getContext("2d");
+          ctx?.drawImage(img, 0, 0);
+          setLogo(canvas.toDataURL("image/png"));
+          setLogoError(undefined);
+        };
+        img.onerror = () => {
+          setLogoError("Failed to process SVG image");
+        };
+        img.src = dataUrl;
+      } else {
+        setLogo(dataUrl);
+        setLogoError(undefined);
+      }
     };
     reader.readAsDataURL(file);
   };
@@ -175,7 +194,7 @@ export default function CustomersPage() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

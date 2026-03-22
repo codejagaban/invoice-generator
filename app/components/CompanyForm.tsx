@@ -52,7 +52,22 @@ export default function CompanyForm({
 
     const reader = new FileReader();
     reader.onload = (ev) => {
-      setLogo(ev.target?.result as string);
+      const dataUrl = ev.target?.result as string;
+      // Convert SVG to PNG for html2canvas/PDF compatibility
+      if (file.type === "image/svg+xml") {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          canvas.width = img.naturalWidth || 200;
+          canvas.height = img.naturalHeight || 200;
+          const ctx = canvas.getContext("2d");
+          ctx?.drawImage(img, 0, 0);
+          setLogo(canvas.toDataURL("image/png"));
+        };
+        img.src = dataUrl;
+      } else {
+        setLogo(dataUrl);
+      }
     };
     reader.readAsDataURL(file);
   };
@@ -74,7 +89,7 @@ export default function CompanyForm({
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setSubmitError(null);
