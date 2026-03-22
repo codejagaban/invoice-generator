@@ -234,12 +234,15 @@ export function generateInvoiceHTML(
           <!-- Customer Info -->
           <section>
             <div class="section-title">Bill To:</div>
-            <div class="customer-info">
-              <div class="customer-label">${invoice.customer.name}</div>
-              ${invoice.customer.email ? `<div>${invoice.customer.email}</div>` : ""}
-              ${invoice.customer.address ? `<div>${invoice.customer.address}</div>` : ""}
-              ${cityLine(invoice.customer.city, invoice.customer.state, invoice.customer.zipCode)}
-              ${invoice.customer.country ? `<div>${invoice.customer.country}</div>` : ""}
+            <div class="customer-info" style="display: flex; gap: 12px; align-items: flex-start;">
+              ${invoice.customer.logo ? `<img src="${invoice.customer.logo}" alt="${invoice.customer.name} logo" style="max-height: 48px; max-width: 48px; object-fit: contain; border-radius: 4px; flex-shrink: 0;" />` : ""}
+              <div>
+                <div class="customer-label">${invoice.customer.name}</div>
+                ${invoice.customer.email ? `<div>${invoice.customer.email}</div>` : ""}
+                ${invoice.customer.address ? `<div>${invoice.customer.address}</div>` : ""}
+                ${cityLine(invoice.customer.city, invoice.customer.state, invoice.customer.zipCode)}
+                ${invoice.customer.country ? `<div>${invoice.customer.country}</div>` : ""}
+              </div>
             </div>
           </section>
 

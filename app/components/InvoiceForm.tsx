@@ -133,6 +133,7 @@ export default function InvoiceForm({
     customerState: initialData?.customer.state || "",
     customerZipCode: initialData?.customer.zipCode || "",
     customerCountry: initialData?.customer.country || "United Kingdom",
+    customerLogo: initialData?.customer.logo || "",
     currency: initialData?.currency || "GBP",
     notes: initialData?.notes || "",
     taxRate: initialData?.taxRate || 0,
@@ -221,6 +222,7 @@ export default function InvoiceForm({
       customerState: selected.state,
       customerZipCode: selected.zipCode,
       customerCountry: selected.country,
+      customerLogo: selected.logo || "",
     }));
   };
 
@@ -342,6 +344,7 @@ export default function InvoiceForm({
           state: formData.customerState,
           zipCode: formData.customerZipCode,
           country: formData.customerCountry,
+          logo: formData.customerLogo || undefined,
         },
         items,
         notes: formData.notes,
