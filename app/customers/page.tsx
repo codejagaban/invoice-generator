@@ -6,6 +6,7 @@
  */
 
 import { useEffect, useRef, useState } from "react";
+import { useDbReady } from "@/app/components/DbScopeProvider";
 import {
   User,
   Mail,
@@ -71,6 +72,7 @@ const COUNTRIES = [
 ];
 
 export default function CustomersPage() {
+  const dbReady = useDbReady();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -134,12 +136,13 @@ export default function CustomersPage() {
   };
 
   useEffect(() => {
+    if (!dbReady) return;
     (async () => {
       const data = await getCustomers();
       setCustomers(data);
       setIsLoading(false);
     })();
-  }, []);
+  }, [dbReady]);
 
   const resetForm = () => {
     setEditingId(null);

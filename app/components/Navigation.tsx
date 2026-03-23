@@ -24,7 +24,10 @@ export default function Navigation() {
   const { data: session, status } = useSession();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => { setMounted(true); }, []);
 
   const isActive = (href: string) => {
     if (href === "/") return pathname === "/";
@@ -79,8 +82,8 @@ export default function Navigation() {
     </svg>
   );
 
-  // Top bar for home page or unauthenticated users
-  if (!session || pathname === "/") {
+  // Top bar for home page, unauthenticated users, or before mount (SSR match)
+  if (!mounted || !session || pathname === "/") {
     return (
       <header className="border-b border-b-(--border) bg-(--surface) sticky top-0 z-50">
         <nav className="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between">

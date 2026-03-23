@@ -26,6 +26,7 @@ import {
   isOverdue,
   isDueSoon,
 } from "@/app/lib/invoice";
+import { useDbReady } from "@/app/components/DbScopeProvider";
 import { InvoiceListSkeleton } from "@/app/components/shared/Skeleton";
 import StatusBadge from "@/app/components/shared/StatusBadge";
 import EmptyState from "@/app/components/shared/EmptyState";
@@ -33,6 +34,7 @@ import MiniChart, { groupByDay } from "@/app/components/shared/MiniChart";
 import { FileText } from "lucide-react";
 
 export default function InvoicesDashboardPage() {
+  const dbReady = useDbReady();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -57,13 +59,14 @@ export default function InvoicesDashboardPage() {
   };
 
   useEffect(() => {
+    if (!dbReady) return;
     (async () => {
       const [data, settings] = await Promise.all([getInvoices(), getSettings()]);
       setInvoices(data);
       setDefaultCurrency(settings.defaultCurrency);
       setIsLoading(false);
     })();
-  }, []);
+  }, [dbReady]);
   const filteredInvoices = useMemo(() => {
     let filtered = invoices;
 
