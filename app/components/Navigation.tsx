@@ -112,15 +112,13 @@ export default function Navigation() {
           )}
 
           <div className="flex items-center gap-3">
-            {pathname !== "/" && (
-              <Link
-                href="/invoices/create"
-                className="hidden sm:inline-flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg font-medium hover:bg-gray-900 dark:bg-white dark:text-black dark:hover:bg-gray-100 transition-colors text-sm"
-              >
-                <FilePlus2 className="h-4 w-4" />
-                New Invoice
-              </Link>
-            )}
+            <Link
+              href="/invoices/create"
+              className="hidden sm:inline-flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg font-medium hover:bg-gray-900 dark:bg-white dark:text-black dark:hover:bg-gray-100 transition-colors text-sm"
+            >
+              <FilePlus2 className="h-4 w-4" />
+              New Invoice
+            </Link>
             {status === "loading" ? (
               <div className="h-8 w-8 rounded-full bg-(--surface-raised) animate-pulse" />
             ) : session ? (
