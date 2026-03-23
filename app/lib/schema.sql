@@ -8,6 +8,8 @@ CREATE TABLE IF NOT EXISTS users (
   email_verified TIMESTAMPTZ,
   image          TEXT,
   password       TEXT,
+  is_anonymous   BOOLEAN NOT NULL DEFAULT false,
+  expires_at     TIMESTAMPTZ,
   created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
