@@ -41,8 +41,10 @@ import {
   isDueSoon,
 } from "@/app/lib/invoice";
 import { downloadInvoicePDF, generateInvoiceEmailHTML } from "@/app/lib/pdf";
+import { useDbReady } from "@/app/components/DbScopeProvider";
 
 export default function InvoiceDetailPage() {
+  const dbReady = useDbReady();
   const params = useParams();
   const router = useRouter();
   const id = params.id as string;
@@ -60,12 +62,13 @@ export default function InvoiceDetailPage() {
   const [emailResult, setEmailResult] = useState<{ success?: boolean; error?: string } | null>(null);
 
   useEffect(() => {
+    if (!dbReady) return;
     (async () => {
       const inv = await getInvoiceById(id);
       setInvoice(inv);
       setIsLoading(false);
     })();
-  }, [id]);
+  }, [id, dbReady]);
 
   const handleDownloadPDF = async () => {
     if (!invoice) return;

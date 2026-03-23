@@ -7,6 +7,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useDbReady } from "@/app/components/DbScopeProvider";
 import Link from "next/link";
 import { FilePlus2, LayoutTemplate, Trash2, BookTemplate } from "lucide-react";
 import Button from "@/app/components/shared/Button";
@@ -22,17 +23,19 @@ import { TemplateListSkeleton } from "@/app/components/shared/Skeleton";
 import EmptyState from "@/app/components/shared/EmptyState";
 
 export default function TemplatesPage() {
+  const dbReady = useDbReady();
   const router = useRouter();
   const [templates, setTemplates] = useState<InvoiceTemplate[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    if (!dbReady) return;
     (async () => {
       const data = await getTemplates();
       setTemplates(data);
       setIsLoading(false);
     })();
-  }, []);
+  }, [dbReady]);
 
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this template?")) return;

@@ -10,8 +10,10 @@ import { useParams, useRouter } from "next/navigation";
 import InvoiceForm from "@/app/components/InvoiceForm";
 import type { Invoice } from "@/app/lib/types";
 import { getInvoiceById, updateInvoice } from "@/app/lib/storage";
+import { useDbReady } from "@/app/components/DbScopeProvider";
 
 export default function EditInvoicePage() {
+  const dbReady = useDbReady();
   const params = useParams();
   const router = useRouter();
   const id = params.id as string;
@@ -20,6 +22,7 @@ export default function EditInvoicePage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!dbReady) return;
     (async () => {
       const inv = await getInvoiceById(id);
       if (!inv) {
@@ -28,7 +31,7 @@ export default function EditInvoicePage() {
       setInvoice(inv);
       setIsLoading(false);
     })();
-  }, [id]);
+  }, [id, dbReady]);
 
   const handleSubmit = async (updatedInvoice: Invoice) => {
     try {
