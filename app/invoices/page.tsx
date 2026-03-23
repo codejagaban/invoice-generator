@@ -156,6 +156,7 @@ export default function InvoicesDashboardPage() {
                 </div>
                 <MiniChart
                   data={groupByDay(invoices.map((inv) => inv.createdAt))}
+                  color="#8b5cf6"
                   className="w-20"
                 />
               </div>
@@ -172,7 +173,7 @@ export default function InvoicesDashboardPage() {
                 </div>
                 <MiniChart
                   data={groupByDay(invoices.map((inv) => inv.createdAt))}
-                  color="#3b82f6"
+                  color="#0ea5e9"
                   className="w-20"
                 />
               </div>
@@ -181,7 +182,7 @@ export default function InvoicesDashboardPage() {
               <div className="flex items-start justify-between gap-4">
                 <div className="space-y-1">
                   <p className="text-xs font-medium uppercase tracking-widest text-(--muted)">Paid</p>
-                  <p className="font-mono text-3xl font-bold tabular-nums tracking-tight text-green-600 dark:text-green-400">
+                  <p className="font-mono text-3xl font-bold tabular-nums tracking-tight text-black dark:text-white">
                     {invoices.filter((inv) => inv.status === "paid").length}
                   </p>
                 </div>
@@ -191,7 +192,7 @@ export default function InvoicesDashboardPage() {
                       .filter((inv) => inv.status === "paid")
                       .map((inv) => inv.updatedAt),
                   )}
-                  color="#22c55e"
+                  color="#10b981"
                   className="w-20"
                 />
               </div>
@@ -200,7 +201,7 @@ export default function InvoicesDashboardPage() {
               <div className="flex items-start justify-between gap-4">
                 <div className="space-y-1">
                   <p className="text-xs font-medium uppercase tracking-widest text-(--muted)">Overdue</p>
-                  <p className="font-mono text-3xl font-bold tabular-nums tracking-tight text-red-600 dark:text-red-400">
+                  <p className="font-mono text-3xl font-bold tabular-nums tracking-tight text-black dark:text-white">
                     {invoices.filter((inv) => isOverdue(inv.dueDate)).length}
                   </p>
                 </div>
@@ -210,7 +211,7 @@ export default function InvoicesDashboardPage() {
                       .filter((inv) => isOverdue(inv.dueDate))
                       .map((inv) => inv.dueDate),
                   )}
-                  color="#ef4444"
+                  color="#f43f5e"
                   className="w-20"
                 />
               </div>
