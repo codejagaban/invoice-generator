@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { setDbScope } from "@/app/lib/db";
+import { pushToCloud, pullFromCloud } from "@/app/lib/sync";
 
 const SCOPE_KEY = "db_scope";
+const SYNCED_KEY = "db_synced";
 
 function getSavedScope(): string | null {
   if (typeof window === "undefined") return null;
@@ -15,9 +17,11 @@ function getSavedScope(): string | null {
  * Syncs the IndexedDB scope with the current user session.
  * Authenticated users get an isolated database; guests get a shared "guest" DB.
  *
- * Key safeguard: once a user scope is set, we never downgrade to "guest"
- * during the same browser session. This prevents data loss when the
- * session briefly returns null during token refresh or redeployment.
+ * On login:
+ * - Pulls cloud data into IndexedDB if local is empty (new device)
+ * - Pushes IndexedDB data to cloud for backup
+ *
+ * On every save (via storage.ts), data is also pushed to cloud.
  */
 export default function DbScopeProvider({
   children,
@@ -30,6 +34,7 @@ export default function DbScopeProvider({
   const emailScope = session?.user?.email || null;
   const savedScope = getSavedScope();
   const scope = emailScope || savedScope || (status === "loading" ? null : "guest");
+  const isAuthenticated = !!emailScope;
 
   // Persist scope to sessionStorage when we have an email
   useEffect(() => {
@@ -37,6 +42,33 @@ export default function DbScopeProvider({
       sessionStorage.setItem(SCOPE_KEY, emailScope);
     }
   }, [emailScope]);
+
+  // Sync on login — pull then push
+  const syncOnLogin = useCallback(async () => {
+    if (!isAuthenticated) return;
+
+    // Only sync once per browser session
+    const alreadySynced = sessionStorage.getItem(SYNCED_KEY);
+    if (alreadySynced === emailScope) return;
+
+    // Mark as syncing immediately to prevent double-sync
+    sessionStorage.setItem(SYNCED_KEY, emailScope!);
+
+    // Pull cloud data if local is empty (new device / cleared cache)
+    const pulled = await pullFromCloud();
+    if (pulled) {
+      // Reload page to reflect pulled data
+      window.location.reload();
+      return;
+    }
+
+    // Push local data to cloud as backup
+    await pushToCloud();
+  }, [isAuthenticated, emailScope]);
+
+  useEffect(() => {
+    syncOnLogin();
+  }, [syncOnLogin]);
 
   if (!scope) {
     return null;
