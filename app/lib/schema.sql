@@ -97,6 +97,13 @@ CREATE TABLE IF NOT EXISTS settings (
 INSERT OR IGNORE INTO settings (id, default_currency, updated_at)
 VALUES ('default', 'GBP', datetime('now'));
 
+-- ── Cloud backup: stores full IndexedDB snapshot per user as JSON ────────────
+CREATE TABLE IF NOT EXISTS user_data (
+  user_email  TEXT NOT NULL PRIMARY KEY,
+  data        TEXT NOT NULL,
+  updated_at  TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
 -- ── Auth: users ──────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS users (
   id            TEXT    NOT NULL PRIMARY KEY,
