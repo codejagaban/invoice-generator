@@ -6,6 +6,7 @@
  */
 
 import { useEffect, useState } from "react";
+import { useDbReady } from "@/app/components/DbScopeProvider";
 import Button from "@/app/components/shared/Button";
 import Card, {
   CardContent,
@@ -48,6 +49,7 @@ const CURRENCIES = [
 ];
 
 export default function CompanyPage() {
+  const dbReady = useDbReady();
   const [companies, setCompanies] = useState<CompanyDetails[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -58,6 +60,7 @@ export default function CompanyPage() {
   const [currencySaved, setCurrencySaved] = useState(false);
 
   useEffect(() => {
+    if (!dbReady) return;
     (async () => {
       const [companies, settings] = await Promise.all([
         getCompanyDetails(),
@@ -67,7 +70,7 @@ export default function CompanyPage() {
       setDefaultCurrency(settings.defaultCurrency);
       setIsLoading(false);
     })();
-  }, []);
+  }, [dbReady]);
 
   const handleSaveCurrency = async () => {
     setIsSavingCurrency(true);

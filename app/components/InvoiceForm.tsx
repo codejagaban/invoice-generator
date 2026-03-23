@@ -62,6 +62,7 @@ import {
   formatCurrency,
 } from "@/app/lib/invoice";
 import { createTemplate, getCustomers, getCompanyDetails, getSettings } from "@/app/lib/storage";
+import { useDbReady } from "@/app/components/DbScopeProvider";
 
 const COUNTRIES = [
   "United Kingdom",
@@ -113,6 +114,7 @@ export default function InvoiceForm({
   initialData,
   onSubmit,
 }: InvoiceFormProps) {
+  const dbReady = useDbReady();
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showSaveTemplateModal, setShowSaveTemplateModal] = useState(false);
@@ -165,6 +167,7 @@ export default function InvoiceForm({
   );
 
   useEffect(() => {
+    if (!dbReady) return;
     (async () => {
       const [storedCustomers, storedCompanies, settings] = await Promise.all([
         getCustomers(),
@@ -196,7 +199,7 @@ export default function InvoiceForm({
       }
     })();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [dbReady]);
 
   // Load template from sessionStorage on mount
   useEffect(() => {

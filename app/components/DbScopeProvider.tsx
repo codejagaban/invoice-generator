@@ -1,14 +1,19 @@
 "use client";
 
-import { useEffect } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { setDbScope } from "@/app/lib/db";
 
 const SCOPE_KEY = "db_scope";
 
-function getSavedScope(): string | null {
-  if (typeof window === "undefined") return null;
-  return sessionStorage.getItem(SCOPE_KEY);
+const DbReadyContext = createContext(false);
+
+/**
+ * Returns true once the storage layer (IndexedDB or Postgres) is ready.
+ * Pages should skip data fetching until this is true.
+ */
+export function useDbReady() {
+  return useContext(DbReadyContext);
 }
 
 /**
@@ -22,22 +27,25 @@ export default function DbScopeProvider({
   children: React.ReactNode;
 }) {
   const { data: session, status } = useSession();
-
-  const emailScope = session?.user?.email || null;
-  const savedScope = getSavedScope();
-  const scope = emailScope || savedScope || (status === "loading" ? null : "guest");
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
+    if (status === "loading") return;
+
+    const emailScope = session?.user?.email || null;
+    const scope = emailScope || sessionStorage.getItem(SCOPE_KEY) || "guest";
+
     if (emailScope) {
       sessionStorage.setItem(SCOPE_KEY, emailScope);
     }
-  }, [emailScope]);
 
-  if (!scope) {
-    return null;
-  }
+    setDbScope(scope);
+    setReady(true);
+  }, [session, status]);
 
-  setDbScope(scope);
-
-  return <>{children}</>;
+  return (
+    <DbReadyContext.Provider value={ready}>
+      {children}
+    </DbReadyContext.Provider>
+  );
 }

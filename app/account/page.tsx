@@ -6,6 +6,7 @@
  */
 
 import { useEffect, useState } from "react";
+import { useDbReady } from "@/app/components/DbScopeProvider";
 import { InputWithRef as Input } from "@/app/components/shared/Input";
 import Textarea from "@/app/components/shared/Textarea";
 import Button from "@/app/components/shared/Button";
@@ -39,6 +40,7 @@ const emptyForm = {
 };
 
 export default function AccountPage() {
+  const dbReady = useDbReady();
   const [accounts, setAccounts] = useState<AccountDetails[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -47,11 +49,12 @@ export default function AccountPage() {
   const [formData, setFormData] = useState(emptyForm);
 
   useEffect(() => {
+    if (!dbReady) return;
     (async () => {
       setAccounts(await getAccountDetails());
       setIsLoading(false);
     })();
-  }, []);
+  }, [dbReady]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
