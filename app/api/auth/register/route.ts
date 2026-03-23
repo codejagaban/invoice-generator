@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import pool from "@/app/lib/neon";
+import pool from "@/app/lib/pool";
 
 export async function POST(request: NextRequest) {
   try {
