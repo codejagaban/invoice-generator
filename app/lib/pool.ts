@@ -26,8 +26,11 @@ function getSslConfig(): false | { rejectUnauthorized: boolean; ca?: string } {
   return { rejectUnauthorized: false };
 }
 
+// Strip sslmode from URL — we configure SSL manually via the ssl option
+const connectionString = process.env.DATABASE_URL.replace(/[?&]sslmode=[^&]*/g, "");
+
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
+  connectionString,
   ssl: getSslConfig(),
   max: 10,
 });

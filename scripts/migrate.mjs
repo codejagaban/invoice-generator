@@ -35,8 +35,11 @@ function getSslConfig() {
   return { rejectUnauthorized: false };
 }
 
+// Strip sslmode from URL — we configure SSL manually via the ssl option
+const connectionString = process.env.DATABASE_URL.replace(/[?&]sslmode=[^&]*/g, "");
+
 const client = new pg.Client({
-  connectionString: process.env.DATABASE_URL,
+  connectionString,
   ssl: getSslConfig(),
 });
 
