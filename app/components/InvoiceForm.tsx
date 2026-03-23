@@ -203,8 +203,6 @@ export default function InvoiceForm({
 
   // Load template from sessionStorage on mount
   useEffect(() => {
-    if (typeof window === "undefined") return;
-
     const selectedTemplate = sessionStorage.getItem("selectedTemplate");
     if (selectedTemplate && !initialData) {
       try {

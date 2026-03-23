@@ -56,8 +56,8 @@ export default function DbScopeProvider({
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ guestId }),
             });
-          } catch {
-            // Migration failed — not critical, continue
+          } catch (err) {
+            console.warn("Guest data migration failed:", err);
           }
           // Clear the cookie
           document.cookie = `${GUEST_COOKIE}=; max-age=0; path=/`;
