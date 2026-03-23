@@ -234,15 +234,13 @@ export function generateInvoiceHTML(
           <!-- Customer Info -->
           <section>
             <div class="section-title">Bill To:</div>
-            <div class="customer-info" style="display: flex; gap: 12px; align-items: flex-start;">
-              ${invoice.customer.logo ? `<img src="${invoice.customer.logo}" alt="${invoice.customer.name} logo" style="max-height: 48px; max-width: 48px; object-fit: contain; border-radius: 4px; flex-shrink: 0;" />` : ""}
-              <div>
-                <div class="customer-label">${invoice.customer.name}</div>
-                ${invoice.customer.email ? `<div>${invoice.customer.email}</div>` : ""}
-                ${invoice.customer.address ? `<div>${invoice.customer.address}</div>` : ""}
-                ${cityLine(invoice.customer.city, invoice.customer.state, invoice.customer.zipCode)}
-                ${invoice.customer.country ? `<div>${invoice.customer.country}</div>` : ""}
-              </div>
+            <div class="customer-info">
+              ${invoice.customer.logo ? `<img src="${invoice.customer.logo}" alt="${invoice.customer.name} logo" style="max-height: 40px; max-width: 120px; object-fit: contain; border-radius: 4px; margin-bottom: 8px; display: block;" />` : ""}
+              <div class="customer-label">${invoice.customer.name}</div>
+              ${invoice.customer.email ? `<div>${invoice.customer.email}</div>` : ""}
+              ${invoice.customer.address ? `<div>${invoice.customer.address}</div>` : ""}
+              ${cityLine(invoice.customer.city, invoice.customer.state, invoice.customer.zipCode)}
+              ${invoice.customer.country ? `<div>${invoice.customer.country}</div>` : ""}
             </div>
           </section>
 
@@ -521,16 +519,29 @@ export async function downloadInvoicePDF(
   const options = {
     margin: [10, 10, 10, 10] as [number, number, number, number],
     filename: `Invoice_${invoice.invoiceNumber}.pdf`,
-    image: { type: "png" as const, quality: 0.98 },
-    html2canvas: { scale: 2 },
+    image: { type: "png" as const, quality: 1 },
+    html2canvas: {
+      scale: 4,
+      useCORS: true,
+      letterRendering: true,
+    },
     jsPDF: { unit: "mm", format: "a4", orientation: "portrait" as const },
   };
 
   try {
     const element = document.createElement("div");
     element.innerHTML = htmlContent;
+    // Attach to DOM so fonts and styles render correctly
+    element.style.position = "fixed";
+    element.style.left = "-9999px";
+    element.style.top = "0";
+    document.body.appendChild(element);
     await html2pdf().set(options).from(element).save();
+    document.body.removeChild(element);
   } catch (error) {
+    // Clean up DOM element if it was attached
+    const leftover = document.querySelector('[style*="-9999px"]');
+    if (leftover) document.body.removeChild(leftover);
     console.error("PDF generation failed:", error);
     throw new Error("Failed to generate PDF");
   }
