@@ -262,9 +262,9 @@ export function generateInvoiceHTML(
                   .map(
                     (item) => `
                   <tr>
-                    <td>${item.description}</td>
-                    <td style="text-align: right;">${item.quantity}</td>
-                    <td style="text-align: right;">${formatCurrency(item.rate, invoice.currency)}</td>
+                    <td>${item.description}${item.type === "hours" ? ' <span style="font-size: 11px; color: #6b7280;">(hours)</span>' : ""}</td>
+                    <td style="text-align: right;">${item.type === "hours" ? `${item.quantity} hrs` : item.quantity}</td>
+                    <td style="text-align: right;">${formatCurrency(item.rate, invoice.currency)}${item.type === "hours" ? "/hr" : ""}</td>
                     <td style="text-align: right;">${formatCurrency(item.quantity * item.rate, invoice.currency)}</td>
                   </tr>
                 `,

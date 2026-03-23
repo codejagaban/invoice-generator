@@ -15,11 +15,14 @@ export interface Customer {
   logo?: string;
 }
 
+export type InvoiceItemType = "item" | "hours";
+
 export interface InvoiceItem {
   id: string;
   description: string;
   quantity: number;
   rate: number;
+  type?: InvoiceItemType;
   discount?: number;
   taxRate?: number;
 }
