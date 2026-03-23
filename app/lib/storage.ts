@@ -12,7 +12,6 @@ import type {
   AccountDetails,
   Settings,
 } from "./types";
-import { getDbScope } from "./db";
 
 /**
  * Call the /api/data endpoint for Postgres operations.
