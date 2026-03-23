@@ -3,7 +3,7 @@
  *   node --env-file=.env.local scripts/migrate.mjs          # dev
  *   node --env-file=.env.production scripts/migrate.mjs     # prod
  */
-import { neon } from "@neondatabase/serverless";
+import pg from "pg";
 import { readFileSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
@@ -16,18 +16,22 @@ if (!process.env.DATABASE_URL) {
   process.exit(1);
 }
 
-const sql = neon(process.env.DATABASE_URL);
+const client = new pg.Client({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false },
+});
 
+await client.connect();
 console.log("Running migration...");
 
-// Split on semicolons and run each statement
 const statements = schema
   .split(";")
   .map((s) => s.trim())
   .filter((s) => s.length > 0);
 
 for (const statement of statements) {
-  await sql.query(statement);
+  await client.query(statement);
 }
 
 console.log("Migration complete.");
+await client.end();

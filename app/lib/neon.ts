@@ -1,9 +1,13 @@
-import { neon } from "@neondatabase/serverless";
+import { Pool } from "pg";
 
 if (!process.env.DATABASE_URL) {
   throw new Error("DATABASE_URL environment variable is not set");
 }
 
-const sql = neon(process.env.DATABASE_URL);
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false },
+  max: 10,
+});
 
-export default sql;
+export default pool;

@@ -1,10 +1,10 @@
 /**
- * Postgres Storage Layer (Neon)
+ * Postgres Storage Layer
  * Server-side persistence for authenticated users.
- * Mirrors the same interface as IndexedDB storage.ts.
+ * Uses node-postgres (pg) — works with any Postgres host (Aiven, Supabase, etc.).
  */
 
-import sql from "./neon";
+import pool from "./neon";
 import type {
   Invoice,
   InvoiceTemplate,
@@ -14,26 +14,33 @@ import type {
   Settings,
 } from "./types";
 
+// Helper to query and return rows
+async function query(text: string, params: unknown[] = []) {
+  const { rows } = await pool.query(text, params);
+  return rows;
+}
+
 // ============ INVOICE STORAGE ============
 
 export async function pgGetInvoices(userId: string): Promise<Invoice[]> {
-  const rows = await sql`SELECT * FROM invoices WHERE user_id = ${userId} ORDER BY created_at DESC`;
+  const rows = await query("SELECT * FROM invoices WHERE user_id = $1 ORDER BY created_at DESC", [userId]);
   return rows.map(rowToInvoice);
 }
 
 export async function pgGetInvoiceById(userId: string, id: string): Promise<Invoice | null> {
-  const rows = await sql`SELECT * FROM invoices WHERE id = ${id} AND user_id = ${userId} LIMIT 1`;
+  const rows = await query("SELECT * FROM invoices WHERE id = $1 AND user_id = $2 LIMIT 1", [id, userId]);
   return rows[0] ? rowToInvoice(rows[0]) : null;
 }
 
 export async function pgCreateInvoice(userId: string, invoice: Invoice): Promise<Invoice> {
-  await sql`
-    INSERT INTO invoices (id, user_id, invoice_number, date, due_date, status, customer, company, items, notes, tax_rate, currency, created_at, updated_at)
-    VALUES (${invoice.id}, ${userId}, ${invoice.invoiceNumber}, ${invoice.date}, ${invoice.dueDate}, ${invoice.status},
-            ${JSON.stringify(invoice.customer)}, ${invoice.company ? JSON.stringify(invoice.company) : null},
-            ${JSON.stringify(invoice.items)}, ${invoice.notes || null}, ${invoice.taxRate || null},
-            ${invoice.currency}, ${invoice.createdAt}, ${invoice.updatedAt})
-  `;
+  await query(
+    `INSERT INTO invoices (id, user_id, invoice_number, date, due_date, status, customer, company, items, notes, tax_rate, currency, created_at, updated_at)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)`,
+    [invoice.id, userId, invoice.invoiceNumber, invoice.date, invoice.dueDate, invoice.status,
+     JSON.stringify(invoice.customer), invoice.company ? JSON.stringify(invoice.company) : null,
+     JSON.stringify(invoice.items), invoice.notes || null, invoice.taxRate || null,
+     invoice.currency, invoice.createdAt, invoice.updatedAt]
+  );
   return invoice;
 }
 
@@ -41,20 +48,20 @@ export async function pgUpdateInvoice(userId: string, id: string, updates: Parti
   const existing = await pgGetInvoiceById(userId, id);
   if (!existing) return null;
   const updated: Invoice = { ...existing, ...updates, updatedAt: new Date().toISOString() };
-  await sql`
-    UPDATE invoices SET
-      invoice_number = ${updated.invoiceNumber}, date = ${updated.date}, due_date = ${updated.dueDate},
-      status = ${updated.status}, customer = ${JSON.stringify(updated.customer)},
-      company = ${updated.company ? JSON.stringify(updated.company) : null},
-      items = ${JSON.stringify(updated.items)}, notes = ${updated.notes || null},
-      tax_rate = ${updated.taxRate || null}, currency = ${updated.currency}, updated_at = ${updated.updatedAt}
-    WHERE id = ${id} AND user_id = ${userId}
-  `;
+  await query(
+    `UPDATE invoices SET invoice_number = $1, date = $2, due_date = $3, status = $4, customer = $5,
+       company = $6, items = $7, notes = $8, tax_rate = $9, currency = $10, updated_at = $11
+     WHERE id = $12 AND user_id = $13`,
+    [updated.invoiceNumber, updated.date, updated.dueDate, updated.status,
+     JSON.stringify(updated.customer), updated.company ? JSON.stringify(updated.company) : null,
+     JSON.stringify(updated.items), updated.notes || null, updated.taxRate || null,
+     updated.currency, updated.updatedAt, id, userId]
+  );
   return updated;
 }
 
 export async function pgDeleteInvoice(userId: string, id: string): Promise<boolean> {
-  await sql`DELETE FROM invoices WHERE id = ${id} AND user_id = ${userId}`;
+  await query("DELETE FROM invoices WHERE id = $1 AND user_id = $2", [id, userId]);
   return true;
 }
 
@@ -79,21 +86,22 @@ function rowToInvoice(row: Record<string, unknown>): Invoice {
 // ============ CUSTOMER STORAGE ============
 
 export async function pgGetCustomers(userId: string): Promise<Customer[]> {
-  const rows = await sql`SELECT * FROM customers WHERE user_id = ${userId}`;
+  const rows = await query("SELECT * FROM customers WHERE user_id = $1", [userId]);
   return rows.map(rowToCustomer);
 }
 
 export async function pgGetCustomerById(userId: string, id: string): Promise<Customer | null> {
-  const rows = await sql`SELECT * FROM customers WHERE id = ${id} AND user_id = ${userId} LIMIT 1`;
+  const rows = await query("SELECT * FROM customers WHERE id = $1 AND user_id = $2 LIMIT 1", [id, userId]);
   return rows[0] ? rowToCustomer(rows[0]) : null;
 }
 
 export async function pgCreateCustomer(userId: string, customer: Customer): Promise<Customer> {
-  await sql`
-    INSERT INTO customers (id, user_id, name, email, address, city, state, zip_code, country, logo)
-    VALUES (${customer.id}, ${userId}, ${customer.name}, ${customer.email}, ${customer.address},
-            ${customer.city}, ${customer.state}, ${customer.zipCode}, ${customer.country}, ${customer.logo || null})
-  `;
+  await query(
+    `INSERT INTO customers (id, user_id, name, email, address, city, state, zip_code, country, logo)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+    [customer.id, userId, customer.name, customer.email, customer.address,
+     customer.city, customer.state, customer.zipCode, customer.country, customer.logo || null]
+  );
   return customer;
 }
 
@@ -101,17 +109,18 @@ export async function pgUpdateCustomer(userId: string, id: string, updates: Part
   const existing = await pgGetCustomerById(userId, id);
   if (!existing) return null;
   const updated: Customer = { ...existing, ...updates };
-  await sql`
-    UPDATE customers SET name = ${updated.name}, email = ${updated.email}, address = ${updated.address},
-      city = ${updated.city}, state = ${updated.state}, zip_code = ${updated.zipCode},
-      country = ${updated.country}, logo = ${updated.logo || null}
-    WHERE id = ${id} AND user_id = ${userId}
-  `;
+  await query(
+    `UPDATE customers SET name = $1, email = $2, address = $3, city = $4, state = $5,
+       zip_code = $6, country = $7, logo = $8
+     WHERE id = $9 AND user_id = $10`,
+    [updated.name, updated.email, updated.address, updated.city, updated.state,
+     updated.zipCode, updated.country, updated.logo || null, id, userId]
+  );
   return updated;
 }
 
 export async function pgDeleteCustomer(userId: string, id: string): Promise<boolean> {
-  await sql`DELETE FROM customers WHERE id = ${id} AND user_id = ${userId}`;
+  await query("DELETE FROM customers WHERE id = $1 AND user_id = $2", [id, userId]);
   return true;
 }
 
@@ -132,22 +141,23 @@ function rowToCustomer(row: Record<string, unknown>): Customer {
 // ============ TEMPLATE STORAGE ============
 
 export async function pgGetTemplates(userId: string): Promise<InvoiceTemplate[]> {
-  const rows = await sql`SELECT * FROM templates WHERE user_id = ${userId}`;
+  const rows = await query("SELECT * FROM templates WHERE user_id = $1", [userId]);
   return rows.map(rowToTemplate);
 }
 
 export async function pgGetTemplateById(userId: string, id: string): Promise<InvoiceTemplate | null> {
-  const rows = await sql`SELECT * FROM templates WHERE id = ${id} AND user_id = ${userId} LIMIT 1`;
+  const rows = await query("SELECT * FROM templates WHERE id = $1 AND user_id = $2 LIMIT 1", [id, userId]);
   return rows[0] ? rowToTemplate(rows[0]) : null;
 }
 
 export async function pgCreateTemplate(userId: string, template: InvoiceTemplate): Promise<InvoiceTemplate> {
-  await sql`
-    INSERT INTO templates (id, user_id, name, description, customer, items, notes, tax_rate, currency, created_at)
-    VALUES (${template.id}, ${userId}, ${template.name}, ${template.description || null},
-            ${JSON.stringify(template.customer)}, ${JSON.stringify(template.items)},
-            ${template.notes || null}, ${template.taxRate || null}, ${template.currency}, ${template.createdAt})
-  `;
+  await query(
+    `INSERT INTO templates (id, user_id, name, description, customer, items, notes, tax_rate, currency, created_at)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+    [template.id, userId, template.name, template.description || null,
+     JSON.stringify(template.customer), JSON.stringify(template.items),
+     template.notes || null, template.taxRate || null, template.currency, template.createdAt]
+  );
   return template;
 }
 
@@ -155,17 +165,19 @@ export async function pgUpdateTemplate(userId: string, id: string, updates: Part
   const existing = await pgGetTemplateById(userId, id);
   if (!existing) return null;
   const updated: InvoiceTemplate = { ...existing, ...updates };
-  await sql`
-    UPDATE templates SET name = ${updated.name}, description = ${updated.description || null},
-      customer = ${JSON.stringify(updated.customer)}, items = ${JSON.stringify(updated.items)},
-      notes = ${updated.notes || null}, tax_rate = ${updated.taxRate || null}, currency = ${updated.currency}
-    WHERE id = ${id} AND user_id = ${userId}
-  `;
+  await query(
+    `UPDATE templates SET name = $1, description = $2, customer = $3, items = $4,
+       notes = $5, tax_rate = $6, currency = $7
+     WHERE id = $8 AND user_id = $9`,
+    [updated.name, updated.description || null, JSON.stringify(updated.customer),
+     JSON.stringify(updated.items), updated.notes || null, updated.taxRate || null,
+     updated.currency, id, userId]
+  );
   return updated;
 }
 
 export async function pgDeleteTemplate(userId: string, id: string): Promise<boolean> {
-  await sql`DELETE FROM templates WHERE id = ${id} AND user_id = ${userId}`;
+  await query("DELETE FROM templates WHERE id = $1 AND user_id = $2", [id, userId]);
   return true;
 }
 
@@ -186,28 +198,29 @@ function rowToTemplate(row: Record<string, unknown>): InvoiceTemplate {
 // ============ COMPANY DETAILS STORAGE ============
 
 export async function pgGetCompanyDetails(userId: string): Promise<CompanyDetails[]> {
-  const rows = await sql`SELECT * FROM company_details WHERE user_id = ${userId}`;
+  const rows = await query("SELECT * FROM company_details WHERE user_id = $1", [userId]);
   return rows.map(rowToCompany);
 }
 
 export async function pgGetDefaultCompanyDetails(userId: string): Promise<CompanyDetails | null> {
-  const rows = await sql`SELECT * FROM company_details WHERE user_id = ${userId} AND is_default = true LIMIT 1`;
+  const rows = await query("SELECT * FROM company_details WHERE user_id = $1 AND is_default = true LIMIT 1", [userId]);
   return rows[0] ? rowToCompany(rows[0]) : null;
 }
 
 export async function pgGetCompanyById(userId: string, id: string): Promise<CompanyDetails | null> {
-  const rows = await sql`SELECT * FROM company_details WHERE id = ${id} AND user_id = ${userId} LIMIT 1`;
+  const rows = await query("SELECT * FROM company_details WHERE id = $1 AND user_id = $2 LIMIT 1", [id, userId]);
   return rows[0] ? rowToCompany(rows[0]) : null;
 }
 
 export async function pgCreateCompany(userId: string, company: CompanyDetails): Promise<CompanyDetails> {
-  await sql`
-    INSERT INTO company_details (id, user_id, name, email, phone, address, city, state, zip_code, country, website, tax_id, logo, is_default, created_at, updated_at)
-    VALUES (${company.id}, ${userId}, ${company.name}, ${company.email}, ${company.phone || null},
-            ${company.address}, ${company.city}, ${company.state}, ${company.zipCode}, ${company.country},
-            ${company.website || null}, ${company.taxId || null}, ${company.logo || null},
-            ${company.isDefault}, ${company.createdAt}, ${company.updatedAt})
-  `;
+  await query(
+    `INSERT INTO company_details (id, user_id, name, email, phone, address, city, state, zip_code, country, website, tax_id, logo, is_default, created_at, updated_at)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)`,
+    [company.id, userId, company.name, company.email, company.phone || null,
+     company.address, company.city, company.state, company.zipCode, company.country,
+     company.website || null, company.taxId || null, company.logo || null,
+     company.isDefault, company.createdAt, company.updatedAt]
+  );
   return company;
 }
 
@@ -215,24 +228,26 @@ export async function pgUpdateCompany(userId: string, id: string, updates: Parti
   const existing = await pgGetCompanyById(userId, id);
   if (!existing) return null;
   const updated: CompanyDetails = { ...existing, ...updates, updatedAt: new Date().toISOString() };
-  await sql`
-    UPDATE company_details SET name = ${updated.name}, email = ${updated.email}, phone = ${updated.phone || null},
-      address = ${updated.address}, city = ${updated.city}, state = ${updated.state}, zip_code = ${updated.zipCode},
-      country = ${updated.country}, website = ${updated.website || null}, tax_id = ${updated.taxId || null},
-      logo = ${updated.logo || null}, is_default = ${updated.isDefault}, updated_at = ${updated.updatedAt}
-    WHERE id = ${id} AND user_id = ${userId}
-  `;
+  await query(
+    `UPDATE company_details SET name = $1, email = $2, phone = $3, address = $4, city = $5,
+       state = $6, zip_code = $7, country = $8, website = $9, tax_id = $10,
+       logo = $11, is_default = $12, updated_at = $13
+     WHERE id = $14 AND user_id = $15`,
+    [updated.name, updated.email, updated.phone || null, updated.address, updated.city,
+     updated.state, updated.zipCode, updated.country, updated.website || null, updated.taxId || null,
+     updated.logo || null, updated.isDefault, updated.updatedAt, id, userId]
+  );
   return updated;
 }
 
 export async function pgDeleteCompany(userId: string, id: string): Promise<boolean> {
-  await sql`DELETE FROM company_details WHERE id = ${id} AND user_id = ${userId}`;
+  await query("DELETE FROM company_details WHERE id = $1 AND user_id = $2", [id, userId]);
   return true;
 }
 
 export async function pgSetDefaultCompany(userId: string, id: string): Promise<boolean> {
-  await sql`UPDATE company_details SET is_default = false WHERE user_id = ${userId}`;
-  await sql`UPDATE company_details SET is_default = true WHERE id = ${id} AND user_id = ${userId}`;
+  await query("UPDATE company_details SET is_default = false WHERE user_id = $1", [userId]);
+  await query("UPDATE company_details SET is_default = true WHERE id = $1 AND user_id = $2", [id, userId]);
   return true;
 }
 
@@ -259,28 +274,29 @@ function rowToCompany(row: Record<string, unknown>): CompanyDetails {
 // ============ ACCOUNT DETAILS STORAGE ============
 
 export async function pgGetAccountDetails(userId: string): Promise<AccountDetails[]> {
-  const rows = await sql`SELECT * FROM account_details WHERE user_id = ${userId}`;
+  const rows = await query("SELECT * FROM account_details WHERE user_id = $1", [userId]);
   return rows.map(rowToAccount);
 }
 
 export async function pgGetDefaultAccountDetails(userId: string): Promise<AccountDetails | null> {
-  const rows = await sql`SELECT * FROM account_details WHERE user_id = ${userId} AND is_default = true LIMIT 1`;
+  const rows = await query("SELECT * FROM account_details WHERE user_id = $1 AND is_default = true LIMIT 1", [userId]);
   return rows[0] ? rowToAccount(rows[0]) : null;
 }
 
 export async function pgGetAccountById(userId: string, id: string): Promise<AccountDetails | null> {
-  const rows = await sql`SELECT * FROM account_details WHERE id = ${id} AND user_id = ${userId} LIMIT 1`;
+  const rows = await query("SELECT * FROM account_details WHERE id = $1 AND user_id = $2 LIMIT 1", [id, userId]);
   return rows[0] ? rowToAccount(rows[0]) : null;
 }
 
 export async function pgCreateAccount(userId: string, account: AccountDetails): Promise<AccountDetails> {
-  await sql`
-    INSERT INTO account_details (id, user_id, account_holder_name, bank_name, account_number, sort_code, routing_number, iban, swift_bic, currency, payment_reference, notes, is_default, created_at, updated_at)
-    VALUES (${account.id}, ${userId}, ${account.accountHolderName}, ${account.bankName}, ${account.accountNumber},
-            ${account.sortCode || null}, ${account.routingNumber || null}, ${account.iban || null}, ${account.swiftBic || null},
-            ${account.currency || null}, ${account.paymentReference || null}, ${account.notes || null},
-            ${account.isDefault}, ${account.createdAt}, ${account.updatedAt})
-  `;
+  await query(
+    `INSERT INTO account_details (id, user_id, account_holder_name, bank_name, account_number, sort_code, routing_number, iban, swift_bic, currency, payment_reference, notes, is_default, created_at, updated_at)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`,
+    [account.id, userId, account.accountHolderName, account.bankName, account.accountNumber,
+     account.sortCode || null, account.routingNumber || null, account.iban || null, account.swiftBic || null,
+     account.currency || null, account.paymentReference || null, account.notes || null,
+     account.isDefault, account.createdAt, account.updatedAt]
+  );
   return account;
 }
 
@@ -288,26 +304,27 @@ export async function pgUpdateAccount(userId: string, id: string, updates: Parti
   const existing = await pgGetAccountById(userId, id);
   if (!existing) return null;
   const updated: AccountDetails = { ...existing, ...updates, updatedAt: new Date().toISOString() };
-  await sql`
-    UPDATE account_details SET account_holder_name = ${updated.accountHolderName}, bank_name = ${updated.bankName},
-      account_number = ${updated.accountNumber}, sort_code = ${updated.sortCode || null},
-      routing_number = ${updated.routingNumber || null}, iban = ${updated.iban || null},
-      swift_bic = ${updated.swiftBic || null}, currency = ${updated.currency || null},
-      payment_reference = ${updated.paymentReference || null}, notes = ${updated.notes || null},
-      is_default = ${updated.isDefault}, updated_at = ${updated.updatedAt}
-    WHERE id = ${id} AND user_id = ${userId}
-  `;
+  await query(
+    `UPDATE account_details SET account_holder_name = $1, bank_name = $2, account_number = $3,
+       sort_code = $4, routing_number = $5, iban = $6, swift_bic = $7, currency = $8,
+       payment_reference = $9, notes = $10, is_default = $11, updated_at = $12
+     WHERE id = $13 AND user_id = $14`,
+    [updated.accountHolderName, updated.bankName, updated.accountNumber,
+     updated.sortCode || null, updated.routingNumber || null, updated.iban || null,
+     updated.swiftBic || null, updated.currency || null, updated.paymentReference || null,
+     updated.notes || null, updated.isDefault, updated.updatedAt, id, userId]
+  );
   return updated;
 }
 
 export async function pgDeleteAccount(userId: string, id: string): Promise<boolean> {
-  await sql`DELETE FROM account_details WHERE id = ${id} AND user_id = ${userId}`;
+  await query("DELETE FROM account_details WHERE id = $1 AND user_id = $2", [id, userId]);
   return true;
 }
 
 export async function pgSetDefaultAccount(userId: string, id: string): Promise<boolean> {
-  await sql`UPDATE account_details SET is_default = false WHERE user_id = ${userId}`;
-  await sql`UPDATE account_details SET is_default = true WHERE id = ${id} AND user_id = ${userId}`;
+  await query("UPDATE account_details SET is_default = false WHERE user_id = $1", [userId]);
+  await query("UPDATE account_details SET is_default = true WHERE id = $1 AND user_id = $2", [id, userId]);
   return true;
 }
 
@@ -333,7 +350,7 @@ function rowToAccount(row: Record<string, unknown>): AccountDetails {
 // ============ SETTINGS STORAGE ============
 
 export async function pgGetSettings(userId: string): Promise<Settings> {
-  const rows = await sql`SELECT * FROM settings WHERE user_id = ${userId} LIMIT 1`;
+  const rows = await query("SELECT * FROM settings WHERE user_id = $1 LIMIT 1", [userId]);
   if (rows[0]) {
     return {
       id: (rows[0].id as string) as "default",
@@ -347,10 +364,11 @@ export async function pgGetSettings(userId: string): Promise<Settings> {
 export async function pgSaveSettings(userId: string, updates: Partial<Omit<Settings, "id">>): Promise<Settings> {
   const existing = await pgGetSettings(userId);
   const updated: Settings = { ...existing, ...updates, updatedAt: new Date().toISOString() };
-  await sql`
-    INSERT INTO settings (id, user_id, default_currency, updated_at)
-    VALUES (${updated.id}, ${userId}, ${updated.defaultCurrency}, ${updated.updatedAt})
-    ON CONFLICT (id) DO UPDATE SET default_currency = ${updated.defaultCurrency}, updated_at = ${updated.updatedAt}
-  `;
+  await query(
+    `INSERT INTO settings (id, user_id, default_currency, updated_at)
+     VALUES ($1, $2, $3, $4)
+     ON CONFLICT (id) DO UPDATE SET default_currency = $3, updated_at = $4`,
+    [updated.id, userId, updated.defaultCurrency, updated.updatedAt]
+  );
   return updated;
 }
