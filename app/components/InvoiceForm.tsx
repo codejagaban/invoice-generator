@@ -490,9 +490,12 @@ export default function InvoiceForm({
             <DatePicker
               label="Invoice Date"
               value={formData.date}
-              onChange={(value) =>
-                setFormData((prev) => ({ ...prev, date: value }))
-              }
+              onChange={(value) => {
+                const dueDate = toLocalDateString(
+                  new Date(new Date(value).getTime() + 7 * 24 * 60 * 60 * 1000),
+                );
+                setFormData((prev) => ({ ...prev, date: value, dueDate }));
+              }}
             />
             <DatePicker
               label="Due Date"
