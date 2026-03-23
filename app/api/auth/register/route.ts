@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import sql from "@/app/lib/neon";
+import pool from "@/app/lib/neon";
 
 export async function POST(request: NextRequest) {
   try {
@@ -25,7 +25,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const existing = await sql`SELECT id FROM users WHERE email = ${email} LIMIT 1`;
+    const { rows: existing } = await pool.query(
+      "SELECT id FROM users WHERE email = $1 LIMIT 1",
+      [email],
+    );
     if (existing.length > 0) {
       return NextResponse.json(
         { error: "An account with this email already exists." },
@@ -36,10 +39,11 @@ export async function POST(request: NextRequest) {
     const hashedPassword = await bcrypt.hash(password, 12);
     const id = crypto.randomUUID();
 
-    await sql`
-      INSERT INTO users (id, name, email, password, created_at)
-      VALUES (${id}, ${name}, ${email}, ${hashedPassword}, ${new Date().toISOString()})
-    `;
+    await pool.query(
+      `INSERT INTO users (id, name, email, password, created_at)
+       VALUES ($1, $2, $3, $4, $5)`,
+      [id, name, email, hashedPassword, new Date().toISOString()],
+    );
 
     return NextResponse.json(
       { message: "Account created successfully." },
