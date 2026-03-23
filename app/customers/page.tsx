@@ -41,6 +41,9 @@ import {
   updateCustomer,
   deleteCustomer,
 } from "@/app/lib/storage";
+import { CustomerListSkeleton } from "@/app/components/shared/Skeleton";
+import EmptyState from "@/app/components/shared/EmptyState";
+import { Users } from "lucide-react";
 
 const COUNTRIES = [
   "United Kingdom",
@@ -236,14 +239,6 @@ export default function CustomersPage() {
     resetForm();
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-black">
-        <p className="text-(--muted)">Loading...</p>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-(--background)">
       <header className="border-b border-b-(--border) bg-(--surface)">
@@ -258,6 +253,9 @@ export default function CustomersPage() {
       </header>
 
       <main className="mx-auto max-w-7xl px-6 py-12">
+        {isLoading ? (
+          <CustomerListSkeleton />
+        ) :
         <div className="grid gap-8 lg:grid-cols-2">
           <Card>
             <CardHeader>
@@ -431,11 +429,11 @@ export default function CustomersPage() {
           <div className="space-y-4">
             {customers.length === 0 ? (
               <Card>
-                <div className="py-12 text-center">
-                  <p className="text-(--muted)">
-                    No customers yet. Add your first customer to get started.
-                  </p>
-                </div>
+                <EmptyState
+                  icon={Users}
+                  title="No customers yet"
+                  description="Add your first customer using the form to get started."
+                />
               </Card>
             ) : (
               customers.map((customer) => (
@@ -475,6 +473,7 @@ export default function CustomersPage() {
                         variant="ghost"
                         className="w-9 px-0"
                         onClick={() => handleEdit(customer)}
+                        aria-label="Edit customer"
                       >
                         <Pencil className="h-4 w-4 text-blue-500" />
                       </Button>
@@ -483,6 +482,7 @@ export default function CustomersPage() {
                         variant="ghost"
                         className="w-9 px-0"
                         onClick={() => handleDelete(customer.id)}
+                        aria-label="Delete customer"
                       >
                         <Trash2 className="h-4 w-4 text-red-500" />
                       </Button>
@@ -493,6 +493,7 @@ export default function CustomersPage() {
             )}
           </div>
         </div>
+        }
       </main>
     </div>
   );

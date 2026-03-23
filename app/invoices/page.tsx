@@ -7,7 +7,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { FilePlus2, CheckCircle2 } from "lucide-react";
+import { FilePlus2, CheckCircle2, Search } from "lucide-react";
 import Button from "@/app/components/shared/Button";
 import { InputWithRef as Input } from "@/app/components/shared/Input";
 import Card from "@/app/components/shared/Card";
@@ -26,9 +26,14 @@ import {
   isOverdue,
   isDueSoon,
 } from "@/app/lib/invoice";
+import { InvoiceListSkeleton } from "@/app/components/shared/Skeleton";
+import StatusBadge from "@/app/components/shared/StatusBadge";
+import EmptyState from "@/app/components/shared/EmptyState";
+import { FileText } from "lucide-react";
 
 export default function InvoicesDashboardPage() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<
     "all" | "draft" | "sent" | "paid" | "cancelled"
@@ -55,6 +60,7 @@ export default function InvoicesDashboardPage() {
       const [data, settings] = await Promise.all([getInvoices(), getSettings()]);
       setInvoices(data);
       setDefaultCurrency(settings.defaultCurrency);
+      setIsLoading(false);
     })();
   }, []);
   const filteredInvoices = useMemo(() => {
@@ -101,20 +107,6 @@ export default function InvoicesDashboardPage() {
     return sorted;
   }, [invoices, searchTerm, statusFilter, sortBy]);
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "paid":
-        return "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400";
-      case "sent":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400";
-      case "draft":
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900/20";
-      case "cancelled":
-        return "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400";
-      default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900/20";
-    }
-  };
 
   const totalAmount = filteredInvoices.reduce((sum, inv) => {
     return (
@@ -145,6 +137,9 @@ export default function InvoicesDashboardPage() {
       </header>
 
       <main className="mx-auto max-w-7xl px-6 py-12">
+        {isLoading ? (
+          <InvoiceListSkeleton />
+        ) : (
         <div className="space-y-6">
           {/* Stats */}
           <div className="grid gap-4 sm:grid-cols-4">
@@ -195,6 +190,7 @@ export default function InvoicesDashboardPage() {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="flex-1"
+                leadingIcon={<Search className="h-4 w-4" />}
               />
               <Select
                 value={statusFilter}
@@ -236,14 +232,17 @@ export default function InvoicesDashboardPage() {
           {/* Invoice List */}
           {filteredInvoices.length === 0 ? (
             <Card>
-              <div className="py-12 text-center">
-                <p className="text-(--muted)">No invoices found.</p>
-                <Link href="/invoices/create">
-                  <Button variant="secondary" className="mt-4">
-                    Create Your First Invoice
-                  </Button>
-                </Link>
-              </div>
+              <EmptyState
+                icon={FileText}
+                title="No invoices found"
+                description={searchTerm || statusFilter !== "all" ? "Try adjusting your search or filters." : "Create your first invoice to get started."}
+              >
+                {!searchTerm && statusFilter === "all" && (
+                  <Link href="/invoices/create">
+                    <Button variant="secondary">Create Your First Invoice</Button>
+                  </Link>
+                )}
+              </EmptyState>
             </Card>
           ) : (
             <div className="space-y-3">
@@ -264,11 +263,7 @@ export default function InvoicesDashboardPage() {
                             <h3 className="font-semibold text-black dark:text-white">
                               {invoice.invoiceNumber}
                             </h3>
-                            <span
-                              className={`inline-block px-2 py-1 text-xs font-medium rounded ${getStatusColor(invoice.status)}`}
-                            >
-                              {invoice.status}
-                            </span>
+                            <StatusBadge status={invoice.status} />
                             {overdue && (
                               <span className="inline-block px-2 py-1 text-xs font-medium rounded bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400">
                                 Overdue
@@ -315,6 +310,7 @@ export default function InvoicesDashboardPage() {
             </div>
           )}
         </div>
+        )}
       </main>
     </div>
   );
