@@ -19,9 +19,9 @@ export default function DbScopeProvider({
     return null;
   }
 
-  // setDbScope is a pure variable assignment — safe to call during render
-  const userId = session?.user?.id || session?.user?.email || "guest";
-  setDbScope(userId);
+  // Use email as the stable key — UUIDs can change if the server DB is recreated
+  const scopeKey = session?.user?.email || "guest";
+  setDbScope(scopeKey);
 
   return <>{children}</>;
 }
