@@ -288,6 +288,7 @@ export default function CompanyPage() {
                           className="w-9 px-0"
                           onClick={() => handleSetDefault(company.id)}
                           title="Set as Default"
+                          aria-label="Set as default company"
                         >
                           <Star className="h-4 w-4 text-yellow-500" />
                         </Button>
@@ -297,7 +298,7 @@ export default function CompanyPage() {
                         size="sm"
                         className="w-9 px-0"
                         onClick={() => handleEdit(company)}
-                        title="Edit"
+                        aria-label="Edit company"
                       >
                         <Pencil className="h-4 w-4 text-blue-500" />
                       </Button>
@@ -306,7 +307,7 @@ export default function CompanyPage() {
                         size="sm"
                         className="w-9 px-0"
                         onClick={() => handleDelete(company.id)}
-                        title="Delete"
+                        aria-label="Delete company"
                       >
                         <Trash2 className="h-4 w-4 text-red-500" />
                       </Button>

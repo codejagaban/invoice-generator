@@ -378,6 +378,7 @@ export default function AccountPage() {
                           className="w-9 px-0"
                           onClick={() => handleSetDefault(account.id)}
                           title="Set as Default"
+                          aria-label="Set as default account"
                         >
                           <Star className="h-4 w-4 text-yellow-500" />
                         </Button>
@@ -387,7 +388,7 @@ export default function AccountPage() {
                         size="sm"
                         className="w-9 px-0"
                         onClick={() => handleEdit(account)}
-                        title="Edit"
+                        aria-label="Edit account"
                       >
                         <Pencil className="h-4 w-4 text-blue-500" />
                       </Button>
@@ -396,7 +397,7 @@ export default function AccountPage() {
                         size="sm"
                         className="w-9 px-0"
                         onClick={() => handleDelete(account.id)}
-                        title="Delete"
+                        aria-label="Delete account"
                       >
                         <Trash2 className="h-4 w-4 text-red-500" />
                       </Button>
