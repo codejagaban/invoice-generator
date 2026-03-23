@@ -103,6 +103,27 @@ export function dbPut<T>(storeName: string, value: T): Promise<T> {
   );
 }
 
+/**
+ * Open a specific named database (ignores current scope).
+ * Used to read from the guest DB during migration.
+ */
+export function openNamedDB(scope: string): Promise<IDBDatabase> {
+  const dbName = `${DB_PREFIX}_${scope}`;
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(dbName, DB_VERSION);
+    request.onupgradeneeded = (event) => {
+      const db = (event.target as IDBOpenDBRequest).result;
+      for (const store of Object.values(STORES)) {
+        if (!db.objectStoreNames.contains(store)) {
+          db.createObjectStore(store, { keyPath: "id" });
+        }
+      }
+    };
+    request.onsuccess = (event) => resolve((event.target as IDBOpenDBRequest).result);
+    request.onerror = (event) => reject((event.target as IDBOpenDBRequest).error);
+  });
+}
+
 export function dbDelete(storeName: string, id: string): Promise<boolean> {
   return openDB().then(
     (db) =>

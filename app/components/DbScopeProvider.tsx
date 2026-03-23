@@ -3,7 +3,7 @@
 import { useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { setDbScope } from "@/app/lib/db";
-import { pushToCloud, pullFromCloud } from "@/app/lib/sync";
+import { pushToCloud, pullFromCloud, migrateGuestData } from "@/app/lib/sync";
 
 const SCOPE_KEY = "db_scope";
 const SYNCED_KEY = "db_synced";
@@ -54,15 +54,23 @@ export default function DbScopeProvider({
     // Mark as syncing immediately to prevent double-sync
     sessionStorage.setItem(SYNCED_KEY, emailScope!);
 
-    // Pull cloud data if local is empty (new device / cleared cache)
-    const pulled = await pullFromCloud();
-    if (pulled) {
-      // Reload page to reflect pulled data
+    // 1. Migrate guest data if user was using app before signing in
+    const migrated = await migrateGuestData();
+    if (migrated) {
+      // Push migrated data to cloud, then reload to reflect it
+      await pushToCloud();
       window.location.reload();
       return;
     }
 
-    // Push local data to cloud as backup
+    // 2. Pull cloud data if local is empty (new device / cleared cache)
+    const pulled = await pullFromCloud();
+    if (pulled) {
+      window.location.reload();
+      return;
+    }
+
+    // 3. Push local data to cloud as backup
     await pushToCloud();
   }, [isAuthenticated, emailScope]);
 
