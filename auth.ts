@@ -2,13 +2,12 @@ import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
-import db from "@/app/lib/turso";
+import sql from "@/app/lib/neon";
 import { authConfig } from "./auth.config";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   ...authConfig,
 
-  // Override providers with full implementations
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -24,12 +23,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
 
-        const result = await db.execute({
-          sql: "SELECT id, name, email, image, password FROM users WHERE email = ? LIMIT 1",
-          args: [credentials.email as string],
-        });
+        const rows = await sql`
+          SELECT id, name, email, image, password FROM users WHERE email = ${credentials.email as string} LIMIT 1
+        `;
 
-        const user = result.rows[0] as unknown as
+        const user = rows[0] as
           | { id: string; name: string | null; email: string; image: string | null; password: string | null }
           | undefined;
 
@@ -43,36 +41,32 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     }),
   ],
 
-  // Override callbacks — add jwt + session on top of authorized from authConfig
   callbacks: {
     ...authConfig.callbacks,
 
     async jwt({ token, user, account }) {
       if (user && account) {
         if (account.provider === "google") {
-          const result = await db.execute({
-            sql: "SELECT id, name, image FROM users WHERE email = ? LIMIT 1",
-            args: [user.email ?? null],
-          });
+          const rows = await sql`
+            SELECT id, name, image FROM users WHERE email = ${user.email ?? ""} LIMIT 1
+          `;
 
-          const existing = result.rows[0] as unknown as
+          const existing = rows[0] as
             | { id: string; name: string | null; image: string | null }
             | undefined;
 
           if (!existing) {
             const id = crypto.randomUUID();
-            await db.execute({
-              sql: `INSERT INTO users (id, name, email, emailVerified, image, password, created_at)
-                    VALUES (?, ?, ?, datetime('now'), ?, NULL, datetime('now'))`,
-              args: [id, user.name ?? null, user.email ?? null, user.image ?? null],
-            });
+            await sql`
+              INSERT INTO users (id, name, email, email_verified, image, password, created_at)
+              VALUES (${id}, ${user.name ?? null}, ${user.email ?? null}, ${new Date().toISOString()}, ${user.image ?? null}, ${null}, ${new Date().toISOString()})
+            `;
             token.id = id;
           } else {
             token.id = existing.id;
-            await db.execute({
-              sql: "UPDATE users SET name = COALESCE(name, ?), image = COALESCE(image, ?) WHERE id = ?",
-              args: [user.name ?? null, user.image ?? null, existing.id],
-            });
+            await sql`
+              UPDATE users SET name = COALESCE(name, ${user.name ?? null}), image = COALESCE(image, ${user.image ?? null}) WHERE id = ${existing.id}
+            `;
           }
         } else {
           token.id = user.id;

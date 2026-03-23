@@ -1,80 +1,89 @@
--- Invoice Generator SQLite Schema
-PRAGMA foreign_keys = ON;
+-- Invoice Generator PostgreSQL Schema
 
+-- ── Auth ────────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS users (
+  id             TEXT PRIMARY KEY,
+  name           TEXT,
+  email          TEXT UNIQUE,
+  email_verified TIMESTAMPTZ,
+  image          TEXT,
+  password       TEXT,
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- ── Customers ───────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS customers (
-  id          TEXT NOT NULL PRIMARY KEY,
+  id        TEXT PRIMARY KEY,
+  user_id   TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  name      TEXT NOT NULL,
+  email     TEXT NOT NULL,
+  address   TEXT NOT NULL DEFAULT '',
+  city      TEXT NOT NULL DEFAULT '',
+  state     TEXT NOT NULL DEFAULT '',
+  zip_code  TEXT NOT NULL DEFAULT '',
+  country   TEXT NOT NULL DEFAULT '',
+  logo      TEXT
+);
+
+-- ── Invoices ────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS invoices (
+  id              TEXT PRIMARY KEY,
+  user_id         TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  invoice_number  TEXT NOT NULL,
+  date            TEXT NOT NULL,
+  due_date        TEXT NOT NULL,
+  status          TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft','sent','paid','cancelled')),
+  customer        JSONB NOT NULL,
+  company         JSONB,
+  items           JSONB NOT NULL DEFAULT '[]',
+  notes           TEXT,
+  tax_rate        DOUBLE PRECISION,
+  currency        TEXT NOT NULL DEFAULT 'GBP',
+  created_at      TEXT NOT NULL,
+  updated_at      TEXT NOT NULL
+);
+
+-- ── Templates ───────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS templates (
+  id          TEXT PRIMARY KEY,
+  user_id     TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  name        TEXT NOT NULL,
+  description TEXT,
+  customer    JSONB NOT NULL DEFAULT '{}',
+  items       JSONB NOT NULL DEFAULT '[]',
+  notes       TEXT,
+  tax_rate    DOUBLE PRECISION,
+  currency    TEXT NOT NULL DEFAULT 'GBP',
+  created_at  TEXT NOT NULL
+);
+
+-- ── Company Details ─────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS company_details (
+  id          TEXT PRIMARY KEY,
+  user_id     TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   name        TEXT NOT NULL,
   email       TEXT NOT NULL,
-  address     TEXT NOT NULL,
-  city        TEXT NOT NULL,
-  state       TEXT NOT NULL,
-  zip_code    TEXT NOT NULL,
-  country     TEXT NOT NULL,
-  logo        TEXT
-);
-
-CREATE TABLE IF NOT EXISTS invoices (
-  id                TEXT NOT NULL PRIMARY KEY,
-  invoice_number    TEXT NOT NULL UNIQUE,
-  date              TEXT NOT NULL,
-  due_date          TEXT NOT NULL,
-  status            TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft','sent','paid','cancelled')),
-  customer_id       TEXT,
-  customer_snapshot TEXT NOT NULL,
-  notes             TEXT,
-  tax_rate          REAL,
-  currency          TEXT NOT NULL DEFAULT 'GBP',
-  created_at        TEXT NOT NULL,
-  updated_at        TEXT NOT NULL,
-  FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE SET NULL
-);
-
-CREATE TABLE IF NOT EXISTS invoice_items (
-  id          TEXT NOT NULL PRIMARY KEY,
-  invoice_id  TEXT NOT NULL,
-  description TEXT NOT NULL,
-  quantity    REAL NOT NULL,
-  rate        REAL NOT NULL,
-  discount    REAL,
-  tax_rate    REAL,
-  FOREIGN KEY (invoice_id) REFERENCES invoices(id) ON DELETE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS templates (
-  id               TEXT NOT NULL PRIMARY KEY,
-  name             TEXT NOT NULL,
-  description      TEXT,
-  customer_partial TEXT NOT NULL,
-  items_partial    TEXT NOT NULL,
-  notes            TEXT,
-  tax_rate         REAL,
-  currency         TEXT NOT NULL DEFAULT 'GBP',
-  created_at       TEXT NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS company_details (
-  id          TEXT    NOT NULL PRIMARY KEY,
-  name        TEXT    NOT NULL,
-  email       TEXT    NOT NULL,
   phone       TEXT,
-  address     TEXT    NOT NULL,
-  city        TEXT    NOT NULL,
-  state       TEXT    NOT NULL,
-  zip_code    TEXT    NOT NULL,
-  country     TEXT    NOT NULL,
+  address     TEXT NOT NULL DEFAULT '',
+  city        TEXT NOT NULL DEFAULT '',
+  state       TEXT NOT NULL DEFAULT '',
+  zip_code    TEXT NOT NULL DEFAULT '',
+  country     TEXT NOT NULL DEFAULT '',
   website     TEXT,
   tax_id      TEXT,
   logo        TEXT,
-  is_default  INTEGER NOT NULL DEFAULT 0,
-  created_at  TEXT    NOT NULL,
-  updated_at  TEXT    NOT NULL
+  is_default  BOOLEAN NOT NULL DEFAULT false,
+  created_at  TEXT NOT NULL,
+  updated_at  TEXT NOT NULL
 );
 
+-- ── Account / Bank Details ──────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS account_details (
-  id                  TEXT    NOT NULL PRIMARY KEY,
-  account_holder_name TEXT    NOT NULL,
-  bank_name           TEXT    NOT NULL,
-  account_number      TEXT    NOT NULL,
+  id                  TEXT PRIMARY KEY,
+  user_id             TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  account_holder_name TEXT NOT NULL,
+  bank_name           TEXT NOT NULL,
+  account_number      TEXT NOT NULL,
   sort_code           TEXT,
   routing_number      TEXT,
   iban                TEXT,
@@ -82,35 +91,15 @@ CREATE TABLE IF NOT EXISTS account_details (
   currency            TEXT,
   payment_reference   TEXT,
   notes               TEXT,
-  is_default          INTEGER NOT NULL DEFAULT 0,
-  created_at          TEXT    NOT NULL,
-  updated_at          TEXT    NOT NULL
+  is_default          BOOLEAN NOT NULL DEFAULT false,
+  created_at          TEXT NOT NULL,
+  updated_at          TEXT NOT NULL
 );
 
+-- ── Settings ────────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS settings (
-  id               TEXT NOT NULL PRIMARY KEY DEFAULT 'default',
+  id               TEXT PRIMARY KEY,
+  user_id          TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   default_currency TEXT NOT NULL DEFAULT 'GBP',
   updated_at       TEXT NOT NULL
-);
-
--- Seed default settings row
-INSERT OR IGNORE INTO settings (id, default_currency, updated_at)
-VALUES ('default', 'GBP', datetime('now'));
-
--- ── Cloud backup: stores full IndexedDB snapshot per user as JSON ────────────
-CREATE TABLE IF NOT EXISTS user_data (
-  user_email  TEXT NOT NULL PRIMARY KEY,
-  data        TEXT NOT NULL,
-  updated_at  TEXT NOT NULL DEFAULT (datetime('now'))
-);
-
--- ── Auth: users ──────────────────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS users (
-  id            TEXT    NOT NULL PRIMARY KEY,
-  name          TEXT,
-  email         TEXT    UNIQUE,
-  emailVerified TEXT,
-  image         TEXT,
-  password      TEXT,
-  created_at    TEXT    NOT NULL DEFAULT (datetime('now'))
 );
