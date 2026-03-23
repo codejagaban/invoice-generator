@@ -8,7 +8,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { FilePlus2, LayoutTemplate, Trash2 } from "lucide-react";
+import { FilePlus2, LayoutTemplate, Trash2, BookTemplate } from "lucide-react";
 import Button from "@/app/components/shared/Button";
 import Card, {
   CardContent,
@@ -18,6 +18,8 @@ import Card, {
 import type { InvoiceTemplate } from "@/app/lib/types";
 import { getTemplates, deleteTemplate } from "@/app/lib/storage";
 import { formatDate } from "@/app/lib/invoice";
+import { TemplateListSkeleton } from "@/app/components/shared/Skeleton";
+import EmptyState from "@/app/components/shared/EmptyState";
 
 export default function TemplatesPage() {
   const router = useRouter();
@@ -45,14 +47,6 @@ export default function TemplatesPage() {
     router.push("/invoices/create");
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-black">
-        <p className="text-(--muted)">Loading templates...</p>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-(--background)">
       <header className="border-b border-b-(--border) bg-(--surface)">
@@ -64,21 +58,24 @@ export default function TemplatesPage() {
       </header>
 
       <main className="mx-auto max-w-7xl px-6 py-12">
+        {isLoading ? (
+          <TemplateListSkeleton />
+        ) :
         <div className="space-y-6">
           {templates.length === 0 ? (
             <Card>
-              <div className="py-12 text-center">
-                <p className="mb-4 text-(--muted)">
-                  No templates yet. Create an invoice and save it as a template
-                  to reuse it.
-                </p>
+              <EmptyState
+                icon={BookTemplate}
+                title="No templates yet"
+                description="Create an invoice and save it as a template to reuse it."
+              >
                 <Link href="/invoices/create">
                   <Button variant="outline">
                     <FilePlus2 className="h-4 w-4 text-green-500" />
                     Create Invoice
                   </Button>
                 </Link>
-              </div>
+              </EmptyState>
             </Card>
           ) : (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -139,6 +136,7 @@ export default function TemplatesPage() {
             </div>
           )}
         </div>
+        }
       </main>
     </div>
   );

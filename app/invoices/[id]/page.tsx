@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { Pencil, Trash2, ArrowLeft, FileDown, Mail, CheckCircle2 } from "lucide-react";
+import StatusBadge from "@/app/components/shared/StatusBadge";
 import Button from "@/app/components/shared/Button";
 import { InputWithRef as Input } from "@/app/components/shared/Input";
 import Card, {
@@ -208,7 +209,7 @@ export default function InvoiceDetailPage() {
             </div>
             <div className="flex gap-2">
               <Link href={`/invoices/${id}/edit`}>
-                <Button variant="ghost" size="sm" className="w-9 px-0">
+                <Button variant="ghost" size="sm" className="w-9 px-0" aria-label="Edit invoice">
                   <Pencil className="h-4 w-4 text-blue-500" />
                 </Button>
               </Link>
@@ -217,6 +218,7 @@ export default function InvoiceDetailPage() {
                 size="sm"
                 className="w-9 px-0"
                 onClick={handleDelete}
+                aria-label="Delete invoice"
               >
                 <Trash2 className="h-4 w-4 text-red-500" />
               </Button>
@@ -229,17 +231,7 @@ export default function InvoiceDetailPage() {
         <div className="space-y-6">
           {/* Status */}
           <div className="flex items-center gap-4">
-            <div
-              className={`px-4 py-2 rounded-full font-medium text-white ${
-                invoice.status === "paid"
-                  ? "bg-green-600"
-                  : invoice.status === "sent"
-                    ? "bg-blue-600"
-                    : "bg-gray-600"
-              }`}
-            >
-              {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
-            </div>
+            <StatusBadge status={invoice.status} size="md" />
             {overdue && (
               <div className="px-4 py-2 rounded-full bg-red-100 font-medium text-red-700 dark:bg-red-900/20 dark:text-red-400">
                 Overdue by {Math.abs(daysRemaining)} days
@@ -314,11 +306,11 @@ export default function InvoiceDetailPage() {
               <CardTitle>Line Items</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-2">
-                {invoice.items.map((item) => (
+              <div className="divide-y divide-(--border)">
+                {invoice.items.map((item, index) => (
                   <div
                     key={item.id}
-                    className="flex items-center justify-between border-b py-2 border-(--border)"
+                    className={`flex items-center justify-between py-3 px-2 -mx-2 rounded-lg ${index % 2 === 1 ? "bg-gray-50 dark:bg-gray-900/30" : ""}`}
                   >
                     <div>
                       <p className="font-medium text-black dark:text-white">
