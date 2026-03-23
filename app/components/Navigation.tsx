@@ -54,9 +54,8 @@ export default function Navigation() {
   }, []);
 
   // Close mobile sidebar on route change
-  useEffect(() => {
-    setMobileOpen(false);
-  }, [pathname]);
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => { setMobileOpen(false); }, [pathname]);
 
   // Hide on auth pages
   if (pathname === "/sign-in" || pathname === "/sign-up") return null;

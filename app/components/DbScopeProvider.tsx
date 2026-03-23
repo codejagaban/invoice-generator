@@ -1,7 +1,6 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
 import { setDbScope } from "@/app/lib/db";
 
 /**
@@ -15,19 +14,14 @@ export default function DbScopeProvider({
   children: React.ReactNode;
 }) {
   const { data: session, status } = useSession();
-  const [ready, setReady] = useState(false);
 
-  useEffect(() => {
-    if (status === "loading") return;
-
-    const userId = session?.user?.id || session?.user?.email || "guest";
-    setDbScope(userId);
-    setReady(true);
-  }, [session, status]);
-
-  if (!ready) {
+  if (status === "loading") {
     return null;
   }
+
+  // setDbScope is a pure variable assignment — safe to call during render
+  const userId = session?.user?.id || session?.user?.email || "guest";
+  setDbScope(userId);
 
   return <>{children}</>;
 }
