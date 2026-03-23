@@ -29,6 +29,7 @@ import {
 import { InvoiceListSkeleton } from "@/app/components/shared/Skeleton";
 import StatusBadge from "@/app/components/shared/StatusBadge";
 import EmptyState from "@/app/components/shared/EmptyState";
+import MiniChart, { groupByDay } from "@/app/components/shared/MiniChart";
 import { FileText } from "lucide-react";
 
 export default function InvoicesDashboardPage() {
@@ -144,39 +145,74 @@ export default function InvoicesDashboardPage() {
           {/* Stats */}
           <div className="grid gap-4 sm:grid-cols-4">
             <Card>
-              <div className="space-y-1">
-                <p className="text-xs font-medium uppercase tracking-widest text-(--muted)">
-                  Total Invoices
-                </p>
-                <p className="font-mono text-4xl font-bold tabular-nums tracking-tight text-black dark:text-white">
-                  {invoices.length}
-                </p>
+              <div className="flex items-start justify-between gap-4">
+                <div className="space-y-1">
+                  <p className="text-xs font-medium uppercase tracking-widest text-(--muted)">
+                    Total Invoices
+                  </p>
+                  <p className="font-mono text-3xl font-bold tabular-nums tracking-tight text-black dark:text-white">
+                    {invoices.length}
+                  </p>
+                </div>
+                <MiniChart
+                  data={groupByDay(invoices.map((inv) => inv.createdAt))}
+                  className="w-20"
+                />
               </div>
             </Card>
             <Card>
-              <div className="space-y-1">
-                <p className="text-xs font-medium uppercase tracking-widest text-(--muted)">
-                  Total Amount
-                </p>
-                <p className="font-mono text-4xl font-bold tabular-nums tracking-tight text-black dark:text-white">
-                  {formatCurrency(totalAmount, defaultCurrency)}
-                </p>
+              <div className="flex items-start justify-between gap-4">
+                <div className="space-y-1">
+                  <p className="text-xs font-medium uppercase tracking-widest text-(--muted)">
+                    Total Amount
+                  </p>
+                  <p className="font-mono text-3xl font-bold tabular-nums tracking-tight text-black dark:text-white">
+                    {formatCurrency(totalAmount, defaultCurrency)}
+                  </p>
+                </div>
+                <MiniChart
+                  data={groupByDay(invoices.map((inv) => inv.createdAt))}
+                  color="#3b82f6"
+                  className="w-20"
+                />
               </div>
             </Card>
             <Card>
-              <div className="space-y-1">
-                <p className="text-xs font-medium uppercase tracking-widest text-(--muted)">Paid</p>
-                <p className="font-mono text-4xl font-bold tabular-nums tracking-tight text-green-600 dark:text-green-400">
-                  {invoices.filter((inv) => inv.status === "paid").length}
-                </p>
+              <div className="flex items-start justify-between gap-4">
+                <div className="space-y-1">
+                  <p className="text-xs font-medium uppercase tracking-widest text-(--muted)">Paid</p>
+                  <p className="font-mono text-3xl font-bold tabular-nums tracking-tight text-green-600 dark:text-green-400">
+                    {invoices.filter((inv) => inv.status === "paid").length}
+                  </p>
+                </div>
+                <MiniChart
+                  data={groupByDay(
+                    invoices
+                      .filter((inv) => inv.status === "paid")
+                      .map((inv) => inv.updatedAt),
+                  )}
+                  color="#22c55e"
+                  className="w-20"
+                />
               </div>
             </Card>
             <Card>
-              <div className="space-y-1">
-                <p className="text-xs font-medium uppercase tracking-widest text-(--muted)">Overdue</p>
-                <p className="font-mono text-4xl font-bold tabular-nums tracking-tight text-red-600 dark:text-red-400">
-                  {invoices.filter((inv) => isOverdue(inv.dueDate)).length}
-                </p>
+              <div className="flex items-start justify-between gap-4">
+                <div className="space-y-1">
+                  <p className="text-xs font-medium uppercase tracking-widest text-(--muted)">Overdue</p>
+                  <p className="font-mono text-3xl font-bold tabular-nums tracking-tight text-red-600 dark:text-red-400">
+                    {invoices.filter((inv) => isOverdue(inv.dueDate)).length}
+                  </p>
+                </div>
+                <MiniChart
+                  data={groupByDay(
+                    invoices
+                      .filter((inv) => isOverdue(inv.dueDate))
+                      .map((inv) => inv.dueDate),
+                  )}
+                  color="#ef4444"
+                  className="w-20"
+                />
               </div>
             </Card>
           </div>
