@@ -1,22 +1,34 @@
 /**
  * Data API Route
- * Proxies all CRUD operations to Postgres for authenticated users.
- * Client-side storage.ts calls this instead of IndexedDB when user is logged in.
+ * Proxies all CRUD operations to Postgres.
+ * Works for both authenticated users (via session) and anonymous guests (via cookie).
  */
 
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
+import pool from "@/app/lib/pool";
 import * as pg from "@/app/lib/pg-storage";
 
-async function getUserId(): Promise<string | null> {
+async function getUserId(request: NextRequest): Promise<string | null> {
+  // 1. Check auth session first
   const session = await auth();
-  if (!session?.user?.id) return null;
-  return session.user.id;
+  if (session?.user?.id) return session.user.id;
+
+  // 2. Fall back to guest_id cookie
+  const guestId = request.cookies.get("guest_id")?.value;
+  if (!guestId) return null;
+
+  // Validate the guest user exists and hasn't expired
+  const { rows } = await pool.query(
+    "SELECT id FROM users WHERE id = $1 AND is_anonymous = true AND (expires_at IS NULL OR expires_at > NOW())",
+    [guestId],
+  );
+  return rows[0] ? (rows[0].id as string) : null;
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const userId = await getUserId();
+    const userId = await getUserId(request);
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
