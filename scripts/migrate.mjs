@@ -1,7 +1,7 @@
 /**
  * Usage:
- *   node --env-file=.env.local scripts/migrate.mjs          # dev
- *   node --env-file=.env.production scripts/migrate.mjs     # prod
+ *   node --env-file=.env.local scripts/migrate.mjs          # dev (localhost)
+ *   node --env-file=.env.production scripts/migrate.mjs     # prod (Aiven)
  */
 import pg from "pg";
 import { readFileSync } from "fs";
@@ -16,9 +16,11 @@ if (!process.env.DATABASE_URL) {
   process.exit(1);
 }
 
+const isLocalhost = process.env.DATABASE_URL.includes("localhost") || process.env.DATABASE_URL.includes("127.0.0.1");
+
 const client = new pg.Client({
   connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false },
+  ssl: isLocalhost ? false : { rejectUnauthorized: false },
 });
 
 await client.connect();
