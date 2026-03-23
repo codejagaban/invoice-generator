@@ -325,8 +325,8 @@ export default function InvoiceDetailPage() {
                         {item.description}
                       </p>
                       <p className="text-sm text-(--muted)">
-                        {item.quantity} ×{" "}
-                        {formatCurrency(item.rate, invoice.currency)}
+                        {item.type === "hours" ? `${item.quantity} hrs` : item.quantity} ×{" "}
+                        {formatCurrency(item.rate, invoice.currency)}{item.type === "hours" ? "/hr" : ""}
                       </p>
                     </div>
                     <p className="font-semibold text-black dark:text-white">

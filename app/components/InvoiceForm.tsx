@@ -39,6 +39,7 @@ import type {
 } from "@/app/lib/types";
 import {
   Building2,
+  Clock,
   DollarSign,
   FileText,
   Globe,
@@ -771,21 +772,50 @@ export default function InvoiceForm({
                 className="grid gap-3 rounded-lg border p-4 sm:grid-cols-[1fr_auto] border-(--border)"
               >
                 <div className="space-y-2">
-                  <Input
-                    type="text"
-                    placeholder="Description"
-                    value={item.description}
-                    onChange={(e) =>
-                      handleItemChange(index, "description", e.target.value)
-                    }
-                    leadingIcon={<FileText className="h-4 w-4" />}
-                  />
+                  <div className="flex gap-2">
+                    <div className="shrink-0 flex rounded-lg border border-(--border) overflow-hidden">
+                      <button
+                        type="button"
+                        onClick={() => handleItemChange(index, "type", "item")}
+                        className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium transition-colors ${
+                          item.type !== "hours"
+                            ? "bg-black text-white dark:bg-white dark:text-black"
+                            : "bg-(--surface-raised) text-(--muted) hover:bg-(--border)"
+                        }`}
+                      >
+                        <Hash className="h-3.5 w-3.5" /> Item
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleItemChange(index, "type", "hours")}
+                        className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium transition-colors ${
+                          item.type === "hours"
+                            ? "bg-black text-white dark:bg-white dark:text-black"
+                            : "bg-(--surface-raised) text-(--muted) hover:bg-(--border)"
+                        }`}
+                      >
+                        <Clock className="h-3.5 w-3.5" /> Hours
+                      </button>
+                    </div>
+                    <Input
+                      type="text"
+                      placeholder={item.type === "hours" ? "Service / task description" : "Item description"}
+                      value={item.description}
+                      onChange={(e) =>
+                        handleItemChange(index, "description", e.target.value)
+                      }
+                      leadingIcon={<FileText className="h-4 w-4" />}
+                      className="flex-1"
+                    />
+                  </div>
                   <div className="grid gap-2 sm:grid-cols-[96px_1fr_auto]">
                     <div>
-                      <span className="block text-xs text-(--muted)">Qty</span>
+                      <span className="block text-xs text-(--muted)">
+                        {item.type === "hours" ? "Hours" : "Qty"}
+                      </span>
                       <Input
                         type="number"
-                        placeholder="0"
+                        placeholder={item.type === "hours" ? "0.0" : "0"}
                         value={item.quantity || ""}
                         onChange={(e) =>
                           handleItemChange(
@@ -797,12 +827,14 @@ export default function InvoiceForm({
                           )
                         }
                         min="0.01"
-                        step="0.01"
-                        leadingIcon={<Hash className="h-4 w-4" />}
+                        step={item.type === "hours" ? "0.25" : "0.01"}
+                        leadingIcon={item.type === "hours" ? <Clock className="h-4 w-4" /> : <Hash className="h-4 w-4" />}
                       />
                     </div>
                     <div>
-                      <span className="block text-xs text-(--muted)">Rate</span>
+                      <span className="block text-xs text-(--muted)">
+                        {item.type === "hours" ? "Rate/hr" : "Rate"}
+                      </span>
                       <Input
                         type="number"
                         placeholder="0.00"
