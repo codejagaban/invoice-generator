@@ -4,7 +4,7 @@
  * Uses node-postgres (pg) — works with any Postgres host (Aiven, Supabase, etc.).
  */
 
-import pool from "./neon";
+import pool from "./pool";
 import type {
   Invoice,
   InvoiceTemplate,
