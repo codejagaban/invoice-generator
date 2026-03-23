@@ -11,7 +11,21 @@ import type {
   AccountDetails,
   Settings,
 } from "./types";
-import { STORES, dbGetAll, dbGetOne, dbPut, dbDelete } from "./db";
+import { STORES, dbGetAll, dbGetOne, dbPut, dbDelete, getDbScope } from "./db";
+import { pushToCloud } from "./sync";
+
+/**
+ * Debounced cloud sync — pushes to Turso after writes settle.
+ * Only syncs for authenticated users (non-guest scope).
+ */
+let syncTimer: ReturnType<typeof setTimeout> | null = null;
+function schedulCloudSync() {
+  if (getDbScope() === "guest") return;
+  if (syncTimer) clearTimeout(syncTimer);
+  syncTimer = setTimeout(() => {
+    pushToCloud();
+  }, 2000);
+}
 
 // ============ INVOICE STORAGE ============
 
@@ -24,7 +38,9 @@ export async function getInvoiceById(id: string): Promise<Invoice | null> {
 }
 
 export async function createInvoice(invoice: Invoice): Promise<Invoice> {
-  return dbPut<Invoice>(STORES.invoices, invoice);
+  const result = await dbPut<Invoice>(STORES.invoices, invoice);
+  schedulCloudSync();
+  return result;
 }
 
 export async function updateInvoice(
@@ -38,11 +54,15 @@ export async function updateInvoice(
     ...updates,
     updatedAt: new Date().toISOString(),
   };
-  return dbPut<Invoice>(STORES.invoices, updated);
+  const result = await dbPut<Invoice>(STORES.invoices, updated);
+  schedulCloudSync();
+  return result;
 }
 
 export async function deleteInvoice(id: string): Promise<boolean> {
-  return dbDelete(STORES.invoices, id);
+  const result = await dbDelete(STORES.invoices, id);
+  schedulCloudSync();
+  return result;
 }
 
 // ============ CUSTOMER STORAGE ============
@@ -56,7 +76,9 @@ export async function getCustomerById(id: string): Promise<Customer | null> {
 }
 
 export async function createCustomer(customer: Customer): Promise<Customer> {
-  return dbPut<Customer>(STORES.customers, customer);
+  const result = await dbPut<Customer>(STORES.customers, customer);
+  schedulCloudSync();
+  return result;
 }
 
 export async function updateCustomer(
@@ -66,11 +88,15 @@ export async function updateCustomer(
   const existing = await getCustomerById(id);
   if (!existing) return null;
   const updated: Customer = { ...existing, ...updates };
-  return dbPut<Customer>(STORES.customers, updated);
+  const result = await dbPut<Customer>(STORES.customers, updated);
+  schedulCloudSync();
+  return result;
 }
 
 export async function deleteCustomer(id: string): Promise<boolean> {
-  return dbDelete(STORES.customers, id);
+  const result = await dbDelete(STORES.customers, id);
+  schedulCloudSync();
+  return result;
 }
 
 // ============ TEMPLATE STORAGE ============
@@ -88,7 +114,9 @@ export async function getTemplateById(
 export async function createTemplate(
   template: InvoiceTemplate,
 ): Promise<InvoiceTemplate> {
-  return dbPut<InvoiceTemplate>(STORES.templates, template);
+  const result = await dbPut<InvoiceTemplate>(STORES.templates, template);
+  schedulCloudSync();
+  return result;
 }
 
 export async function updateTemplate(
@@ -98,11 +126,15 @@ export async function updateTemplate(
   const existing = await getTemplateById(id);
   if (!existing) return null;
   const updated: InvoiceTemplate = { ...existing, ...updates };
-  return dbPut<InvoiceTemplate>(STORES.templates, updated);
+  const result = await dbPut<InvoiceTemplate>(STORES.templates, updated);
+  schedulCloudSync();
+  return result;
 }
 
 export async function deleteTemplate(id: string): Promise<boolean> {
-  return dbDelete(STORES.templates, id);
+  const result = await dbDelete(STORES.templates, id);
+  schedulCloudSync();
+  return result;
 }
 
 // ============ COMPANY DETAILS STORAGE ============
@@ -125,7 +157,9 @@ export async function getCompanyById(
 export async function createCompany(
   company: CompanyDetails,
 ): Promise<CompanyDetails> {
-  return dbPut<CompanyDetails>(STORES.company_details, company);
+  const result = await dbPut<CompanyDetails>(STORES.company_details, company);
+  schedulCloudSync();
+  return result;
 }
 
 export async function updateCompany(
@@ -139,11 +173,15 @@ export async function updateCompany(
     ...updates,
     updatedAt: new Date().toISOString(),
   };
-  return dbPut<CompanyDetails>(STORES.company_details, updated);
+  const result = await dbPut<CompanyDetails>(STORES.company_details, updated);
+  schedulCloudSync();
+  return result;
 }
 
 export async function deleteCompany(id: string): Promise<boolean> {
-  return dbDelete(STORES.company_details, id);
+  const result = await dbDelete(STORES.company_details, id);
+  schedulCloudSync();
+  return result;
 }
 
 export async function setDefaultCompany(id: string): Promise<boolean> {
@@ -158,6 +196,7 @@ export async function setDefaultCompany(id: string): Promise<boolean> {
       }),
     ),
   );
+  schedulCloudSync();
   return true;
 }
 
@@ -181,7 +220,9 @@ export async function getAccountById(
 export async function createAccount(
   account: AccountDetails,
 ): Promise<AccountDetails> {
-  return dbPut<AccountDetails>(STORES.account_details, account);
+  const result = await dbPut<AccountDetails>(STORES.account_details, account);
+  schedulCloudSync();
+  return result;
 }
 
 export async function updateAccount(
@@ -195,11 +236,15 @@ export async function updateAccount(
     ...updates,
     updatedAt: new Date().toISOString(),
   };
-  return dbPut<AccountDetails>(STORES.account_details, updated);
+  const result = await dbPut<AccountDetails>(STORES.account_details, updated);
+  schedulCloudSync();
+  return result;
 }
 
 export async function deleteAccount(id: string): Promise<boolean> {
-  return dbDelete(STORES.account_details, id);
+  const result = await dbDelete(STORES.account_details, id);
+  schedulCloudSync();
+  return result;
 }
 
 export async function setDefaultAccount(id: string): Promise<boolean> {
@@ -214,6 +259,7 @@ export async function setDefaultAccount(id: string): Promise<boolean> {
       }),
     ),
   );
+  schedulCloudSync();
   return true;
 }
 
@@ -233,5 +279,7 @@ export async function saveSettings(
     ...updates,
     updatedAt: new Date().toISOString(),
   };
-  return dbPut<Settings>(STORES.settings, updated);
+  const result = await dbPut<Settings>(STORES.settings, updated);
+  schedulCloudSync();
+  return result;
 }
