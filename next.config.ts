@@ -4,7 +4,7 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: ".",
   },
-  serverExternalPackages: ["bcryptjs"],
+  serverExternalPackages: ["bcryptjs", "pg"],
   images: {
     remotePatterns: [
       {
