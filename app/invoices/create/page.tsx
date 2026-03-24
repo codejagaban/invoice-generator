@@ -10,7 +10,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import InvoiceForm from "@/app/components/InvoiceForm";
 import type { Invoice } from "@/app/lib/types";
-import { createInvoice } from "@/app/lib/storage";
+import { createInvoice, incrementTemplateUsage } from "@/app/lib/storage";
 
 export default function CreateInvoicePage() {
   const router = useRouter();
@@ -20,6 +20,9 @@ export default function CreateInvoicePage() {
     try {
       setError(null);
       await createInvoice(invoice);
+      if (invoice.templateId) {
+        await incrementTemplateUsage(invoice.templateId);
+      }
       router.push(`/invoices/${invoice.id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create invoice");

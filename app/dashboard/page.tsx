@@ -59,6 +59,90 @@ function isLastMonth(dateStr: string): boolean {
   return d.getMonth() === lastMonth.getMonth() && d.getFullYear() === lastMonth.getFullYear();
 }
 
+// ─── Line Chart Component ───────────────────────────────────────────────────
+
+function LineChart({
+  data,
+  labels,
+  color = "#6366f1",
+  formatValue,
+}: {
+  data: number[];
+  labels: string[];
+  color?: string;
+  formatValue?: (v: number) => string;
+}) {
+  const width = 500;
+  const height = 160;
+  const padX = 40;
+  const padTop = 20;
+  const padBottom = 24;
+  const chartW = width - padX * 2;
+  const chartH = height - padTop - padBottom;
+  const max = Math.max(...data, 1);
+
+  const points = data.map((v, i) => ({
+    x: padX + (i / Math.max(data.length - 1, 1)) * chartW,
+    y: padTop + chartH - (v / max) * chartH,
+  }));
+
+  // Smooth bezier path
+  let linePath = `M ${points[0].x} ${points[0].y}`;
+  for (let i = 0; i < points.length - 1; i++) {
+    const p0 = points[Math.max(i - 1, 0)];
+    const p1 = points[i];
+    const p2 = points[i + 1];
+    const p3 = points[Math.min(i + 2, points.length - 1)];
+    const t = 0.3;
+    linePath += ` C ${p1.x + (p2.x - p0.x) * t} ${p1.y + (p2.y - p0.y) * t}, ${p2.x - (p3.x - p1.x) * t} ${p2.y - (p3.y - p1.y) * t}, ${p2.x} ${p2.y}`;
+  }
+
+  const fillPath = `${linePath} L ${points[points.length - 1].x} ${padTop + chartH} L ${points[0].x} ${padTop + chartH} Z`;
+
+  return (
+    <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-44" fill="none">
+      <defs>
+        <linearGradient id="line-chart-grad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity="0.2" />
+          <stop offset="100%" stopColor={color} stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      {/* Grid lines */}
+      {[0, 0.25, 0.5, 0.75, 1].map((pct) => (
+        <line
+          key={pct}
+          x1={padX}
+          y1={padTop + chartH * (1 - pct)}
+          x2={width - padX}
+          y2={padTop + chartH * (1 - pct)}
+          stroke="currentColor"
+          strokeWidth="0.5"
+          className="text-gray-200 dark:text-gray-800"
+        />
+      ))}
+      {/* Fill */}
+      <path d={fillPath} fill="url(#line-chart-grad)" />
+      {/* Line */}
+      <path d={linePath} stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+      {/* Dots and labels */}
+      {points.map((p, i) => (
+        <g key={i}>
+          <circle cx={p.x} cy={p.y} r="4" fill={color} />
+          <circle cx={p.x} cy={p.y} r="2" fill="white" />
+          {/* Value */}
+          <text x={p.x} y={p.y - 10} textAnchor="middle" className="text-[9px] fill-gray-500 dark:fill-gray-400" style={{ fontFamily: "system-ui" }}>
+            {formatValue ? formatValue(data[i]) : data[i]}
+          </text>
+          {/* Label */}
+          <text x={p.x} y={height - 4} textAnchor="middle" className="text-[10px] fill-gray-500 dark:fill-gray-400" style={{ fontFamily: "system-ui" }}>
+            {labels[i]}
+          </text>
+        </g>
+      ))}
+    </svg>
+  );
+}
+
 // ─── Bar Chart Component ────────────────────────────────────────────────────
 
 function BarChart({
@@ -115,15 +199,17 @@ function StatusDonut({
   const strokeWidth = 20;
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
-  let offset = 0;
+  const offsets = segments.reduce<number[]>((acc, _seg, i) => {
+    acc.push(i === 0 ? 0 : acc[i - 1] + (segments[i - 1].value / total) * circumference);
+    return acc;
+  }, []);
 
   return (
     <div className="flex items-center gap-6">
       <svg width={size} height={size} className="shrink-0">
-        {segments.map((seg) => {
+        {segments.map((seg, i) => {
           const dashLength = (seg.value / total) * circumference;
-          const dashOffset = -offset;
-          offset += dashLength;
+          const dashOffset = -offsets[i];
           return (
             <circle
               key={seg.label}
@@ -433,7 +519,7 @@ export default function DashboardPage() {
                 <h3 className="text-sm font-semibold text-black dark:text-white mb-4">
                   Monthly Revenue (Last 6 Months)
                 </h3>
-                <BarChart
+                <LineChart
                   data={metrics.monthlyRevenue}
                   labels={metrics.monthLabels}
                   color="#6366f1"
