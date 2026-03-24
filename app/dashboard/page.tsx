@@ -20,7 +20,7 @@ import Button from "@/app/components/shared/Button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/shared/Select";
 import Card from "@/app/components/shared/Card";
 import type { Invoice } from "@/app/lib/types";
-import { getInvoices, getSettings } from "@/app/lib/storage";
+import { getInvoices, getSettings, saveSettings } from "@/app/lib/storage";
 import {
   formatDate,
   formatCurrency,
@@ -617,6 +617,31 @@ export default function DashboardPage() {
                   <SelectItem value="sent">Sent</SelectItem>
                   <SelectItem value="paid">Paid</SelectItem>
                   <SelectItem value="cancelled">Cancelled</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={defaultCurrency} onValueChange={async (v) => {
+                setDefaultCurrency(v);
+                await saveSettings({ defaultCurrency: v, updatedAt: new Date().toISOString() });
+              }}>
+                <SelectTrigger className="flex-1 sm:flex-none sm:w-28">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {[
+                    { code: "USD", label: "USD" },
+                    { code: "EUR", label: "EUR" },
+                    { code: "GBP", label: "GBP" },
+                    { code: "CAD", label: "CAD" },
+                    { code: "AUD", label: "AUD" },
+                    { code: "JPY", label: "JPY" },
+                    { code: "CHF", label: "CHF" },
+                    { code: "CNY", label: "CNY" },
+                    { code: "INR", label: "INR" },
+                    { code: "MXN", label: "MXN" },
+                    { code: "NGN", label: "NGN" },
+                  ].map((c) => (
+                    <SelectItem key={c.code} value={c.code}>{c.label}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               {(period !== "this-month" || statusFilter !== "all") && (
