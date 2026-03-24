@@ -7,7 +7,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { FilePlus2, CheckCircle2, Search } from "lucide-react";
+import { FilePlus2, Search, Pencil } from "lucide-react";
 import Button from "@/app/components/shared/Button";
 import { InputWithRef as Input } from "@/app/components/shared/Input";
 import Card from "@/app/components/shared/Card";
@@ -28,7 +28,7 @@ import {
 } from "@/app/lib/invoice";
 import { useDbReady } from "@/app/components/DbScopeProvider";
 import { InvoiceListSkeleton } from "@/app/components/shared/Skeleton";
-import StatusBadge from "@/app/components/shared/StatusBadge";
+
 import EmptyState from "@/app/components/shared/EmptyState";
 import MiniChart, { groupByDay } from "@/app/components/shared/MiniChart";
 import { FileText } from "lucide-react";
@@ -43,19 +43,17 @@ export default function InvoicesDashboardPage() {
   >("all");
   const [sortBy, setSortBy] = useState<"date" | "amount" | "name">("date");
   const [defaultCurrency, setDefaultCurrency] = useState("GBP");
-  const [markingPaidId, setMarkingPaidId] = useState<string | null>(null);
+  const [updatingStatusId, setUpdatingStatusId] = useState<string | null>(null);
 
-  const handleMarkAsPaid = async (e: React.MouseEvent, invoiceId: string) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setMarkingPaidId(invoiceId);
-    const updated = await updateInvoice(invoiceId, { status: "paid" });
+  const handleStatusChange = async (invoiceId: string, newStatus: Invoice["status"]) => {
+    setUpdatingStatusId(invoiceId);
+    const updated = await updateInvoice(invoiceId, { status: newStatus });
     if (updated) {
       setInvoices((prev) =>
         prev.map((inv) => (inv.id === invoiceId ? updated : inv)),
       );
     }
-    setMarkingPaidId(null);
+    setUpdatingStatusId(null);
   };
 
   useEffect(() => {
@@ -296,7 +294,6 @@ export default function InvoicesDashboardPage() {
                       <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-(--muted)">Due Date</th>
                       <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-(--muted)">Status</th>
                       <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-(--muted)">Amount</th>
-                      <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-(--muted)"></th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-(--border)">
@@ -338,23 +335,25 @@ export default function InvoicesDashboardPage() {
                               </span>
                             )}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <StatusBadge status={invoice.status} />
+                          <td className="px-6 py-4 whitespace-nowrap group/status" onClick={(e) => e.stopPropagation()}>
+                            <label className="relative inline-flex items-center gap-1.5 cursor-pointer">
+                              <select
+                                value={invoice.status}
+                                onChange={(e) => handleStatusChange(invoice.id, e.target.value as Invoice["status"])}
+                                disabled={updatingStatusId === invoice.id}
+                                className="appearance-none cursor-pointer border-0 bg-transparent p-0 text-xs font-medium focus:outline-none disabled:opacity-50"
+                                style={{ color: invoice.status === "paid" ? "#16a34a" : invoice.status === "sent" ? "#2563eb" : invoice.status === "cancelled" ? "#dc2626" : "#666" }}
+                              >
+                                <option value="draft">Draft</option>
+                                <option value="sent">Sent</option>
+                                <option value="paid">Paid</option>
+                                <option value="cancelled">Cancelled</option>
+                              </select>
+                              <Pencil className="h-3 w-3 text-(--muted) opacity-0 group-hover/status:opacity-100 transition-opacity pointer-events-none" />
+                            </label>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-right font-semibold text-black dark:text-white">
                             {formatCurrency(amount, invoice.currency)}
-                          </td>
-                          <td className="px-6 py-0 whitespace-nowrap text-right">
-                            {invoice.status !== "paid" && (
-                              <button
-                                className="inline-flex items-center justify-center rounded p-1 text-green-600 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-900/20 disabled:opacity-50"
-                                onClick={(e) => { e.stopPropagation(); handleMarkAsPaid(e, invoice.id); }}
-                                disabled={markingPaidId === invoice.id}
-                                title="Mark as paid"
-                              >
-                                <CheckCircle2 className="h-4 w-4" />
-                              </button>
-                            )}
                           </td>
                         </tr>
                       );
