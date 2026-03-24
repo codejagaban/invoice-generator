@@ -164,10 +164,10 @@ export default function AccountPage() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-black dark:text-white mb-2">
-            Account Details
+            Accounts
           </h1>
           <p className="text-(--muted)">
-            Add your bank account information so clients know where to send payment.
+            Manage your bank account details for invoice payment information.
           </p>
         </div>
 

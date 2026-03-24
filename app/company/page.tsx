@@ -1,29 +1,31 @@
 "use client";
 
 /**
- * Company Settings Page
- * Manage company/freelancer details
+ * Company Page
+ * Manage company/freelancer profiles
  */
 
 import { useEffect, useState } from "react";
 import { useDbReady } from "@/app/components/DbScopeProvider";
 import Button from "@/app/components/shared/Button";
-import Card, {
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/app/components/shared/Card";
+import Card from "@/app/components/shared/Card";
+import { InputWithRef as Input } from "@/app/components/shared/Input";
 import CompanyForm from "@/app/components/CompanyForm";
 import type { CompanyDetails } from "@/app/lib/types";
-import { Pencil, Trash2, Star } from "lucide-react";
-import Image from "next/image";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/app/components/shared/Select";
+  Pencil,
+  Trash2,
+  Star,
+  Building2,
+  Search,
+  Plus,
+  X,
+  Mail,
+  Phone,
+  Globe,
+  MapPin,
+} from "lucide-react";
+import Image from "next/image";
 import { useConfirm } from "@/app/components/shared/ConfirmDialog";
 import {
   getCompanyDetails,
@@ -31,23 +33,8 @@ import {
   updateCompany,
   deleteCompany,
   setDefaultCompany,
-  getSettings,
-  saveSettings,
 } from "@/app/lib/storage";
-
-const CURRENCIES = [
-  { code: "USD", label: "US Dollar" },
-  { code: "EUR", label: "Euro" },
-  { code: "GBP", label: "British Pound" },
-  { code: "CAD", label: "Canadian Dollar" },
-  { code: "AUD", label: "Australian Dollar" },
-  { code: "JPY", label: "Japanese Yen" },
-  { code: "CHF", label: "Swiss Franc" },
-  { code: "CNY", label: "Chinese Yuan" },
-  { code: "INR", label: "Indian Rupee" },
-  { code: "MXN", label: "Mexican Peso" },
-  { code: "NGN", label: "Nigerian Naira" },
-];
+import EmptyState from "@/app/components/shared/EmptyState";
 
 export default function CompanyPage() {
   const [confirm, ConfirmDialogUI] = useConfirm();
@@ -57,46 +44,28 @@ export default function CompanyPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingData, setEditingData] = useState<CompanyDetails | undefined>();
-  const [defaultCurrency, setDefaultCurrency] = useState("GBP");
-  const [isSavingCurrency, setIsSavingCurrency] = useState(false);
-  const [currencySaved, setCurrencySaved] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     if (!dbReady) return;
     (async () => {
-      const [companies, settings] = await Promise.all([
-        getCompanyDetails(),
-        getSettings(),
-      ]);
-      setCompanies(companies);
-      setDefaultCurrency(settings.defaultCurrency);
+      const data = await getCompanyDetails();
+      setCompanies(data);
       setIsLoading(false);
     })();
   }, [dbReady]);
-
-  const handleSaveCurrency = async () => {
-    setIsSavingCurrency(true);
-    await saveSettings({ defaultCurrency });
-    setIsSavingCurrency(false);
-    setCurrencySaved(true);
-    setTimeout(() => setCurrencySaved(false), 2000);
-  };
 
   const handleSubmit = async (company: CompanyDetails) => {
     if (editingId) {
       const updated = await updateCompany(editingId, company);
       if (updated) {
-        setCompanies((prev) =>
-          prev.map((c) => (c.id === editingId ? updated : c)),
-        );
+        setCompanies((prev) => prev.map((c) => (c.id === editingId ? updated : c)));
       }
     } else {
       const created = await createCompany(company);
       setCompanies((prev) => [...prev, created]);
     }
-    setShowForm(false);
-    setEditingId(null);
-    setEditingData(undefined);
+    handleCancel();
   };
 
   const handleDelete = async (id: string) => {
@@ -108,12 +77,7 @@ export default function CompanyPage() {
 
   const handleSetDefault = async (id: string) => {
     if (await setDefaultCompany(id)) {
-      setCompanies((prev) =>
-        prev.map((c) => ({
-          ...c,
-          isDefault: c.id === id,
-        })),
-      );
+      setCompanies((prev) => prev.map((c) => ({ ...c, isDefault: c.id === id })));
     }
   };
 
@@ -129,201 +93,172 @@ export default function CompanyPage() {
     setEditingData(undefined);
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-(--background) p-6">
-        <div className="max-w-6xl mx-auto">
-          <p className="text-(--muted)">Loading...</p>
-        </div>
-      </div>
-    );
-  }
+  const filteredCompanies = searchTerm
+    ? companies.filter(
+        (c) =>
+          c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          c.email.toLowerCase().includes(searchTerm.toLowerCase()),
+      )
+    : companies;
 
   return (
-    <div className="min-h-screen bg-(--background) p-6">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-black dark:text-white mb-2">
-            Company Settings
-          </h1>
-          <p className="text-(--muted)">
-            Manage your company or freelancing details
-          </p>
+    <div className="min-h-screen bg-(--background)">
+      <header className="border-b border-b-(--border) bg-(--surface)">
+        <div className="mx-auto max-w-7xl px-6 py-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-black dark:text-white">Companies</h1>
+              <p className="mt-1 text-sm text-(--muted)">{companies.length} compan{companies.length !== 1 ? "ies" : "y"}</p>
+            </div>
+            <Button onClick={() => { handleCancel(); setShowForm(true); }}>
+              <Plus className="h-4 w-4" />
+              Add Company
+            </Button>
+          </div>
         </div>
+      </header>
 
-        {/* Form Section */}
-        {showForm && (
-          <div className="mb-8">
-            <CompanyForm
-              initialData={editingData}
-              onSubmit={handleSubmit}
-              onCancel={handleCancel}
+      <main className="mx-auto max-w-7xl px-6 py-8">
+        {isLoading ? (
+          <p className="text-(--muted)">Loading...</p>
+        ) : (
+          <div className="space-y-6">
+            {/* Search */}
+            <Input
+              type="text"
+              placeholder="Search company..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              leadingIcon={<Search className="h-4 w-4" />}
+              className="max-w-sm"
             />
+
+            {/* Table */}
+            {filteredCompanies.length === 0 ? (
+              <Card>
+                <EmptyState
+                  icon={Building2}
+                  title={searchTerm ? "No companies found" : "No company profiles yet"}
+                  description={searchTerm ? "Try a different search term." : "Add your company details to get started."}
+                >
+                  {!searchTerm && (
+                    <Button onClick={() => setShowForm(true)}>
+                      <Plus className="h-4 w-4" />
+                      Add Company
+                    </Button>
+                  )}
+                </EmptyState>
+              </Card>
+            ) : (
+              <Card className="overflow-hidden p-0!">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-(--border) bg-(--surface)">
+                        <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wider text-(--muted)">Company</th>
+                        <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wider text-(--muted)">Email</th>
+                        <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wider text-(--muted) hidden md:table-cell">Phone</th>
+                        <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wider text-(--muted) hidden lg:table-cell">Address</th>
+                        <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wider text-(--muted) hidden lg:table-cell">Country</th>
+                        <th className="px-5 py-3 text-right text-[10px] font-semibold uppercase tracking-wider text-(--muted) w-28"></th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-(--border)">
+                      {filteredCompanies.map((company) => (
+                        <tr key={company.id} className="transition-colors hover:bg-(--border)/20">
+                          <td className="px-5 py-3.5">
+                            <div className="flex items-center gap-3">
+                              {company.logo ? (
+                                <Image
+                                  src={company.logo}
+                                  alt=""
+                                  width={32}
+                                  height={32}
+                                  className="h-8 w-8 rounded-full object-contain border border-(--border) bg-(--surface-raised) shrink-0"
+                                  style={{ objectFit: "contain" }}
+                                />
+                              ) : (
+                                <div className="h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400 shrink-0">
+                                  {company.name.charAt(0).toUpperCase()}
+                                </div>
+                              )}
+                              <div>
+                                <span className="font-medium text-black dark:text-white">{company.name}</span>
+                                {company.isDefault && (
+                                  <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-semibold text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+                                    <Star className="h-2.5 w-2.5" /> Default
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-5 py-3.5 text-(--muted)">{company.email}</td>
+                          <td className="px-5 py-3.5 text-(--muted) hidden md:table-cell">{company.phone || "—"}</td>
+                          <td className="px-5 py-3.5 text-(--muted) hidden lg:table-cell max-w-50 truncate">
+                            {[company.address, company.city, company.state].filter(Boolean).join(", ")}
+                          </td>
+                          <td className="px-5 py-3.5 text-(--muted) hidden lg:table-cell">{company.country}</td>
+                          <td className="px-5 py-3.5 text-right">
+                            <div className="flex items-center justify-end gap-1">
+                              {!company.isDefault && (
+                                <button
+                                  onClick={() => handleSetDefault(company.id)}
+                                  className="inline-flex h-7 w-7 items-center justify-center rounded-md text-(--muted) hover:bg-yellow-50 hover:text-yellow-600 dark:hover:bg-yellow-950/20 dark:hover:text-yellow-400 transition-colors"
+                                  title="Set as default"
+                                >
+                                  <Star className="h-3.5 w-3.5" />
+                                </button>
+                              )}
+                              <button
+                                onClick={() => handleEdit(company)}
+                                className="inline-flex h-7 w-7 items-center justify-center rounded-md text-(--muted) hover:bg-(--surface) hover:text-black dark:hover:text-white transition-colors"
+                                title="Edit"
+                              >
+                                <Pencil className="h-3.5 w-3.5" />
+                              </button>
+                              <button
+                                onClick={() => handleDelete(company.id)}
+                                className="inline-flex h-7 w-7 items-center justify-center rounded-md text-(--muted) hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/20 dark:hover:text-red-400 transition-colors"
+                                title="Delete"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </Card>
+            )}
           </div>
         )}
+      </main>
 
-        {/* Default Currency */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle>Default Currency</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="mb-4 text-sm text-(--muted)">
-              Used as the default currency when creating new invoices.
-            </p>
-            <div className="flex items-center gap-3">
-              <Select value={defaultCurrency} onValueChange={setDefaultCurrency}>
-                <SelectTrigger className="w-64">
-                  <SelectValue placeholder="Select currency" />
-                </SelectTrigger>
-                <SelectContent>
-                  {CURRENCIES.map((c) => (
-                    <SelectItem key={c.code} value={c.code}>
-                      {c.label} ({c.code})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Button onClick={handleSaveCurrency} disabled={isSavingCurrency}>
-                {currencySaved ? "Saved!" : isSavingCurrency ? "Saving..." : "Save"}
-              </Button>
+      {/* ── Add/Edit Company Modal ──────────────────────────── */}
+      {showForm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-[2px] p-4">
+          <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-xl border border-(--border) bg-white dark:bg-[#1a1a1a] shadow-2xl">
+            <div className="flex items-center justify-between border-b border-(--border) px-6 py-4">
+              <h2 className="text-lg font-semibold text-black dark:text-white">
+                {editingId ? "Edit Company" : "Add Company"}
+              </h2>
+              <button onClick={handleCancel} className="text-(--muted) hover:text-black dark:hover:text-white transition-colors">
+                <X className="h-5 w-5" />
+              </button>
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Companies List */}
-        <div className="space-y-4">
-          {companies.length === 0 && !showForm ? (
-            <Card>
-              <CardContent className="py-12 text-center">
-                <p className="text-(--muted) mb-4">
-                  No company profiles yet. Create one to get started.
-                </p>
-                <Button onClick={() => setShowForm(true)}>
-                  + Add Company Profile
-                </Button>
-              </CardContent>
-            </Card>
-          ) : (
-            <>
-              {!showForm && (
-                <div className="mb-6">
-                  <Button onClick={() => setShowForm(true)}>
-                    + Add Company Profile
-                  </Button>
-                </div>
-              )}
-
-              {companies.map((company) => (
-                <Card key={company.id}>
-                  <CardHeader>
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex items-center gap-3">
-                        {company.logo && (
-                          <Image
-                            src={company.logo}
-                            alt={`${company.name} logo`}
-                            width={48}
-                            height={48}
-                            className="h-12 w-12 rounded-lg object-contain border border-(--border) bg-(--surface-raised) p-1 shrink-0"
-                            style={{ objectFit: "contain" }}
-                            priority
-                          />
-                        )}
-                        <div>
-                          <CardTitle>{company.name}</CardTitle>
-                          <p className="text-sm text-(--muted) mt-1">
-                            {company.email}
-                          </p>
-                        </div>
-                      </div>
-                      {company.isDefault && (
-                        <span className="inline-block bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs px-2 py-1 rounded shrink-0">
-                          Default
-                        </span>
-                      )}
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div className="grid gap-4 sm:grid-cols-2 text-sm">
-                      <div>
-                        <p className="text-(--muted)">Phone</p>
-                        <p className="text-black dark:text-white">
-                          {company.phone || "—"}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-(--muted)">Website</p>
-                        <p className="text-black dark:text-white truncate">
-                          {company.website || "—"}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-(--muted)">Address</p>
-                        <p className="text-black dark:text-white">
-                          {company.address}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-(--muted)">Tax ID</p>
-                        <p className="text-black dark:text-white">
-                          {company.taxId || "—"}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-(--muted)">City</p>
-                        <p className="text-black dark:text-white">
-                          {company.city}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-(--muted)">Country</p>
-                        <p className="text-black dark:text-white">
-                          {company.country}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex gap-1 pt-4 border-t border-(--border)">
-                      {!company.isDefault && companies.length > 0 && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="w-9 px-0"
-                          onClick={() => handleSetDefault(company.id)}
-                          title="Set as Default"
-                          aria-label="Set as default company"
-                        >
-                          <Star className="h-4 w-4 text-yellow-500" />
-                        </Button>
-                      )}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="w-9 px-0"
-                        onClick={() => handleEdit(company)}
-                        aria-label="Edit company"
-                      >
-                        <Pencil className="h-4 w-4 text-blue-500" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="w-9 px-0"
-                        onClick={() => handleDelete(company.id)}
-                        aria-label="Delete company"
-                      >
-                        <Trash2 className="h-4 w-4 text-red-500" />
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </>
-          )}
+            <div className="p-6">
+              <CompanyForm
+                initialData={editingData}
+                onSubmit={handleSubmit}
+                onCancel={handleCancel}
+              />
+            </div>
+          </div>
         </div>
-      </div>
+      )}
+
       <ConfirmDialogUI />
     </div>
   );
