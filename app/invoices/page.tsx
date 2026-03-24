@@ -269,7 +269,7 @@ export default function InvoicesDashboardPage() {
             </div>
           </Card>
 
-          {/* Invoice List */}
+          {/* Invoice Table */}
           {filteredInvoices.length === 0 ? (
             <Card>
               <EmptyState
@@ -285,69 +285,86 @@ export default function InvoicesDashboardPage() {
               </EmptyState>
             </Card>
           ) : (
-            <div className="space-y-3">
-              {filteredInvoices.map((invoice) => {
-                const amount = invoice.items.reduce(
-                  (sum, item) => sum + item.quantity * item.rate,
-                  0,
-                );
-                const overdue = isOverdue(invoice.dueDate);
-                const dueSoon = isDueSoon(invoice.dueDate);
+            <Card className="overflow-hidden p-0!">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-(--border) bg-(--surface)">
+                      <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-(--muted)">Invoice</th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-(--muted)">Customer</th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-(--muted)">Date</th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-(--muted)">Due Date</th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-(--muted)">Status</th>
+                      <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-(--muted)">Amount</th>
+                      <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-(--muted)"></th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-(--border)">
+                    {filteredInvoices.map((invoice) => {
+                      const amount = invoice.items.reduce(
+                        (sum, item) => sum + item.quantity * item.rate,
+                        0,
+                      );
+                      const overdue = isOverdue(invoice.dueDate);
+                      const dueSoon = isDueSoon(invoice.dueDate);
 
-                return (
-                  <Link key={invoice.id} href={`/invoices/${invoice.id}`}>
-                    <Card className="hover:border-black dark:hover:border-white cursor-pointer transition-colors">
-                      <div className="flex items-center justify-between gap-4">
-                        <div className="flex-1 space-y-2 min-w-0">
-                          <div className="flex items-center gap-3 flex-wrap">
-                            <h3 className="font-semibold text-black dark:text-white">
-                              {invoice.invoiceNumber}
-                            </h3>
-                            <StatusBadge status={invoice.status} />
+                      return (
+                        <tr
+                          key={invoice.id}
+                          className="cursor-pointer transition-colors hover:bg-(--border)/30"
+                          onClick={() => window.location.href = `/invoices/${invoice.id}`}
+                        >
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className="font-semibold text-black dark:text-white">{invoice.invoiceNumber}</span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-(--muted)">
+                            {invoice.customer.name}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-(--muted)">
+                            {formatDate(invoice.date)}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={overdue ? "text-red-600 dark:text-red-400 font-medium" : dueSoon ? "text-yellow-600 dark:text-yellow-400 font-medium" : "text-(--muted)"}>
+                              {formatDate(invoice.dueDate)}
+                            </span>
                             {overdue && (
-                              <span className="inline-block px-2 py-1 text-xs font-medium rounded bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400">
-                                Overdue
+                              <span className="ml-2 inline-block px-1.5 py-0.5 text-[10px] font-semibold rounded bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400">
+                                OVERDUE
                               </span>
                             )}
                             {dueSoon && !overdue && (
-                              <span className="inline-block px-2 py-1 text-xs font-medium rounded bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400">
-                                Due Soon
+                              <span className="ml-2 inline-block px-1.5 py-0.5 text-[10px] font-semibold rounded bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400">
+                                DUE SOON
                               </span>
                             )}
-                          </div>
-                          <div className="flex items-center gap-4 text-sm text-(--muted) flex-wrap">
-                            <span>{invoice.customer.name}</span>
-                            <span>{formatDate(invoice.date)}</span>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <div className="text-right">
-                            <p className="font-semibold text-black dark:text-white">
-                              {formatCurrency(amount, invoice.currency)}
-                            </p>
-                            <p className="text-sm text-(--muted)">
-                              Due: {formatDate(invoice.dueDate)}
-                            </p>
-                          </div>
-                          {invoice.status !== "paid" && (
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="shrink-0 text-green-600 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-900/20"
-                              onClick={(e) => handleMarkAsPaid(e, invoice.id)}
-                              disabled={markingPaidId === invoice.id}
-                              title="Mark as paid"
-                            >
-                              <CheckCircle2 className="h-5 w-5" />
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-                    </Card>
-                  </Link>
-                );
-              })}
-            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <StatusBadge status={invoice.status} />
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right font-semibold text-black dark:text-white">
+                            {formatCurrency(amount, invoice.currency)}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right">
+                            {invoice.status !== "paid" && (
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="shrink-0 text-green-600 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-900/20"
+                                onClick={(e) => handleMarkAsPaid(e, invoice.id)}
+                                disabled={markingPaidId === invoice.id}
+                                title="Mark as paid"
+                              >
+                                <CheckCircle2 className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
           )}
         </div>
         )}
