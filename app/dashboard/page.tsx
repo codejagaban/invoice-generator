@@ -50,14 +50,19 @@ function pctChange(current: number, previous: number): number | null {
 function isThisMonth(dateStr: string): boolean {
   const d = new Date(dateStr);
   const now = new Date();
-  return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+  return (
+    d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()
+  );
 }
 
 function isLastMonth(dateStr: string): boolean {
   const d = new Date(dateStr);
   const now = new Date();
   const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-  return d.getMonth() === lastMonth.getMonth() && d.getFullYear() === lastMonth.getFullYear();
+  return (
+    d.getMonth() === lastMonth.getMonth() &&
+    d.getFullYear() === lastMonth.getFullYear()
+  );
 }
 
 // ─── Line Chart Component ───────────────────────────────────────────────────
@@ -125,20 +130,43 @@ function LineChart({
         />
       ))}
       {/* Fill */}
-      <path d={fillPath} fill="url(#line-chart-grad)" clipPath="url(#chart-clip)" />
+      <path
+        d={fillPath}
+        fill="url(#line-chart-grad)"
+        clipPath="url(#chart-clip)"
+      />
       {/* Line */}
-      <path d={linePath} stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" clipPath="url(#chart-clip)" />
+      <path
+        d={linePath}
+        stroke={color}
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        clipPath="url(#chart-clip)"
+      />
       {/* Dots and labels */}
       {points.map((p, i) => (
         <g key={i}>
           <circle cx={p.x} cy={p.y} r="4" fill={color} />
           <circle cx={p.x} cy={p.y} r="2" fill="white" />
           {/* Value */}
-          <text x={p.x} y={p.y - 10} textAnchor="middle" className="text-[9px] fill-gray-500 dark:fill-gray-400" style={{ fontFamily: "system-ui" }}>
+          <text
+            x={p.x}
+            y={p.y - 10}
+            textAnchor="middle"
+            className="text-[9px] fill-gray-500 dark:fill-gray-400"
+            style={{ fontFamily: "system-ui" }}
+          >
             {formatValue ? formatValue(data[i]) : data[i]}
           </text>
           {/* Label */}
-          <text x={p.x} y={height - 4} textAnchor="middle" className="text-[10px] fill-gray-500 dark:fill-gray-400" style={{ fontFamily: "system-ui" }}>
+          <text
+            x={p.x}
+            y={height - 4}
+            textAnchor="middle"
+            className="text-[10px] fill-gray-500 dark:fill-gray-400"
+            style={{ fontFamily: "system-ui" }}
+          >
             {labels[i]}
           </text>
         </g>
@@ -250,7 +278,11 @@ function StatusDonut({
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const offsets = segments.reduce<number[]>((acc, _seg, i) => {
-    acc.push(i === 0 ? 0 : acc[i - 1] + (segments[i - 1].value / total) * circumference);
+    acc.push(
+      i === 0
+        ? 0
+        : acc[i - 1] + (segments[i - 1].value / total) * circumference,
+    );
     return acc;
   }, []);
 
@@ -328,10 +360,12 @@ function MetricCard({
       <div className="flex items-start justify-between gap-3">
         <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${iconColor}`}>
+            <div
+              className={`flex h-8 w-8 items-center justify-center rounded-lg ${iconColor}`}
+            >
               <Icon className="h-4 w-4" />
             </div>
-            <p className="text-xs font-medium uppercase tracking-widest text-(--muted)">
+            <p className="text-xs font-medium uppercase tracking-wider text-(--muted)">
               {label}
             </p>
           </div>
@@ -371,7 +405,10 @@ export default function DashboardPage() {
   useEffect(() => {
     if (!dbReady) return;
     (async () => {
-      const [data, settings] = await Promise.all([getInvoices(), getSettings()]);
+      const [data, settings] = await Promise.all([
+        getInvoices(),
+        getSettings(),
+      ]);
       setInvoices(data);
       setDefaultCurrency(settings.defaultCurrency);
       setIsLoading(false);
@@ -392,7 +429,12 @@ export default function DashboardPage() {
     monthlyRevenue: number[];
     monthlyCount: number[];
     monthLabels: string[];
-    statusCounts: { draft: number; sent: number; paid: number; cancelled: number };
+    statusCounts: {
+      draft: number;
+      sent: number;
+      paid: number;
+      cancelled: number;
+    };
     sparkRevenue: number[];
     sparkCount: number[];
     sparkPaid: number[];
@@ -401,13 +443,25 @@ export default function DashboardPage() {
   };
 
   const emptyMetrics: Metrics = {
-    thisMonthRevenue: 0, revenueChange: null, thisMonthCount: 0, countChange: null,
-    thisMonthPaidAmount: 0, paidChange: null, overdueInvoices: [], overdueAmount: 0,
-    dueSoonInvoices: [], unpaidAmount: 0, monthlyRevenue: Array(6).fill(0),
-    monthlyCount: Array(6).fill(0), monthLabels: Array.from({ length: 6 }, (_, i) => getMonthLabel(5 - i)),
+    thisMonthRevenue: 0,
+    revenueChange: null,
+    thisMonthCount: 0,
+    countChange: null,
+    thisMonthPaidAmount: 0,
+    paidChange: null,
+    overdueInvoices: [],
+    overdueAmount: 0,
+    dueSoonInvoices: [],
+    unpaidAmount: 0,
+    monthlyRevenue: Array(6).fill(0),
+    monthlyCount: Array(6).fill(0),
+    monthLabels: Array.from({ length: 6 }, (_, i) => getMonthLabel(5 - i)),
     statusCounts: { draft: 0, sent: 0, paid: 0, cancelled: 0 },
-    sparkRevenue: Array(7).fill(0), sparkCount: Array(7).fill(0), sparkPaid: Array(7).fill(0),
-    recentInvoices: [], totalInvoices: 0,
+    sparkRevenue: Array(7).fill(0),
+    sparkCount: Array(7).fill(0),
+    sparkPaid: Array(7).fill(0),
+    recentInvoices: [],
+    totalInvoices: 0,
   };
 
   const [metrics, setMetrics] = useState<Metrics>(emptyMetrics);
@@ -426,27 +480,52 @@ export default function DashboardPage() {
       const thisMonth = invoices.filter((inv) => isThisMonth(inv.date));
       const lastMonth = invoices.filter((inv) => isLastMonth(inv.date));
 
-      const thisMonthRevenue = thisMonth.reduce((s, inv) => s + convert(inv), 0);
-      const lastMonthRevenue = lastMonth.reduce((s, inv) => s + convert(inv), 0);
+      const thisMonthRevenue = thisMonth.reduce(
+        (s, inv) => s + convert(inv),
+        0,
+      );
+      const lastMonthRevenue = lastMonth.reduce(
+        (s, inv) => s + convert(inv),
+        0,
+      );
 
       const thisMonthPaid = thisMonth.filter((inv) => inv.status === "paid");
       const lastMonthPaid = lastMonth.filter((inv) => inv.status === "paid");
-      const thisMonthPaidAmount = thisMonthPaid.reduce((s, inv) => s + convert(inv), 0);
-      const lastMonthPaidAmount = lastMonthPaid.reduce((s, inv) => s + convert(inv), 0);
+      const thisMonthPaidAmount = thisMonthPaid.reduce(
+        (s, inv) => s + convert(inv),
+        0,
+      );
+      const lastMonthPaidAmount = lastMonthPaid.reduce(
+        (s, inv) => s + convert(inv),
+        0,
+      );
 
       const overdueInvoices = invoices.filter(
-        (inv) => inv.status !== "paid" && inv.status !== "cancelled" && isOverdue(inv.dueDate),
+        (inv) =>
+          inv.status !== "paid" &&
+          inv.status !== "cancelled" &&
+          isOverdue(inv.dueDate),
       );
-      const overdueAmount = overdueInvoices.reduce((s, inv) => s + convert(inv), 0);
+      const overdueAmount = overdueInvoices.reduce(
+        (s, inv) => s + convert(inv),
+        0,
+      );
 
       const dueSoonInvoices = invoices.filter(
-        (inv) => inv.status !== "paid" && inv.status !== "cancelled" && isDueSoon(inv.dueDate) && !isOverdue(inv.dueDate),
+        (inv) =>
+          inv.status !== "paid" &&
+          inv.status !== "cancelled" &&
+          isDueSoon(inv.dueDate) &&
+          !isOverdue(inv.dueDate),
       );
 
       const unpaidInvoices = invoices.filter(
         (inv) => inv.status !== "paid" && inv.status !== "cancelled",
       );
-      const unpaidAmount = unpaidInvoices.reduce((s, inv) => s + convert(inv), 0);
+      const unpaidAmount = unpaidInvoices.reduce(
+        (s, inv) => s + convert(inv),
+        0,
+      );
 
       // Monthly revenue (last 6 months)
       const monthlyRevenue: number[] = [];
@@ -460,7 +539,9 @@ export default function DashboardPage() {
           const id = new Date(inv.date);
           return id.getMonth() === m && id.getFullYear() === y;
         });
-        monthlyRevenue.push(monthInvoices.reduce((s, inv) => s + convert(inv), 0));
+        monthlyRevenue.push(
+          monthInvoices.reduce((s, inv) => s + convert(inv), 0),
+        );
         monthLabels.push(getMonthLabel(i));
       }
 
@@ -494,7 +575,9 @@ export default function DashboardPage() {
       const sparkPaid = Array(7).fill(0) as number[];
       for (const inv of invoices) {
         const d = new Date(inv.date);
-        const diff = Math.floor((now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24));
+        const diff = Math.floor(
+          (now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24),
+        );
         if (diff >= 0 && diff < 7) {
           sparkRevenue[6 - diff] += convert(inv);
           sparkCount[6 - diff]++;
@@ -504,7 +587,10 @@ export default function DashboardPage() {
 
       // Recent invoices (last 5)
       const recentInvoices = [...invoices]
-        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        .sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+        )
         .slice(0, 5);
 
       setMetrics({
@@ -537,7 +623,9 @@ export default function DashboardPage() {
         <div className="mx-auto max-w-7xl px-6 py-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-black dark:text-white">Dashboard</h1>
+              <h1 className="text-3xl font-bold text-black dark:text-white">
+                Dashboard
+              </h1>
               <p className="mt-1 text-sm text-(--muted)">
                 Overview of your invoicing activity
               </p>
@@ -560,8 +648,11 @@ export default function DashboardPage() {
             {/* ── Top Metric Cards ─────────────────────────────────── */}
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <MetricCard
-                label="Revenue This Month"
-                value={formatCurrency(metrics.thisMonthRevenue, defaultCurrency)}
+                label="Revenue"
+                value={formatCurrency(
+                  metrics.thisMonthRevenue,
+                  defaultCurrency,
+                )}
                 change={metrics.revenueChange}
                 sparkData={metrics.sparkRevenue}
                 sparkColor="#6366f1"
@@ -569,7 +660,7 @@ export default function DashboardPage() {
                 iconColor="bg-indigo-100 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400"
               />
               <MetricCard
-                label="Invoices This Month"
+                label="Invoices"
                 value={String(metrics.thisMonthCount)}
                 change={metrics.countChange}
                 sparkData={metrics.sparkCount}
@@ -578,8 +669,11 @@ export default function DashboardPage() {
                 iconColor="bg-sky-100 text-sky-600 dark:bg-sky-950 dark:text-sky-400"
               />
               <MetricCard
-                label="Collected This Month"
-                value={formatCurrency(metrics.thisMonthPaidAmount, defaultCurrency)}
+                label="Collected"
+                value={formatCurrency(
+                  metrics.thisMonthPaidAmount,
+                  defaultCurrency,
+                )}
                 change={metrics.paidChange}
                 sparkData={metrics.sparkPaid}
                 sparkColor="#10b981"
@@ -621,10 +715,26 @@ export default function DashboardPage() {
                 </h3>
                 <StatusDonut
                   segments={[
-                    { label: "Paid", value: metrics.statusCounts.paid, color: "#10b981" },
-                    { label: "Sent", value: metrics.statusCounts.sent, color: "#3b82f6" },
-                    { label: "Draft", value: metrics.statusCounts.draft, color: "#9ca3af" },
-                    { label: "Cancelled", value: metrics.statusCounts.cancelled, color: "#ef4444" },
+                    {
+                      label: "Paid",
+                      value: metrics.statusCounts.paid,
+                      color: "#10b981",
+                    },
+                    {
+                      label: "Sent",
+                      value: metrics.statusCounts.sent,
+                      color: "#3b82f6",
+                    },
+                    {
+                      label: "Draft",
+                      value: metrics.statusCounts.draft,
+                      color: "#9ca3af",
+                    },
+                    {
+                      label: "Cancelled",
+                      value: metrics.statusCounts.cancelled,
+                      color: "#ef4444",
+                    },
                   ]}
                 />
               </Card>
@@ -638,8 +748,11 @@ export default function DashboardPage() {
                   Attention Required
                 </h3>
                 <div className="space-y-3">
-                  {metrics.overdueInvoices.length === 0 && metrics.dueSoonInvoices.length === 0 ? (
-                    <p className="text-sm text-(--muted) py-4">All invoices are on track.</p>
+                  {metrics.overdueInvoices.length === 0 &&
+                  metrics.dueSoonInvoices.length === 0 ? (
+                    <p className="text-sm text-(--muted) py-4">
+                      All invoices are on track.
+                    </p>
                   ) : (
                     <>
                       {metrics.overdueInvoices.map((inv) => (
@@ -660,7 +773,10 @@ export default function DashboardPage() {
                             </div>
                           </div>
                           <span className="text-sm font-semibold text-red-700 dark:text-red-300">
-                            {formatCurrency(getInvoiceAmount(inv), inv.currency)}
+                            {formatCurrency(
+                              getInvoiceAmount(inv),
+                              inv.currency,
+                            )}
                           </span>
                         </Link>
                       ))}
@@ -682,7 +798,10 @@ export default function DashboardPage() {
                             </div>
                           </div>
                           <span className="text-sm font-semibold text-yellow-700 dark:text-yellow-300">
-                            {formatCurrency(getInvoiceAmount(inv), inv.currency)}
+                            {formatCurrency(
+                              getInvoiceAmount(inv),
+                              inv.currency,
+                            )}
                           </span>
                         </Link>
                       ))}
@@ -693,7 +812,10 @@ export default function DashboardPage() {
                       <p className="text-xs text-(--muted)">
                         Total overdue:{" "}
                         <span className="font-semibold text-red-600 dark:text-red-400">
-                          {formatCurrency(metrics.overdueAmount, defaultCurrency)}
+                          {formatCurrency(
+                            metrics.overdueAmount,
+                            defaultCurrency,
+                          )}
                         </span>
                       </p>
                     </div>
@@ -716,7 +838,9 @@ export default function DashboardPage() {
                 </div>
                 <div className="space-y-3">
                   {metrics.recentInvoices.length === 0 ? (
-                    <p className="text-sm text-(--muted) py-4">No invoices yet.</p>
+                    <p className="text-sm text-(--muted) py-4">
+                      No invoices yet.
+                    </p>
                   ) : (
                     metrics.recentInvoices.map((inv) => (
                       <Link
@@ -734,7 +858,10 @@ export default function DashboardPage() {
                         </div>
                         <div className="text-right">
                           <p className="text-sm font-semibold text-black dark:text-white tabular-nums">
-                            {formatCurrency(getInvoiceAmount(inv), inv.currency)}
+                            {formatCurrency(
+                              getInvoiceAmount(inv),
+                              inv.currency,
+                            )}
                           </p>
                           <span
                             className={`text-[10px] font-semibold uppercase ${

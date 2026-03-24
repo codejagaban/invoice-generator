@@ -46,7 +46,7 @@ export default function SignUpPage() {
       router.push("/sign-in");
       return;
     }
-    router.push("/invoices");
+    router.push("/dashboard");
   }
 
   return (
