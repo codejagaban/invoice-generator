@@ -222,7 +222,7 @@ export default function InvoicesDashboardPage() {
           </div>
 
           {/* Filters */}
-          <Card>
+          <div className="mb-10">
             <div className="space-y-4 sm:flex sm:gap-4 sm:space-y-0">
               <Input
                 type="text"
@@ -267,7 +267,7 @@ export default function InvoicesDashboardPage() {
                 </SelectContent>
               </Select>
             </div>
-          </Card>
+          </div>
 
           {/* Invoice Table */}
           {filteredInvoices.length === 0 ? (
