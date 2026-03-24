@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+
+const inter = Inter({
+  subsets: ["latin"],
+});
 import AppShell from "@/app/components/AppShell";
 import DbScopeProvider from "@/app/components/DbScopeProvider";
 import SessionProviderWrapper from "@/app/components/SessionProviderWrapper";
 import "./globals.css";
 
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: "Invoice Generator",
@@ -22,7 +22,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} antialiased`}>
+      <body className={`${inter.className} antialiased`}>
         <SessionProviderWrapper>
           <DbScopeProvider>
             <AppShell>{children}</AppShell>
