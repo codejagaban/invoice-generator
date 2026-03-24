@@ -757,7 +757,7 @@ export async function downloadInvoicePDF(
       flexDirection: "row",
       width: 200,
       justifyContent: "space-between",
-      marginTop: 30,
+      marginTop: 20,
       paddingVertical: 6,
       borderBottomWidth: 1,
       borderBottomColor: "#646464",

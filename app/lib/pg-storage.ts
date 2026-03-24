@@ -34,12 +34,12 @@ export async function pgGetInvoiceById(userId: string, id: string): Promise<Invo
 
 export async function pgCreateInvoice(userId: string, invoice: Invoice): Promise<Invoice> {
   await query(
-    `INSERT INTO invoices (id, user_id, invoice_number, date, due_date, status, customer, company, items, notes, tax_rate, currency, created_at, updated_at)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)`,
+    `INSERT INTO invoices (id, user_id, invoice_number, date, due_date, status, customer, company, items, notes, tax_rate, currency, template_id, created_at, updated_at)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`,
     [invoice.id, userId, invoice.invoiceNumber, invoice.date, invoice.dueDate, invoice.status,
      JSON.stringify(invoice.customer), invoice.company ? JSON.stringify(invoice.company) : null,
      JSON.stringify(invoice.items), invoice.notes || null, invoice.taxRate || null,
-     invoice.currency, invoice.createdAt, invoice.updatedAt]
+     invoice.currency, invoice.templateId || null, invoice.createdAt, invoice.updatedAt]
   );
   return invoice;
 }
@@ -78,6 +78,7 @@ function rowToInvoice(row: Record<string, unknown>): Invoice {
     notes: row.notes as string | undefined,
     taxRate: row.tax_rate as number | undefined,
     currency: row.currency as string,
+    templateId: row.template_id as string | undefined,
     createdAt: row.created_at as string,
     updatedAt: row.updated_at as string,
   };
@@ -152,11 +153,11 @@ export async function pgGetTemplateById(userId: string, id: string): Promise<Inv
 
 export async function pgCreateTemplate(userId: string, template: InvoiceTemplate): Promise<InvoiceTemplate> {
   await query(
-    `INSERT INTO templates (id, user_id, name, description, customer, items, notes, tax_rate, currency, created_at)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+    `INSERT INTO templates (id, user_id, name, description, customer, items, notes, tax_rate, currency, usage_count, created_at)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
     [template.id, userId, template.name, template.description || null,
      JSON.stringify(template.customer), JSON.stringify(template.items),
-     template.notes || null, template.taxRate || null, template.currency, template.createdAt]
+     template.notes || null, template.taxRate || null, template.currency, template.usageCount || 0, template.createdAt]
   );
   return template;
 }
@@ -167,13 +168,17 @@ export async function pgUpdateTemplate(userId: string, id: string, updates: Part
   const updated: InvoiceTemplate = { ...existing, ...updates };
   await query(
     `UPDATE templates SET name = $1, description = $2, customer = $3, items = $4,
-       notes = $5, tax_rate = $6, currency = $7
-     WHERE id = $8 AND user_id = $9`,
+       notes = $5, tax_rate = $6, currency = $7, usage_count = $8
+     WHERE id = $9 AND user_id = $10`,
     [updated.name, updated.description || null, JSON.stringify(updated.customer),
      JSON.stringify(updated.items), updated.notes || null, updated.taxRate || null,
-     updated.currency, id, userId]
+     updated.currency, updated.usageCount || 0, id, userId]
   );
   return updated;
+}
+
+export async function pgIncrementTemplateUsage(userId: string, id: string): Promise<void> {
+  await query("UPDATE templates SET usage_count = usage_count + 1 WHERE id = $1 AND user_id = $2", [id, userId]);
 }
 
 export async function pgDeleteTemplate(userId: string, id: string): Promise<boolean> {
@@ -191,6 +196,7 @@ function rowToTemplate(row: Record<string, unknown>): InvoiceTemplate {
     notes: row.notes as string | undefined,
     taxRate: row.tax_rate as number | undefined,
     currency: row.currency as string,
+    usageCount: (row.usage_count as number) || 0,
     createdAt: row.created_at as string,
   };
 }

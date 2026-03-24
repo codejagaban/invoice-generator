@@ -41,6 +41,7 @@ CREATE TABLE IF NOT EXISTS invoices (
   notes           TEXT,
   tax_rate        DOUBLE PRECISION,
   currency        TEXT NOT NULL DEFAULT 'GBP',
+  template_id     TEXT REFERENCES templates(id) ON DELETE SET NULL,
   created_at      TEXT NOT NULL,
   updated_at      TEXT NOT NULL
 );
@@ -56,6 +57,7 @@ CREATE TABLE IF NOT EXISTS templates (
   notes       TEXT,
   tax_rate    DOUBLE PRECISION,
   currency    TEXT NOT NULL DEFAULT 'GBP',
+  usage_count INTEGER NOT NULL DEFAULT 0,
   created_at  TEXT NOT NULL
 );
 
