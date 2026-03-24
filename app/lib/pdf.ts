@@ -543,7 +543,9 @@ export async function downloadInvoicePDF(
 
   // Convert base64 data URLs to Blobs for @react-pdf/renderer.
   // Workaround: https://github.com/diegomura/react-pdf/issues/216
-  const toImageBlob = (dataUrl: string | undefined): Blob | string | undefined => {
+  const toImageBlob = (
+    dataUrl: string | undefined,
+  ): Blob | string | undefined => {
     if (!dataUrl) return undefined;
     if (!dataUrl.startsWith("data:")) return dataUrl;
     try {
@@ -567,11 +569,20 @@ export async function downloadInvoicePDF(
 
     // Deterministic background color from name
     const colors = [
-      "#000000", "#1a1a2e", "#16213e", "#0f3460", "#1b262c",
-      "#2c3e50", "#34495e", "#4a148c", "#1b5e20", "#b71c1c",
+      "#000000",
+      "#1a1a2e",
+      "#16213e",
+      "#0f3460",
+      "#1b262c",
+      "#2c3e50",
+      "#34495e",
+      "#4a148c",
+      "#1b5e20",
+      "#b71c1c",
     ];
     let hash = 0;
-    for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    for (let i = 0; i < name.length; i++)
+      hash = name.charCodeAt(i) + ((hash << 5) - hash);
     const bg = colors[Math.abs(hash) % colors.length];
 
     ctx.fillStyle = bg;
@@ -581,9 +592,10 @@ export async function downloadInvoicePDF(
 
     // Initials
     const words = name.trim().split(/\s+/);
-    const initials = words.length >= 2
-      ? (words[0][0] + words[words.length - 1][0]).toUpperCase()
-      : name.slice(0, 2).toUpperCase();
+    const initials =
+      words.length >= 2
+        ? (words[0][0] + words[words.length - 1][0]).toUpperCase()
+        : name.slice(0, 2).toUpperCase();
 
     ctx.fillStyle = "#ffffff";
     ctx.font = "bold 80px sans-serif";
@@ -600,8 +612,9 @@ export async function downloadInvoicePDF(
     return new Blob([bytes], { type: mime });
   };
 
-  const companyLogoSrc = toImageBlob(company?.logo)
-    ?? (company ? generateInitialsAvatar(company.name) : undefined);
+  const companyLogoSrc =
+    toImageBlob(company?.logo) ??
+    (company ? generateInitialsAvatar(company.name) : undefined);
   const customerLogoSrc = toImageBlob(invoice.customer.logo);
 
   const styles = StyleSheet.create({
@@ -744,6 +757,7 @@ export async function downloadInvoicePDF(
       flexDirection: "row",
       width: 200,
       justifyContent: "space-between",
+      marginTop: 30,
       paddingVertical: 6,
       borderBottomWidth: 1,
       borderBottomColor: "#646464",
@@ -843,285 +857,299 @@ export async function downloadInvoicePDF(
           View,
           { style: styles.content },
 
-        // Header
-        React.createElement(
-          View,
-          { style: styles.header },
-          // Left: Invoice details
+          // Header
           React.createElement(
             View,
-            { style: styles.headerLeft },
-            React.createElement(Text, { style: styles.title }, "INVOICE"),
+            { style: styles.header },
+            // Left: Invoice details
             React.createElement(
-              Text,
-              { style: styles.invoiceNumber },
-              `Invoice #${invoice.invoiceNumber}`,
+              View,
+              { style: styles.headerLeft },
+              React.createElement(Text, { style: styles.title }, "INVOICE"),
+              React.createElement(
+                Text,
+                { style: styles.invoiceNumber },
+                `Invoice #${invoice.invoiceNumber}`,
+              ),
+              React.createElement(
+                Text,
+                { style: styles.label },
+                "INVOICE DATE",
+              ),
+              React.createElement(
+                Text,
+                { style: styles.value },
+                formatDate(invoice.date),
+              ),
+              React.createElement(Text, { style: styles.label }, "DUE DATE"),
+              React.createElement(
+                Text,
+                { style: styles.value },
+                formatDate(invoice.dueDate),
+              ),
             ),
-            React.createElement(Text, { style: styles.label }, "INVOICE DATE"),
-            React.createElement(
-              Text,
-              { style: styles.value },
-              formatDate(invoice.date),
-            ),
-            React.createElement(Text, { style: styles.label }, "DUE DATE"),
-            React.createElement(
-              Text,
-              { style: styles.value },
-              formatDate(invoice.dueDate),
-            ),
-          ),
-          // Right: Company details
-          company
-            ? React.createElement(
-                View,
-                { style: styles.headerRight },
-                companyLogoSrc
-                  ? React.createElement(Image, {
-                      source: companyLogoSrc as Blob,
-                      style: styles.companyLogo,
-                    })
-                  : null,
-                React.createElement(
-                  Text,
-                  { style: styles.companyName },
-                  company.name,
-                ),
-                ...[
-                  company.email,
-                  company.phone,
-                  company.address,
-                  cityLine(company.city, company.state, company.zipCode),
-                  company.country,
-                  company.taxId ? `Tax ID: ${company.taxId}` : "",
-                ]
-                  .filter(Boolean)
-                  .map((line, i) =>
-                    React.createElement(
-                      Text,
-                      { key: i, style: styles.companyDetail },
-                      line,
-                    ),
+            // Right: Company details
+            company
+              ? React.createElement(
+                  View,
+                  { style: styles.headerRight },
+                  companyLogoSrc
+                    ? React.createElement(Image, {
+                        source: companyLogoSrc as Blob,
+                        style: styles.companyLogo,
+                      })
+                    : null,
+                  React.createElement(
+                    Text,
+                    { style: styles.companyName },
+                    company.name,
                   ),
-              )
-            : null,
-        ),
-
-        // Bill To
-        React.createElement(
-          View,
-          { style: styles.billToSection },
-          React.createElement(Text, { style: styles.sectionTitle }, "BILL TO:"),
-          customerLogoSrc
-            ? React.createElement(Image, {
-                source: customerLogoSrc,
-                style: styles.customerLogo,
-              })
-            : null,
-          React.createElement(
-            Text,
-            { style: styles.customerName },
-            invoice.customer.name,
-          ),
-          ...[
-            invoice.customer.email,
-            invoice.customer.address,
-            cityLine(
-              invoice.customer.city,
-              invoice.customer.state,
-              invoice.customer.zipCode,
-            ),
-            invoice.customer.country,
-          ]
-            .filter(Boolean)
-            .map((line, i) =>
-              React.createElement(
-                Text,
-                { key: i, style: styles.customerDetail },
-                line,
-              ),
-            ),
-        ),
-
-        // Table Header
-        React.createElement(
-          View,
-          { style: styles.tableHeader },
-          React.createElement(
-            Text,
-            { style: { ...styles.tableHeaderText, ...styles.colDesc } },
-            "Description",
-          ),
-          React.createElement(
-            Text,
-            { style: { ...styles.tableHeaderText, ...styles.colQty } },
-            "Quantity",
-          ),
-          React.createElement(
-            Text,
-            { style: { ...styles.tableHeaderText, ...styles.colRate } },
-            "Rate",
-          ),
-          React.createElement(
-            Text,
-            { style: { ...styles.tableHeaderText, ...styles.colAmt } },
-            "Amount",
-          ),
-        ),
-
-        // Table Rows
-        ...invoice.items.map((item, i) =>
-          React.createElement(
-            View,
-            { key: i, style: styles.tableRow },
-            React.createElement(
-              View,
-              { style: styles.colDesc },
-              React.createElement(
-                Text,
-                { style: styles.tableCellText },
-                item.description,
-                item.type === "hours"
-                  ? React.createElement(
-                      Text,
-                      { style: styles.hoursTag },
-                      " (hours)",
-                    )
-                  : null,
-              ),
-            ),
-            React.createElement(
-              Text,
-              { style: { ...styles.tableCellText, ...styles.colQty } },
-              item.type === "hours"
-                ? `${item.quantity} hrs`
-                : String(item.quantity),
-            ),
-            React.createElement(
-              Text,
-              { style: { ...styles.tableCellText, ...styles.colRate } },
-              `${formatCurrency(item.rate, invoice.currency)}${item.type === "hours" ? "/hr" : ""}`,
-            ),
-            React.createElement(
-              Text,
-              { style: { ...styles.tableCellText, ...styles.colAmt } },
-              formatCurrency(item.quantity * item.rate, invoice.currency),
-            ),
-          ),
-        ),
-
-        // Totals
-        React.createElement(
-          View,
-          { style: styles.totalsSection },
-          React.createElement(
-            View,
-            { style: styles.totalsRow },
-            React.createElement(Text, { style: styles.totalsLabel }, "Subtotal:"),
-            React.createElement(
-              Text,
-              { style: styles.totalsValue },
-              formatCurrency(subtotal, invoice.currency),
-            ),
-          ),
-          invoice.taxRate
-            ? React.createElement(
-                View,
-                { style: styles.totalsRow },
-                React.createElement(
-                  Text,
-                  { style: styles.totalsLabel },
-                  `Tax (${invoice.taxRate}%):`,
-                ),
-                React.createElement(
-                  Text,
-                  { style: styles.totalsValue },
-                  formatCurrency(tax, invoice.currency),
-                ),
-              )
-            : null,
-          React.createElement(
-            View,
-            { style: styles.totalsFinalRow },
-            React.createElement(
-              Text,
-              { style: styles.totalsFinalLabel },
-              "Total:",
-            ),
-            React.createElement(
-              Text,
-              { style: styles.totalsFinalValue },
-              formatCurrency(total, invoice.currency),
-            ),
-          ),
-        ),
-
-        // Notes
-        invoice.notes
-          ? React.createElement(
-              View,
-              { style: styles.notesSection },
-              React.createElement(Text, { style: styles.notesTitle }, "Notes"),
-              React.createElement(
-                Text,
-                { style: styles.notesText },
-                invoice.notes,
-              ),
-            )
-          : null,
-
-        // Payment Details
-        account
-          ? React.createElement(
-              View,
-              { style: styles.paymentSection },
-              React.createElement(
-                Text,
-                { style: styles.sectionTitle },
-                "PAYMENT DETAILS",
-              ),
-              React.createElement(
-                View,
-                { style: styles.paymentGrid },
-                ...(
-                  [
-                    ["Account Holder", account.accountHolderName],
-                    ["Bank Name", account.bankName],
-                    ["Account Number", account.accountNumber],
-                    account.sortCode
-                      ? ["Sort Code", account.sortCode]
-                      : null,
-                    account.routingNumber
-                      ? ["Routing Number", account.routingNumber]
-                      : null,
-                    account.iban ? ["IBAN", account.iban] : null,
-                    account.swiftBic
-                      ? ["SWIFT / BIC", account.swiftBic]
-                      : null,
-                  ] as (readonly [string, string] | null)[]
+                  ...[
+                    company.email,
+                    company.phone,
+                    company.address,
+                    cityLine(company.city, company.state, company.zipCode),
+                    company.country,
+                    company.taxId ? `Tax ID: ${company.taxId}` : "",
+                  ]
+                    .filter(Boolean)
+                    .map((line, i) =>
+                      React.createElement(
+                        Text,
+                        { key: i, style: styles.companyDetail },
+                        line,
+                      ),
+                    ),
                 )
-                  .filter(
-                    (pair): pair is readonly [string, string] => pair !== null,
+              : null,
+          ),
+
+          // Bill To
+          React.createElement(
+            View,
+            { style: styles.billToSection },
+            React.createElement(
+              Text,
+              { style: styles.sectionTitle },
+              "BILL TO:",
+            ),
+            customerLogoSrc
+              ? React.createElement(Image, {
+                  source: customerLogoSrc,
+                  style: styles.customerLogo,
+                })
+              : null,
+            React.createElement(
+              Text,
+              { style: styles.customerName },
+              invoice.customer.name,
+            ),
+            ...[
+              invoice.customer.email,
+              invoice.customer.address,
+              cityLine(
+                invoice.customer.city,
+                invoice.customer.state,
+                invoice.customer.zipCode,
+              ),
+              invoice.customer.country,
+            ]
+              .filter(Boolean)
+              .map((line, i) =>
+                React.createElement(
+                  Text,
+                  { key: i, style: styles.customerDetail },
+                  line,
+                ),
+              ),
+          ),
+
+          // Table Header
+          React.createElement(
+            View,
+            { style: styles.tableHeader },
+            React.createElement(
+              Text,
+              { style: { ...styles.tableHeaderText, ...styles.colDesc } },
+              "Description",
+            ),
+            React.createElement(
+              Text,
+              { style: { ...styles.tableHeaderText, ...styles.colQty } },
+              "Quantity",
+            ),
+            React.createElement(
+              Text,
+              { style: { ...styles.tableHeaderText, ...styles.colRate } },
+              "Rate",
+            ),
+            React.createElement(
+              Text,
+              { style: { ...styles.tableHeaderText, ...styles.colAmt } },
+              "Amount",
+            ),
+          ),
+
+          // Table Rows
+          ...invoice.items.map((item, i) =>
+            React.createElement(
+              View,
+              { key: i, style: styles.tableRow },
+              React.createElement(
+                View,
+                { style: styles.colDesc },
+                React.createElement(
+                  Text,
+                  { style: styles.tableCellText },
+                  item.description,
+                  item.type === "hours"
+                    ? React.createElement(
+                        Text,
+                        { style: styles.hoursTag },
+                        " (hours)",
+                      )
+                    : null,
+                ),
+              ),
+              React.createElement(
+                Text,
+                { style: { ...styles.tableCellText, ...styles.colQty } },
+                item.type === "hours"
+                  ? `${item.quantity} hrs`
+                  : String(item.quantity),
+              ),
+              React.createElement(
+                Text,
+                { style: { ...styles.tableCellText, ...styles.colRate } },
+                `${formatCurrency(item.rate, invoice.currency)}${item.type === "hours" ? "/hr" : ""}`,
+              ),
+              React.createElement(
+                Text,
+                { style: { ...styles.tableCellText, ...styles.colAmt } },
+                formatCurrency(item.quantity * item.rate, invoice.currency),
+              ),
+            ),
+          ),
+
+          // Totals
+          React.createElement(
+            View,
+            { style: styles.totalsSection },
+            React.createElement(
+              View,
+              { style: styles.totalsRow },
+              React.createElement(
+                Text,
+                { style: styles.totalsLabel },
+                "Subtotal:",
+              ),
+              React.createElement(
+                Text,
+                { style: styles.totalsValue },
+                formatCurrency(subtotal, invoice.currency),
+              ),
+            ),
+            invoice.taxRate
+              ? React.createElement(
+                  View,
+                  { style: styles.totalsRow },
+                  React.createElement(
+                    Text,
+                    { style: styles.totalsLabel },
+                    `Tax (${invoice.taxRate}%):`,
+                  ),
+                  React.createElement(
+                    Text,
+                    { style: styles.totalsValue },
+                    formatCurrency(tax, invoice.currency),
+                  ),
+                )
+              : null,
+            React.createElement(
+              View,
+              { style: styles.totalsFinalRow },
+              React.createElement(
+                Text,
+                { style: styles.totalsFinalLabel },
+                "Total:",
+              ),
+              React.createElement(
+                Text,
+                { style: styles.totalsFinalValue },
+                formatCurrency(total, invoice.currency),
+              ),
+            ),
+          ),
+
+          // Notes
+          invoice.notes
+            ? React.createElement(
+                View,
+                { style: styles.notesSection },
+                React.createElement(
+                  Text,
+                  { style: styles.notesTitle },
+                  "Notes",
+                ),
+                React.createElement(
+                  Text,
+                  { style: styles.notesText },
+                  invoice.notes,
+                ),
+              )
+            : null,
+
+          // Payment Details
+          account
+            ? React.createElement(
+                View,
+                { style: styles.paymentSection },
+                React.createElement(
+                  Text,
+                  { style: styles.sectionTitle },
+                  "PAYMENT DETAILS",
+                ),
+                React.createElement(
+                  View,
+                  { style: styles.paymentGrid },
+                  ...(
+                    [
+                      ["Account Holder", account.accountHolderName],
+                      ["Bank Name", account.bankName],
+                      ["Account Number", account.accountNumber],
+                      account.sortCode ? ["Sort Code", account.sortCode] : null,
+                      account.routingNumber
+                        ? ["Routing Number", account.routingNumber]
+                        : null,
+                      account.iban ? ["IBAN", account.iban] : null,
+                      account.swiftBic
+                        ? ["SWIFT / BIC", account.swiftBic]
+                        : null,
+                    ] as (readonly [string, string] | null)[]
                   )
-                  .map(([label, value], i) =>
-                    React.createElement(
-                      View,
-                      { key: i, style: styles.paymentItem },
+                    .filter(
+                      (pair): pair is readonly [string, string] =>
+                        pair !== null,
+                    )
+                    .map(([label, value], i) =>
                       React.createElement(
-                        Text,
-                        { style: styles.paymentLabel },
-                        label,
-                      ),
-                      React.createElement(
-                        Text,
-                        { style: styles.paymentValue },
-                        value,
+                        View,
+                        { key: i, style: styles.paymentItem },
+                        React.createElement(
+                          Text,
+                          { style: styles.paymentLabel },
+                          label,
+                        ),
+                        React.createElement(
+                          Text,
+                          { style: styles.paymentValue },
+                          value,
+                        ),
                       ),
                     ),
-                  ),
-              ),
-            )
-          : null,
-
+                ),
+              )
+            : null,
         ), // end content wrapper
 
         // Footer
