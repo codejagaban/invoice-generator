@@ -154,10 +154,11 @@ export async function pgGetTemplateById(userId: string, id: string): Promise<Inv
 
 export async function pgCreateTemplate(userId: string, template: InvoiceTemplate): Promise<InvoiceTemplate> {
   await query(
-    `INSERT INTO templates (id, user_id, name, description, customer, items, notes, tax_rate, currency, usage_count, created_at)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+    `INSERT INTO templates (id, user_id, name, description, customer, company, account_id, items, notes, tax_rate, currency, usage_count, created_at)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
     [template.id, userId, template.name, template.description || null,
-     JSON.stringify(template.customer), JSON.stringify(template.items),
+     JSON.stringify(template.customer), template.company ? JSON.stringify(template.company) : null,
+     template.accountId || null, JSON.stringify(template.items),
      template.notes || null, template.taxRate || null, template.currency, template.usageCount || 0, template.createdAt]
   );
   return template;
@@ -168,10 +169,11 @@ export async function pgUpdateTemplate(userId: string, id: string, updates: Part
   if (!existing) return null;
   const updated: InvoiceTemplate = { ...existing, ...updates };
   await query(
-    `UPDATE templates SET name = $1, description = $2, customer = $3, items = $4,
-       notes = $5, tax_rate = $6, currency = $7, usage_count = $8
-     WHERE id = $9 AND user_id = $10`,
+    `UPDATE templates SET name = $1, description = $2, customer = $3, company = $4, account_id = $5, items = $6,
+       notes = $7, tax_rate = $8, currency = $9, usage_count = $10
+     WHERE id = $11 AND user_id = $12`,
     [updated.name, updated.description || null, JSON.stringify(updated.customer),
+     updated.company ? JSON.stringify(updated.company) : null, updated.accountId || null,
      JSON.stringify(updated.items), updated.notes || null, updated.taxRate || null,
      updated.currency, updated.usageCount || 0, id, userId]
   );
@@ -193,6 +195,8 @@ function rowToTemplate(row: Record<string, unknown>): InvoiceTemplate {
     name: row.name as string,
     description: row.description as string | undefined,
     customer: typeof row.customer === "string" ? JSON.parse(row.customer) : row.customer,
+    company: row.company ? (typeof row.company === "string" ? JSON.parse(row.company) : row.company) : undefined,
+    accountId: row.account_id as string | undefined,
     items: typeof row.items === "string" ? JSON.parse(row.items) : (row.items as InvoiceTemplate["items"]),
     notes: row.notes as string | undefined,
     taxRate: row.tax_rate as number | undefined,

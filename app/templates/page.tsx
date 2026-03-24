@@ -20,8 +20,8 @@ import Card, {
   CardHeader,
   CardTitle,
 } from "@/app/components/shared/Card";
-import type { InvoiceTemplate, InvoiceItem } from "@/app/lib/types";
-import { getTemplates, deleteTemplate, updateTemplate } from "@/app/lib/storage";
+import type { InvoiceTemplate, InvoiceItem, AccountDetails } from "@/app/lib/types";
+import { getTemplates, deleteTemplate, updateTemplate, getAccountDetails } from "@/app/lib/storage";
 import { formatDate } from "@/app/lib/invoice";
 import { TemplateListSkeleton } from "@/app/components/shared/Skeleton";
 import EmptyState from "@/app/components/shared/EmptyState";
@@ -36,8 +36,9 @@ export default function TemplatesPage() {
   useEffect(() => {
     if (!dbReady) return;
     (async () => {
-      const data = await getTemplates();
+      const [data, accs] = await Promise.all([getTemplates(), getAccountDetails()]);
       setTemplates(data);
+      setAccounts(accs);
       setIsLoading(false);
     })();
   }, [dbReady]);
@@ -49,6 +50,7 @@ export default function TemplatesPage() {
     setTemplates(templates.filter((t) => t.id !== id));
   };
 
+  const [accounts, setAccounts] = useState<AccountDetails[]>([]);
   const [editingTemplate, setEditingTemplate] = useState<InvoiceTemplate | null>(null);
   const [editForm, setEditForm] = useState({
     name: "",
@@ -60,6 +62,17 @@ export default function TemplatesPage() {
     customerState: "",
     customerZipCode: "",
     customerCountry: "",
+    companyName: "",
+    companyEmail: "",
+    companyPhone: "",
+    companyAddress: "",
+    companyCity: "",
+    companyState: "",
+    companyZipCode: "",
+    companyCountry: "",
+    companyLogo: "",
+    companyTaxId: "",
+    accountId: "",
     notes: "",
     taxRate: 0,
     currency: "GBP",
@@ -78,6 +91,17 @@ export default function TemplatesPage() {
       customerState: template.customer.state || "",
       customerZipCode: template.customer.zipCode || "",
       customerCountry: template.customer.country || "",
+      companyName: template.company?.name || "",
+      companyEmail: template.company?.email || "",
+      companyPhone: template.company?.phone || "",
+      companyAddress: template.company?.address || "",
+      companyCity: template.company?.city || "",
+      companyState: template.company?.state || "",
+      companyZipCode: template.company?.zipCode || "",
+      companyCountry: template.company?.country || "",
+      companyLogo: template.company?.logo || "",
+      companyTaxId: template.company?.taxId || "",
+      accountId: template.accountId || "",
       notes: template.notes || "",
       taxRate: template.taxRate || 0,
       currency: template.currency,
@@ -106,6 +130,19 @@ export default function TemplatesPage() {
           zipCode: editForm.customerZipCode,
           country: editForm.customerCountry,
         },
+        company: editForm.companyName ? {
+          name: editForm.companyName,
+          email: editForm.companyEmail,
+          phone: editForm.companyPhone || undefined,
+          address: editForm.companyAddress,
+          city: editForm.companyCity,
+          state: editForm.companyState,
+          zipCode: editForm.companyZipCode,
+          country: editForm.companyCountry,
+          logo: editForm.companyLogo || undefined,
+          taxId: editForm.companyTaxId || undefined,
+        } : undefined,
+        accountId: editForm.accountId && editForm.accountId !== "none" ? editForm.accountId : undefined,
         items: editForm.items,
         notes: editForm.notes || undefined,
         taxRate: editForm.taxRate,
@@ -348,6 +385,61 @@ export default function TemplatesPage() {
                   ))}
                 </div>
               </div>
+
+              {/* Company */}
+              <div>
+                <h3 className="text-sm font-semibold text-black dark:text-white mb-3">Company</h3>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <label className="text-xs font-medium text-(--muted)">Name</label>
+                    <Input value={editForm.companyName} onChange={(e) => setEditForm((p) => ({ ...p, companyName: e.target.value }))} />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-(--muted)">Email</label>
+                    <Input value={editForm.companyEmail} onChange={(e) => setEditForm((p) => ({ ...p, companyEmail: e.target.value }))} />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-(--muted)">Phone</label>
+                    <Input value={editForm.companyPhone} onChange={(e) => setEditForm((p) => ({ ...p, companyPhone: e.target.value }))} />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-(--muted)">Address</label>
+                    <Input value={editForm.companyAddress} onChange={(e) => setEditForm((p) => ({ ...p, companyAddress: e.target.value }))} />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-(--muted)">City</label>
+                    <Input value={editForm.companyCity} onChange={(e) => setEditForm((p) => ({ ...p, companyCity: e.target.value }))} />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-(--muted)">Country</label>
+                    <Input value={editForm.companyCountry} onChange={(e) => setEditForm((p) => ({ ...p, companyCountry: e.target.value }))} />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-(--muted)">Tax ID</label>
+                    <Input value={editForm.companyTaxId} onChange={(e) => setEditForm((p) => ({ ...p, companyTaxId: e.target.value }))} />
+                  </div>
+                </div>
+              </div>
+
+              {/* Bank Account */}
+              {accounts.length > 0 && (
+                <div>
+                  <label className="text-xs font-medium text-(--muted)">Bank Account</label>
+                  <Select value={editForm.accountId || "none"} onValueChange={(value) => setEditForm((p) => ({ ...p, accountId: value }))}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="No bank account" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">No bank account</SelectItem>
+                      {accounts.map((acc) => (
+                        <SelectItem key={acc.id} value={acc.id}>
+                          {acc.bankName} — {acc.accountNumber}{acc.isDefault ? " (Default)" : ""}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
 
               {/* Other */}
               <div className="grid gap-4 sm:grid-cols-3">

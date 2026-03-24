@@ -230,10 +230,25 @@ export default function InvoiceForm({
           customerZipCode: template.customer.zipCode || "",
           customerCountry: template.customer.country || "",
           customerLogo: template.customer.logo || "",
+          companyName: template.company?.name || prev.companyName,
+          companyEmail: template.company?.email || prev.companyEmail,
+          companyPhone: template.company?.phone || prev.companyPhone,
+          companyAddress: template.company?.address || prev.companyAddress,
+          companyCity: template.company?.city || prev.companyCity,
+          companyState: template.company?.state || prev.companyState,
+          companyZipCode: template.company?.zipCode || prev.companyZipCode,
+          companyCountry: template.company?.country || prev.companyCountry,
+          companyLogo: template.company?.logo || prev.companyLogo,
+          companyTaxId: template.company?.taxId || prev.companyTaxId,
           currency: template.currency,
           notes: template.notes || "",
           taxRate: template.taxRate || 0,
         }));
+
+        // Restore account selection
+        if (template.accountId) {
+          setSelectedAccountId(template.accountId);
+        }
 
         // Populate items
         if (template.items && template.items.length > 0) {
@@ -361,6 +376,19 @@ export default function InvoiceForm({
           country: formData.customerCountry,
           logo: formData.customerLogo || undefined,
         },
+        company: formData.companyName ? {
+          name: formData.companyName,
+          email: formData.companyEmail,
+          phone: formData.companyPhone || undefined,
+          address: formData.companyAddress,
+          city: formData.companyCity,
+          state: formData.companyState,
+          zipCode: formData.companyZipCode,
+          country: formData.companyCountry,
+          logo: formData.companyLogo || undefined,
+          taxId: formData.companyTaxId || undefined,
+        } : undefined,
+        accountId: selectedAccountId && selectedAccountId !== "none" ? selectedAccountId : undefined,
         items,
         notes: formData.notes,
         taxRate: Number(formData.taxRate),

@@ -52,6 +52,8 @@ export interface InvoiceTemplate {
   name: string;
   description?: string;
   customer: Partial<Customer>;
+  company?: Partial<CompanyDetails>;
+  accountId?: string;
   items: Partial<InvoiceItem>[];
   notes?: string;
   taxRate?: number;
