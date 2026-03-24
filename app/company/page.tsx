@@ -24,6 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/app/components/shared/Select";
+import { useConfirm } from "@/app/components/shared/ConfirmDialog";
 import {
   getCompanyDetails,
   createCompany,
@@ -49,6 +50,7 @@ const CURRENCIES = [
 ];
 
 export default function CompanyPage() {
+  const [confirm, ConfirmDialogUI] = useConfirm();
   const dbReady = useDbReady();
   const [companies, setCompanies] = useState<CompanyDetails[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -98,7 +100,7 @@ export default function CompanyPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm("Are you sure you want to delete this company profile?")) {
+    if (await confirm({ description: "Are you sure you want to delete this company profile?", variant: "danger", confirmLabel: "Delete" })) {
       await deleteCompany(id);
       setCompanies((prev) => prev.filter((c) => c.id !== id));
     }
@@ -322,6 +324,7 @@ export default function CompanyPage() {
           )}
         </div>
       </div>
+      <ConfirmDialogUI />
     </div>
   );
 }

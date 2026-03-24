@@ -45,6 +45,7 @@ import {
 import { CustomerListSkeleton } from "@/app/components/shared/Skeleton";
 import EmptyState from "@/app/components/shared/EmptyState";
 import { Users } from "lucide-react";
+import { useConfirm } from "@/app/components/shared/ConfirmDialog";
 
 const COUNTRIES = [
   "United Kingdom",
@@ -72,6 +73,7 @@ const COUNTRIES = [
 ];
 
 export default function CustomersPage() {
+  const [confirm, ConfirmDialogUI] = useConfirm();
   const dbReady = useDbReady();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -192,7 +194,7 @@ export default function CustomersPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this customer?")) return;
+    if (!(await confirm({ description: "Are you sure you want to delete this customer?", variant: "danger", confirmLabel: "Delete" }))) return;
     await deleteCustomer(id);
     setCustomers((prev) => prev.filter((customer) => customer.id !== id));
     if (editingId === id) {
@@ -498,6 +500,7 @@ export default function CustomersPage() {
         </div>
         }
       </main>
+      <ConfirmDialogUI />
     </div>
   );
 }

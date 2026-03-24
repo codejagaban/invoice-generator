@@ -24,6 +24,7 @@ import {
   deleteAccount,
   setDefaultAccount,
 } from "@/app/lib/storage";
+import { useConfirm } from "@/app/components/shared/ConfirmDialog";
 
 const emptyForm = {
   accountHolderName: "",
@@ -40,6 +41,7 @@ const emptyForm = {
 };
 
 export default function AccountPage() {
+  const [confirm, ConfirmDialogUI] = useConfirm();
   const dbReady = useDbReady();
   const [accounts, setAccounts] = useState<AccountDetails[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -130,7 +132,7 @@ export default function AccountPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Delete this account profile?")) return;
+    if (!(await confirm({ description: "Delete this account profile?", variant: "danger", confirmLabel: "Delete" }))) return;
     await deleteAccount(id);
     setAccounts((prev) => prev.filter((a) => a.id !== id));
   };
@@ -412,6 +414,7 @@ export default function AccountPage() {
           )}
         </div>
       </div>
+      <ConfirmDialogUI />
     </div>
   );
 }
