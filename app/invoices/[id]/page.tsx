@@ -6,6 +6,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { useConfirm } from "@/app/components/shared/ConfirmDialog";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { Pencil, Trash2, ArrowLeft, FileDown, Mail, CheckCircle2 } from "lucide-react";
@@ -44,6 +46,7 @@ import { downloadInvoicePDF, generateInvoiceEmailHTML, generateInvoicePDFBase64 
 import { useDbReady } from "@/app/components/DbScopeProvider";
 
 export default function InvoiceDetailPage() {
+  const [confirm, ConfirmDialogUI] = useConfirm();
   const dbReady = useDbReady();
   const params = useParams();
   const router = useRouter();
@@ -78,7 +81,7 @@ export default function InvoiceDetailPage() {
       const company = invoice.company || (await getDefaultCompanyDetails());
       await downloadInvoicePDF(invoice, company || undefined, account || undefined);
     } catch (error) {
-      alert("Failed to download PDF. Please try again.");
+      toast.error("Failed to download PDF. Please try again.");
       console.error(error);
     } finally {
       setIsDownloadingPDF(false);
@@ -86,7 +89,8 @@ export default function InvoiceDetailPage() {
   };
 
   const handleDelete = async () => {
-    if (!confirm("Are you sure you want to delete this invoice?")) return;
+    const ok = await confirm({ description: "Are you sure you want to delete this invoice?", variant: "danger", confirmLabel: "Delete" });
+    if (!ok) return;
     await deleteInvoice(id);
     router.push("/invoices");
   };
@@ -264,6 +268,9 @@ export default function InvoiceDetailPage() {
                     {invoice.customer.city}, {invoice.customer.state}{" "}
                     {invoice.customer.zipCode}
                   </p>
+                  {invoice.customer.country && (
+                    <p className="text-sm">{invoice.customer.country}</p>
+                  )}
                 </>
               )}
             </CardContent>
@@ -496,6 +503,7 @@ export default function InvoiceDetailPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+    <ConfirmDialogUI />
     </div>
   );
 }

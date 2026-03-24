@@ -8,6 +8,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { FilePlus2, Search, Pencil, FileDown, Trash2, CheckCircle2, Send, X } from "lucide-react";
+import { useConfirm } from "@/app/components/shared/ConfirmDialog";
 import Button from "@/app/components/shared/Button";
 import { InputWithRef as Input } from "@/app/components/shared/Input";
 import Card from "@/app/components/shared/Card";
@@ -36,6 +37,7 @@ import MiniChart, { groupByDay } from "@/app/components/shared/MiniChart";
 import { FileText } from "lucide-react";
 
 export default function InvoicesDashboardPage() {
+  const [confirm, ConfirmDialogUI] = useConfirm();
   const dbReady = useDbReady();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -188,7 +190,8 @@ export default function InvoicesDashboardPage() {
   };
 
   const handleBulkDelete = async () => {
-    if (!confirm(`Delete ${selectedInvoices.length} invoice${selectedInvoices.length !== 1 ? "s" : ""}? This cannot be undone.`)) return;
+    const ok = await confirm({ description: `Delete ${selectedInvoices.length} invoice${selectedInvoices.length !== 1 ? "s" : ""}? This cannot be undone.`, variant: "danger", confirmLabel: "Delete" });
+    if (!ok) return;
     setBulkActionInProgress(true);
     try {
       await Promise.all(selectedInvoices.map((inv) => deleteInvoice(inv.id)));
@@ -495,6 +498,7 @@ export default function InvoicesDashboardPage() {
         </div>
         )}
       </main>
+      <ConfirmDialogUI />
     </div>
   );
 }
