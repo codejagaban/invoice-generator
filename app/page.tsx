@@ -44,9 +44,9 @@ const features = [
   },
   {
     icon: Mail,
-    title: "Email delivery",
+    title: "Email with PDF attached",
     description:
-      "Send invoices straight to your client's inbox from inside the app. No downloads, no file attachments.",
+      "Send invoices straight to your client's inbox with the PDF automatically attached. One click, done.",
     iconColor: "text-rose-600 dark:text-rose-400",
     iconBg: "bg-rose-50 dark:bg-rose-950/40",
     iconBorder: "border-rose-200 dark:border-rose-800",
@@ -77,12 +77,12 @@ const steps = [
 ];
 
 const perks = [
-  "No account or sign-up required",
-  "Data stored locally — fully private",
-  "11 currencies supported",
+  "Analytics dashboard with charts",
+  "Multi-currency with live conversion",
+  "Bulk actions on invoices",
   "Customer address book",
   "Invoice status tracking",
-  "Overdue detection",
+  "Overdue & due-soon detection",
 ];
 
 const lineItems = [
@@ -208,7 +208,7 @@ export default function Home() {
               {/* Pill badge */}
               <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-4 py-1.5 text-sm font-medium text-indigo-700 dark:border-indigo-800 dark:bg-indigo-950/40 dark:text-indigo-300">
                 <span className="h-1.5 w-1.5 rounded-full bg-indigo-500 dark:bg-indigo-400" />
-                Free · No sign-up · Private by default
+                Free · Fast · Professional
               </div>
 
               <h1 className="max-w-xl text-5xl font-bold tracking-tight text-black dark:text-white sm:text-6xl leading-[1.1]">
@@ -233,10 +233,10 @@ export default function Home() {
                   <ArrowRight className="h-4 w-4" />
                 </Link>
                 <Link
-                  href="/invoices"
+                  href="/dashboard"
                   className="inline-flex items-center gap-2 rounded-xl border border-(--border) px-7 py-3.5 font-semibold text-black transition-colors hover:bg-(--surface-raised) dark:text-white"
                 >
-                  View dashboard
+                  View Dashboard
                 </Link>
               </div>
             </div>
@@ -253,8 +253,8 @@ export default function Home() {
           <div className="mx-auto max-w-5xl px-6 grid grid-cols-3 divide-x divide-(--border)">
             {[
               { value: "< 2 min", label: "To create an invoice" },
-              { value: "100%", label: "Free, forever" },
-              { value: "0", label: "Sign-ups required" },
+              { value: "170+", label: "Currencies supported" },
+              { value: "1-click", label: "PDF & email delivery" },
             ].map((stat) => (
               <div key={stat.label} className="py-6 px-4 text-center sm:px-8">
                 <p className="text-2xl font-bold text-black dark:text-white sm:text-3xl">
@@ -378,8 +378,8 @@ export default function Home() {
                 Built to respect your time.
               </h2>
               <p className="mt-3 text-sm leading-relaxed text-(--muted)">
-                No subscriptions. No databases. Your data lives in your browser,
-                private and always accessible.
+                Everything you need to manage invoices professionally — from
+                creation to payment tracking.
               </p>
             </div>
             <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -403,7 +403,7 @@ export default function Home() {
               Ready to send your first invoice?
             </h3>
             <p className="mt-3 text-sm text-gray-400 dark:text-gray-600">
-              No sign-up needed. Open the app, fill in the details, and go.
+              Create, send, and track — all in one place.
             </p>
             <div className="mt-7">
               <Link
