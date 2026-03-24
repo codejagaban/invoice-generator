@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Golos_Text } from "next/font/google";
 
-const inter = Inter({
+const golos = Golos_Text({
   subsets: ["latin"],
 });
 import AppShell from "@/app/components/AppShell";
 import DbScopeProvider from "@/app/components/DbScopeProvider";
 import SessionProviderWrapper from "@/app/components/SessionProviderWrapper";
+import { Toaster } from "sonner";
 import "./globals.css";
 
 
@@ -22,12 +23,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.className} antialiased`}>
+      <body className={`${golos.className} antialiased`}>
         <SessionProviderWrapper>
           <DbScopeProvider>
             <AppShell>{children}</AppShell>
           </DbScopeProvider>
         </SessionProviderWrapper>
+        <Toaster richColors position="top-right" />
       </body>
     </html>
   );

@@ -1,4 +1,5 @@
 "use client";
+import { toast } from "sonner";
 
 /**
  * Invoice Form Component
@@ -219,6 +220,7 @@ export default function InvoiceForm({
           customerState: template.customer.state || "",
           customerZipCode: template.customer.zipCode || "",
           customerCountry: template.customer.country || "",
+          customerLogo: template.customer.logo || "",
           currency: template.currency,
           notes: template.notes || "",
           taxRate: template.taxRate || 0,
@@ -329,7 +331,7 @@ export default function InvoiceForm({
 
   const handleSaveAsTemplate = async () => {
     if (!templateName.trim()) {
-      alert("Please enter a template name");
+      toast.error("Please enter a template name");
       return;
     }
 
@@ -359,12 +361,12 @@ export default function InvoiceForm({
       };
 
       await createTemplate(template);
-      alert("Template saved successfully!");
+      toast.success("Template saved successfully!");
       setShowSaveTemplateModal(false);
       setTemplateName("");
       setTemplateDescription("");
     } catch (error) {
-      alert("Failed to save template. Please try again.");
+      toast.error("Failed to save template. Please try again.");
       console.error(error);
     } finally {
       setIsSavingTemplate(false);
