@@ -106,6 +106,9 @@ function LineChart({
           <stop offset="0%" stopColor={color} stopOpacity="0.2" />
           <stop offset="100%" stopColor={color} stopOpacity="0" />
         </linearGradient>
+        <clipPath id="chart-clip">
+          <rect x={padX} y={padTop} width={chartW} height={chartH} />
+        </clipPath>
       </defs>
       {/* Grid lines */}
       {[0, 0.25, 0.5, 0.75, 1].map((pct) => (
@@ -121,9 +124,9 @@ function LineChart({
         />
       ))}
       {/* Fill */}
-      <path d={fillPath} fill="url(#line-chart-grad)" />
+      <path d={fillPath} fill="url(#line-chart-grad)" clipPath="url(#chart-clip)" />
       {/* Line */}
-      <path d={linePath} stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d={linePath} stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" clipPath="url(#chart-clip)" />
       {/* Dots and labels */}
       {points.map((p, i) => (
         <g key={i}>
@@ -156,26 +159,72 @@ function BarChart({
   color?: string;
   formatValue?: (v: number) => string;
 }) {
+  const width = 500;
+  const height = 160;
+  const padX = 30;
+  const padTop = 20;
+  const padBottom = 24;
+  const chartH = height - padTop - padBottom;
   const max = Math.max(...data, 1);
+  const barCount = data.length;
+  const gap = 12;
+  const totalGap = gap * (barCount - 1);
+  const barW = (width - padX * 2 - totalGap) / barCount;
+
   return (
-    <div className="flex items-end gap-2 h-40">
-      {data.map((value, i) => (
-        <div key={i} className="flex-1 flex flex-col items-center gap-1">
-          <span className="text-[10px] text-(--muted) tabular-nums">
-            {formatValue ? formatValue(value) : value}
-          </span>
-          <div
-            className="w-full rounded-t-md transition-all duration-500"
-            style={{
-              height: `${Math.max((value / max) * 100, 2)}%`,
-              backgroundColor: color,
-              opacity: i === data.length - 1 ? 1 : 0.6,
-            }}
-          />
-          <span className="text-[10px] text-(--muted)">{labels[i]}</span>
-        </div>
+    <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-44" fill="none">
+      {/* Grid lines */}
+      {[0, 0.25, 0.5, 0.75, 1].map((pct) => (
+        <line
+          key={pct}
+          x1={padX}
+          y1={padTop + chartH * (1 - pct)}
+          x2={width - padX}
+          y2={padTop + chartH * (1 - pct)}
+          stroke="currentColor"
+          strokeWidth="0.5"
+          className="text-gray-200 dark:text-gray-800"
+        />
       ))}
-    </div>
+      {data.map((value, i) => {
+        const barH = Math.max((value / max) * chartH, 2);
+        const x = padX + i * (barW + gap);
+        const y = padTop + chartH - barH;
+        return (
+          <g key={i}>
+            <rect
+              x={x}
+              y={y}
+              width={barW}
+              height={barH}
+              rx={4}
+              fill={color}
+              opacity={i === data.length - 1 ? 1 : 0.6}
+            />
+            {/* Value */}
+            <text
+              x={x + barW / 2}
+              y={y - 6}
+              textAnchor="middle"
+              className="text-[9px] fill-gray-500 dark:fill-gray-400"
+              style={{ fontFamily: "system-ui" }}
+            >
+              {formatValue ? formatValue(value) : value}
+            </text>
+            {/* Label */}
+            <text
+              x={x + barW / 2}
+              y={height - 4}
+              textAnchor="middle"
+              className="text-[10px] fill-gray-500 dark:fill-gray-400"
+              style={{ fontFamily: "system-ui" }}
+            >
+              {labels[i]}
+            </text>
+          </g>
+        );
+      })}
+    </svg>
   );
 }
 
