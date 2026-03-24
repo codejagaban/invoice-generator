@@ -20,6 +20,8 @@ import {
   X,
   Pencil,
   Trash2,
+  Search,
+  Settings2,
 } from "lucide-react";
 import Button from "@/app/components/shared/Button";
 import { InputWithRef as Input } from "@/app/components/shared/Input";
@@ -80,6 +82,8 @@ export default function CustomersPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [logo, setLogo] = useState<string | undefined>(undefined);
   const [logoError, setLogoError] = useState<string | undefined>(undefined);
+  const [showForm, setShowForm] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
@@ -148,6 +152,7 @@ export default function CustomersPage() {
 
   const resetForm = () => {
     setEditingId(null);
+    setShowForm(false);
     setLogo(undefined);
     setLogoError(undefined);
     setErrors({});
@@ -180,6 +185,7 @@ export default function CustomersPage() {
 
   const handleEdit = (customer: Customer) => {
     setEditingId(customer.id);
+    setShowForm(true);
     setLogo(customer.logo);
     setLogoError(undefined);
     setFormData({
@@ -244,262 +250,203 @@ export default function CustomersPage() {
     resetForm();
   };
 
+  const filteredCustomers = searchTerm
+    ? customers.filter(
+        (c) =>
+          c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          c.email.toLowerCase().includes(searchTerm.toLowerCase()),
+      )
+    : customers;
+
   return (
     <div className="min-h-screen bg-(--background)">
       <header className="border-b border-b-(--border) bg-(--surface)">
         <div className="mx-auto max-w-7xl px-6 py-6">
-          <h1 className="text-3xl font-bold text-black dark:text-white">
-            Customers
-          </h1>
-          <p className="mt-2 text-sm text-(--muted)">
-            Create and manage your customer list for faster invoice creation.
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-black dark:text-white">Customers</h1>
+              <p className="mt-1 text-sm text-(--muted)">{customers.length} customer{customers.length !== 1 ? "s" : ""}</p>
+            </div>
+            <Button onClick={() => { resetForm(); setShowForm(true); }}>
+              <UserPlus className="h-4 w-4" />
+              Add Customer
+            </Button>
+          </div>
         </div>
       </header>
 
-      <main className="mx-auto max-w-7xl px-6 py-12">
+      <main className="mx-auto max-w-7xl px-6 py-8">
         {isLoading ? (
           <CustomerListSkeleton />
-        ) :
-        <div className="grid gap-8 lg:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>
-                {editingId ? "Edit Customer" : "Add Customer"}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                {/* Logo Upload */}
-                <div>
-                  <label className="block text-sm font-medium text-(--muted) mb-2">
-                    Customer Logo
-                  </label>
-                  <div className="flex items-start gap-4">
-                    {logo ? (
-                      <div className="relative shrink-0">
-                        <img
-                          src={logo}
-                          alt="Customer logo preview"
-                          className="h-16 w-16 rounded-lg object-contain border border-(--border) bg-(--surface-raised) p-1"
-                        />
-                        <button
-                          type="button"
-                          onClick={removeLogo}
-                          className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600 transition-colors"
-                          title="Remove logo"
-                        >
-                          <X className="h-3 w-3" />
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg border-2 border-dashed border-(--border) bg-(--surface-raised) text-(--muted)">
-                        <ImagePlus className="h-5 w-5" />
-                      </div>
-                    )}
-                    <div className="flex flex-col gap-2">
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept="image/*"
-                        onChange={handleLogoChange}
-                        className="hidden"
-                        id="customer-logo-upload"
-                      />
-                      <label
-                        htmlFor="customer-logo-upload"
-                        className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-(--border) bg-(--surface-raised) px-3 py-2 text-sm font-medium text-black hover:bg-(--border) dark:text-white transition-colors"
-                      >
-                        <ImagePlus className="h-4 w-4" />
-                        {logo ? "Change Logo" : "Upload Logo"}
-                      </label>
-                      <p className="text-xs text-(--muted)">PNG, JPG, SVG · Max 2MB</p>
-                      {logoError && (
-                        <p className="text-xs text-red-600 dark:text-red-400">
-                          {logoError}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </div>
+        ) : (
+          <div className="space-y-6">
+            {/* Search */}
+            <Input
+              type="text"
+              placeholder="Search customer..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              leadingIcon={<Search className="h-4 w-4" />}
+              className="max-w-sm"
+            />
 
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <Input
-                    label="Name"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    leadingIcon={<User className="h-4 w-4" />}
-                    error={errors.name}
-                    required
-                  />
-                  <Input
-                    label="Email"
-                    name="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    leadingIcon={<Mail className="h-4 w-4" />}
-                    error={errors.email}
-                    required
-                  />
-                </div>
-                <Input
-                  label="Address"
-                  name="address"
-                  value={formData.address}
-                  onChange={handleInputChange}
-                  leadingIcon={<MapPin className="h-4 w-4" />}
-                />
-                <div className="grid gap-4 sm:grid-cols-3">
-                  <Input
-                    label="City"
-                    name="city"
-                    value={formData.city}
-                    onChange={handleInputChange}
-                    leadingIcon={<Map className="h-4 w-4" />}
-                  />
-                  <Input
-                    label="State"
-                    name="state"
-                    value={formData.state}
-                    onChange={handleInputChange}
-                    leadingIcon={<Map className="h-4 w-4" />}
-                  />
-                  <Input
-                    label="Zip Code"
-                    name="zipCode"
-                    value={formData.zipCode}
-                    onChange={handleInputChange}
-                    leadingIcon={<Hash className="h-4 w-4" />}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-(--muted) mb-1">
-                    Country
-                  </label>
-                  <div className="relative">
-                    <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-(--muted)">
-                      <Globe className="h-4 w-4" />
-                    </span>
-                    <Select
-                      value={formData.country}
-                      onValueChange={(value) =>
-                        setFormData((prev) => ({ ...prev, country: value }))
-                      }
-                    >
-                      <SelectTrigger className="pl-9">
-                        <SelectValue placeholder="Select country" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {COUNTRIES.map((country) => (
-                          <SelectItem key={country} value={country}>
-                            {country}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div className="flex gap-3">
-                  <Button type="submit">
-                    {editingId ? (
-                      <>
-                        <UserCheck className="h-4 w-4 text-green-400" />
-                        Update Customer
-                      </>
-                    ) : (
-                      <>
-                        <UserPlus className="h-4 w-4 text-green-400" />
-                        Add Customer
-                      </>
-                    )}
-                  </Button>
-                  {editingId && (
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      onClick={resetForm}
-                    >
-                      <X className="h-4 w-4 text-red-500" />
-                      Cancel
-                    </Button>
-                  )}
-                </div>
-              </form>
-            </CardContent>
-          </Card>
-
-          <div className="space-y-4">
-            {customers.length === 0 ? (
+            {/* Table */}
+            {filteredCustomers.length === 0 ? (
               <Card>
                 <EmptyState
                   icon={Users}
-                  title="No customers yet"
-                  description="Add your first customer using the form to get started."
-                />
+                  title={searchTerm ? "No customers found" : "No customers yet"}
+                  description={searchTerm ? "Try a different search term." : "Add your first customer to get started."}
+                >
+                  {!searchTerm && (
+                    <Button onClick={() => { resetForm(); setShowForm(true); }}>
+                      <UserPlus className="h-4 w-4" />
+                      Add Customer
+                    </Button>
+                  )}
+                </EmptyState>
               </Card>
             ) : (
-              customers.map((customer) => (
-                <Card key={customer.id}>
-                  <CardContent className="space-y-3">
-                    <div className="flex items-center gap-3">
-                      {customer.logo && (
-                        <img
-                          src={customer.logo}
-                          alt={`${customer.name} logo`}
-                          className="h-10 w-10 rounded-lg object-contain border border-(--border) bg-(--surface-raised) p-0.5 shrink-0"
-                        />
-                      )}
-                      <div>
-                        <p className="font-semibold text-black dark:text-white">
-                          {customer.name}
-                        </p>
-                        <p className="text-sm text-(--muted)">{customer.email}</p>
-                      </div>
-                    </div>
-                    <div className="text-sm text-(--muted)">
-                      {customer.address && <p>{customer.address}</p>}
-                      {(customer.city ||
-                        customer.state ||
-                        customer.zipCode) && (
-                        <p>
-                          {customer.city}
-                          {customer.city && customer.state ? ", " : ""}
-                          {customer.state} {customer.zipCode}
-                        </p>
-                      )}
-                      {customer.country && <p>{customer.country}</p>}
-                    </div>
-                    <div className="flex gap-2 border-t pt-3 border-(--border)">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="w-9 px-0"
-                        onClick={() => handleEdit(customer)}
-                        aria-label="Edit customer"
-                      >
-                        <Pencil className="h-4 w-4 text-blue-500" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="w-9 px-0"
-                        onClick={() => handleDelete(customer.id)}
-                        aria-label="Delete customer"
-                      >
-                        <Trash2 className="h-4 w-4 text-red-500" />
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))
+              <Card className="overflow-hidden p-0!">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-(--border) bg-(--surface)">
+                        <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wider text-(--muted)">Customer</th>
+                        <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wider text-(--muted)">Email</th>
+                        <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wider text-(--muted) hidden md:table-cell">Address</th>
+                        <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wider text-(--muted) hidden lg:table-cell">Country</th>
+                        <th className="px-5 py-3 text-right text-[10px] font-semibold uppercase tracking-wider text-(--muted) w-20"></th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-(--border)">
+                      {filteredCustomers.map((customer) => (
+                        <tr key={customer.id} className="transition-colors hover:bg-(--border)/20">
+                          <td className="px-5 py-3.5">
+                            <div className="flex items-center gap-3">
+                              {customer.logo ? (
+                                <img
+                                  src={customer.logo}
+                                  alt=""
+                                  className="h-8 w-8 rounded-full object-contain border border-(--border) bg-(--surface-raised) shrink-0"
+                                />
+                              ) : (
+                                <div className="h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400 shrink-0">
+                                  {customer.name.charAt(0).toUpperCase()}
+                                </div>
+                              )}
+                              <span className="font-medium text-black dark:text-white">{customer.name}</span>
+                            </div>
+                          </td>
+                          <td className="px-5 py-3.5 text-(--muted)">{customer.email}</td>
+                          <td className="px-5 py-3.5 text-(--muted) hidden md:table-cell max-w-50 truncate">
+                            {[customer.address, customer.city, customer.state, customer.zipCode].filter(Boolean).join(", ")}
+                          </td>
+                          <td className="px-5 py-3.5 text-(--muted) hidden lg:table-cell">{customer.country}</td>
+                          <td className="px-5 py-3.5 text-right">
+                            <div className="flex items-center justify-end gap-1">
+                              <button
+                                onClick={() => handleEdit(customer)}
+                                className="inline-flex h-7 w-7 items-center justify-center rounded-md text-(--muted) hover:bg-(--surface) hover:text-black dark:hover:text-white transition-colors"
+                                title="Edit"
+                              >
+                                <Pencil className="h-3.5 w-3.5" />
+                              </button>
+                              <button
+                                onClick={() => handleDelete(customer.id)}
+                                className="inline-flex h-7 w-7 items-center justify-center rounded-md text-(--muted) hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/20 dark:hover:text-red-400 transition-colors"
+                                title="Delete"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </Card>
             )}
           </div>
-        </div>
-        }
+        )}
       </main>
+
+      {/* ── Add/Edit Customer Modal ─────────────────────────── */}
+      {showForm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-[2px] p-4">
+          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl border border-(--border) bg-white dark:bg-[#1a1a1a] shadow-2xl">
+            <div className="flex items-center justify-between border-b border-(--border) px-6 py-4">
+              <h2 className="text-lg font-semibold text-black dark:text-white">
+                {editingId ? "Edit Customer" : "Add Customer"}
+              </h2>
+              <button onClick={resetForm} className="text-(--muted) hover:text-black dark:hover:text-white transition-colors">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+              {/* Logo Upload */}
+              <div>
+                <label className="block text-xs font-medium text-(--muted) mb-2">Logo</label>
+                <div className="flex items-center gap-4">
+                  {logo ? (
+                    <div className="relative shrink-0">
+                      <img src={logo} alt="" className="h-12 w-12 rounded-full object-contain border border-(--border) bg-(--surface-raised)" />
+                      <button type="button" onClick={removeLogo} className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600">
+                        <X className="h-2.5 w-2.5" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border-2 border-dashed border-(--border) bg-(--surface-raised) text-(--muted)">
+                      <ImagePlus className="h-4 w-4" />
+                    </div>
+                  )}
+                  <div>
+                    <input ref={fileInputRef} type="file" accept="image/*" onChange={handleLogoChange} className="hidden" id="customer-logo-upload" />
+                    <label htmlFor="customer-logo-upload" className="inline-flex cursor-pointer items-center gap-1.5 text-xs font-medium text-black dark:text-white hover:underline">
+                      <ImagePlus className="h-3.5 w-3.5" />
+                      {logo ? "Change" : "Upload"}
+                    </label>
+                    {logoError && <p className="text-xs text-red-600 dark:text-red-400 mt-1">{logoError}</p>}
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Input label="Name" name="name" value={formData.name} onChange={handleInputChange} leadingIcon={<User className="h-4 w-4" />} error={errors.name} required />
+                <Input label="Email" name="email" type="email" value={formData.email} onChange={handleInputChange} leadingIcon={<Mail className="h-4 w-4" />} error={errors.email} required />
+              </div>
+              <Input label="Address" name="address" value={formData.address} onChange={handleInputChange} leadingIcon={<MapPin className="h-4 w-4" />} />
+              <div className="grid gap-4 sm:grid-cols-3">
+                <Input label="City" name="city" value={formData.city} onChange={handleInputChange} leadingIcon={<Map className="h-4 w-4" />} />
+                <Input label="State" name="state" value={formData.state} onChange={handleInputChange} leadingIcon={<Map className="h-4 w-4" />} />
+                <Input label="Zip Code" name="zipCode" value={formData.zipCode} onChange={handleInputChange} leadingIcon={<Hash className="h-4 w-4" />} />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-(--muted) mb-1">Country</label>
+                <div className="relative">
+                  <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-(--muted)"><Globe className="h-4 w-4" /></span>
+                  <Select value={formData.country} onValueChange={(value) => setFormData((prev) => ({ ...prev, country: value }))}>
+                    <SelectTrigger className="pl-9"><SelectValue placeholder="Select country" /></SelectTrigger>
+                    <SelectContent>
+                      {COUNTRIES.map((country) => (<SelectItem key={country} value={country}>{country}</SelectItem>))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-2">
+                <Button type="button" variant="ghost" onClick={resetForm}>Cancel</Button>
+                <Button type="submit">
+                  {editingId ? (<><UserCheck className="h-4 w-4" /> Update</>) : (<><UserPlus className="h-4 w-4" /> Add Customer</>)}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       <ConfirmDialogUI />
     </div>
   );

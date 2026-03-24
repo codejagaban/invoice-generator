@@ -13,6 +13,7 @@ import {
   FilePlus2,
   Landmark,
   BarChart3,
+  Building2,
   LogIn,
   LogOut,
   ChevronDown,
@@ -37,8 +38,9 @@ export default function Navigation() {
     { href: "/invoices", label: "Invoices", icon: FileText },
     { href: "/customers", label: "Customers", icon: Users },
     { href: "/templates", label: "Templates", icon: LayoutTemplate },
-    { href: "/account", label: "Account", icon: Landmark },
-    { href: "/company", label: "Settings", icon: Settings2 },
+    { href: "/account", label: "Accounts", icon: Landmark },
+    { href: "/company", label: "Companies", icon: Building2 },
+    { href: "/settings", label: "Settings", icon: Settings2 },
   ] as const;
 
   // Close dropdown on outside click
