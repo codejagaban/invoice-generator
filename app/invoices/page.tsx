@@ -5,12 +5,11 @@
 
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import {
   FilePlus2,
   Search,
-  Pencil,
   FileDown,
   Trash2,
   CheckCircle2,
@@ -66,6 +65,9 @@ export default function InvoicesDashboardPage() {
   const [sortBy, setSortBy] = useState<"date" | "amount" | "name">("date");
   const [defaultCurrency, setDefaultCurrency] = useState("GBP");
   const [updatingStatusId, setUpdatingStatusId] = useState<string | null>(null);
+  const [statusMenuId, setStatusMenuId] = useState<string | null>(null);
+  const [statusMenuPos, setStatusMenuPos] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
+  const statusBtnRef = useRef<HTMLButtonElement>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const perPage = 15;
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -587,36 +589,76 @@ export default function InvoicesDashboardPage() {
                                 )}
                               </td>
                               <td
-                                className="px-6 py-4 whitespace-nowrap group/status"
+                                className="px-6 py-4 whitespace-nowrap"
                                 onClick={(e) => e.stopPropagation()}
                               >
-                                <label className={`relative inline-flex items-center justify-center gap-1 cursor-pointer rounded-full px-2.5 py-1 text-xs font-medium w-fit ${
-                                  invoice.status === "paid"
-                                    ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
-                                    : invoice.status === "sent"
-                                      ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
-                                      : invoice.status === "cancelled"
-                                        ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-                                        : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
-                                }`}>
-                                  <select
-                                    value={invoice.status}
-                                    onChange={(e) =>
-                                      handleStatusChange(
-                                        invoice.id,
-                                        e.target.value as Invoice["status"],
-                                      )
-                                    }
+                                <div className="relative">
+                                  <button
+                                    ref={statusMenuId === invoice.id ? statusBtnRef : undefined}
+                                    onClick={(e) => {
+                                      if (statusMenuId === invoice.id) {
+                                        setStatusMenuId(null);
+                                      } else {
+                                        const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                                        setStatusMenuPos({ top: rect.bottom + 4, left: rect.left });
+                                        setStatusMenuId(invoice.id);
+                                      }
+                                    }}
                                     disabled={updatingStatusId === invoice.id}
-                                    className="appearance-none cursor-pointer border-0 bg-transparent p-0 text-xs font-medium focus:outline-none disabled:opacity-50 text-inherit"
+                                    className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium cursor-pointer transition-all hover:ring-2 hover:ring-offset-1 disabled:opacity-50 ${
+                                      invoice.status === "paid"
+                                        ? "bg-emerald-100 text-emerald-700 hover:ring-emerald-300 dark:bg-emerald-900/30 dark:text-emerald-400"
+                                        : invoice.status === "sent"
+                                          ? "bg-blue-100 text-blue-700 hover:ring-blue-300 dark:bg-blue-900/30 dark:text-blue-400"
+                                          : invoice.status === "cancelled"
+                                            ? "bg-red-100 text-red-700 hover:ring-red-300 dark:bg-red-900/30 dark:text-red-400"
+                                            : "bg-gray-100 text-gray-600 hover:ring-gray-300 dark:bg-gray-800 dark:text-gray-400"
+                                    }`}
                                   >
-                                    <option value="draft">Draft</option>
-                                    <option value="sent">Sent</option>
-                                    <option value="paid">Paid</option>
-                                    <option value="cancelled">Cancelled</option>
-                                  </select>
-                                  <Pencil className="h-3 w-3 opacity-0 group-hover/status:opacity-100 transition-opacity pointer-events-none" />
-                                </label>
+                                    <span className={`h-1.5 w-1.5 rounded-full ${
+                                      invoice.status === "paid" ? "bg-emerald-500"
+                                        : invoice.status === "sent" ? "bg-blue-500"
+                                        : invoice.status === "cancelled" ? "bg-red-500"
+                                        : "bg-gray-400"
+                                    }`} />
+                                    {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
+                                  </button>
+                                  {statusMenuId === invoice.id && (
+                                    <>
+                                      <div className="fixed inset-0 z-40" onClick={() => setStatusMenuId(null)} />
+                                      <div className="fixed z-50 w-36 rounded-lg border border-(--border) bg-white dark:bg-[#1a1a1a] shadow-lg py-1" style={{ top: statusMenuPos.top, left: statusMenuPos.left }}>
+                                        {(["draft", "sent", "paid", "cancelled"] as const).map((s) => (
+                                          <button
+                                            key={s}
+                                            onClick={() => {
+                                              handleStatusChange(invoice.id, s);
+                                              setStatusMenuId(null);
+                                            }}
+                                            className={`w-full flex items-center gap-2 px-3 py-2 text-xs cursor-pointer rounded-md mx-1 transition-colors ${
+                                              invoice.status === s
+                                                ? "font-semibold bg-gray-100 dark:bg-gray-800"
+                                                : "hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                                            }`}
+                                            style={{ width: "calc(100% - 8px)" }}
+                                          >
+                                            <span className={`h-2 w-2 rounded-full ${
+                                              s === "paid" ? "bg-emerald-500"
+                                                : s === "sent" ? "bg-blue-500"
+                                                : s === "cancelled" ? "bg-red-500"
+                                                : "bg-gray-400"
+                                            }`} />
+                                            <span className="text-black dark:text-white">
+                                              {s.charAt(0).toUpperCase() + s.slice(1)}
+                                            </span>
+                                            {invoice.status === s && (
+                                              <CheckCircle2 className="h-3 w-3 ml-auto text-(--muted)" />
+                                            )}
+                                          </button>
+                                        ))}
+                                      </div>
+                                    </>
+                                  )}
+                                </div>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-right font-semibold text-black dark:text-white">
                                 {formatCurrency(amount, invoice.currency)}
