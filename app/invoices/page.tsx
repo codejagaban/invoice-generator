@@ -7,7 +7,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { FilePlus2, Search, Pencil } from "lucide-react";
+import { FilePlus2, Search, Pencil, FileDown, Trash2, CheckCircle2, Send, X } from "lucide-react";
 import Button from "@/app/components/shared/Button";
 import { InputWithRef as Input } from "@/app/components/shared/Input";
 import Card from "@/app/components/shared/Card";
@@ -19,7 +19,8 @@ import {
   SelectValue,
 } from "@/app/components/shared/Select";
 import type { Invoice } from "@/app/lib/types";
-import { getInvoices, getSettings, updateInvoice } from "@/app/lib/storage";
+import { getInvoices, getSettings, updateInvoice, deleteInvoice, getDefaultCompanyDetails, getDefaultAccountDetails } from "@/app/lib/storage";
+import { downloadInvoicePDF } from "@/app/lib/pdf";
 import { prefetchRates, convertWithRates } from "@/app/lib/currency";
 import {
   formatDate,
@@ -45,6 +46,17 @@ export default function InvoicesDashboardPage() {
   const [sortBy, setSortBy] = useState<"date" | "amount" | "name">("date");
   const [defaultCurrency, setDefaultCurrency] = useState("GBP");
   const [updatingStatusId, setUpdatingStatusId] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkActionInProgress, setBulkActionInProgress] = useState(false);
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
 
   const handleStatusChange = async (invoiceId: string, newStatus: Invoice["status"]) => {
     setUpdatingStatusId(invoiceId);
@@ -129,6 +141,63 @@ export default function InvoicesDashboardPage() {
       return sum + convertWithRates(amount, inv.currency, rates);
     }, 0);
   }, [filteredInvoices, rates]);
+
+  const selectedInvoices = filteredInvoices.filter((inv) => selectedIds.has(inv.id));
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === filteredInvoices.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredInvoices.map((inv) => inv.id)));
+    }
+  };
+
+  const handleBulkDownload = async () => {
+    setBulkActionInProgress(true);
+    try {
+      const [company, account] = await Promise.all([
+        getDefaultCompanyDetails(),
+        getDefaultAccountDetails(),
+      ]);
+      for (const inv of selectedInvoices) {
+        const co = inv.company || company || undefined;
+        await downloadInvoicePDF(inv, co, account || undefined);
+        await new Promise((r) => setTimeout(r, 500));
+      }
+    } finally {
+      setBulkActionInProgress(false);
+    }
+  };
+
+  const handleBulkStatusChange = async (status: Invoice["status"]) => {
+    setBulkActionInProgress(true);
+    try {
+      const updates = await Promise.all(
+        selectedInvoices.map((inv) => updateInvoice(inv.id, { status })),
+      );
+      setInvoices((prev) =>
+        prev.map((inv) => {
+          const updated = updates.find((u) => u?.id === inv.id);
+          return updated || inv;
+        }),
+      );
+      setSelectedIds(new Set());
+    } finally {
+      setBulkActionInProgress(false);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (!confirm(`Delete ${selectedInvoices.length} invoice${selectedInvoices.length !== 1 ? "s" : ""}? This cannot be undone.`)) return;
+    setBulkActionInProgress(true);
+    try {
+      await Promise.all(selectedInvoices.map((inv) => deleteInvoice(inv.id)));
+      setInvoices((prev) => prev.filter((inv) => !selectedIds.has(inv.id)));
+      setSelectedIds(new Set());
+    } finally {
+      setBulkActionInProgress(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-(--background)">
@@ -293,11 +362,51 @@ export default function InvoicesDashboardPage() {
               </EmptyState>
             </Card>
           ) : (
+            <>
+            {/* Bulk Action Bar */}
+            {selectedIds.size > 0 && (
+              <div className="flex items-center gap-3 rounded-lg border border-(--border) bg-(--surface) px-4 py-3">
+                <span className="text-sm font-medium text-black dark:text-white">
+                  {selectedIds.size} selected
+                </span>
+                <div className="h-4 w-px bg-(--border)" />
+                <Button size="sm" variant="ghost" onClick={handleBulkDownload} disabled={bulkActionInProgress}>
+                  <FileDown className="h-3.5 w-3.5" />
+                  Download PDFs
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => handleBulkStatusChange("paid")} disabled={bulkActionInProgress}>
+                  <CheckCircle2 className="h-3.5 w-3.5 text-green-600" />
+                  Mark Paid
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => handleBulkStatusChange("sent")} disabled={bulkActionInProgress}>
+                  <Send className="h-3.5 w-3.5 text-blue-600" />
+                  Mark Sent
+                </Button>
+                <Button size="sm" variant="ghost" onClick={handleBulkDelete} disabled={bulkActionInProgress}>
+                  <Trash2 className="h-3.5 w-3.5 text-red-500" />
+                  Delete
+                </Button>
+                <div className="ml-auto">
+                  <Button size="sm" variant="ghost" onClick={() => setSelectedIds(new Set())}>
+                    <X className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              </div>
+            )}
+
             <Card className="overflow-hidden p-0!">
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-(--border) bg-(--surface)">
+                      <th className="w-10 px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.size === filteredInvoices.length && filteredInvoices.length > 0}
+                          onChange={toggleSelectAll}
+                          className="h-4 w-4 rounded border-gray-300 cursor-pointer"
+                        />
+                      </th>
                       <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-(--muted)">Invoice</th>
                       <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-(--muted)">Customer</th>
                       <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-(--muted)">Date</th>
@@ -314,13 +423,22 @@ export default function InvoicesDashboardPage() {
                       );
                       const overdue = isOverdue(invoice.dueDate);
                       const dueSoon = isDueSoon(invoice.dueDate);
+                      const isSelected = selectedIds.has(invoice.id);
 
                       return (
                         <tr
                           key={invoice.id}
-                          className="cursor-pointer transition-colors hover:bg-(--border)/30"
+                          className={`cursor-pointer transition-colors hover:bg-(--border)/30 ${isSelected ? "bg-(--border)/20" : ""}`}
                           onClick={() => window.location.href = `/invoices/${invoice.id}`}
                         >
+                          <td className="w-10 px-4 py-4" onClick={(e) => e.stopPropagation()}>
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={() => toggleSelect(invoice.id)}
+                              className="h-4 w-4 rounded border-gray-300 cursor-pointer"
+                            />
+                          </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className="font-semibold text-black dark:text-white">{invoice.invoiceNumber}</span>
                           </td>
@@ -372,6 +490,7 @@ export default function InvoicesDashboardPage() {
                 </table>
               </div>
             </Card>
+            </>
           )}
         </div>
         )}
