@@ -456,8 +456,8 @@ export default function DashboardPage() {
     dueSoonInvoices: [],
     unpaidAmount: 0,
     unpaidCount: 0,
-    monthlyRevenue: Array(12).fill(0),
-    monthlyCount: Array(12).fill(0),
+    monthlyRevenue: Array(12).fill(0) as number[],
+    monthlyCount: Array(12).fill(0) as number[],
     monthLabels: Array.from({ length: 12 }, (_, i) => getMonthLabel(11 - i)),
     statusCounts: { draft: 0, sent: 0, paid: 0, cancelled: 0 },
     recentInvoices: [],
@@ -538,10 +538,22 @@ export default function DashboardPage() {
       const isDefaultFilter = period === "this-month" && statusFilter === "all";
       const chartSource = isDefaultFilter ? invoices : filtered;
 
-      // Monthly revenue (last 12 months)
+      // Determine chart month range
+      const now = new Date();
+      let monthsBack = 11; // default: last 12 months
+      if (chartSource.length > 0 && (period === "all" || period === "year")) {
+        const earliest = chartSource.reduce((min, inv) => {
+          const d = new Date(inv.date);
+          return d < min ? d : min;
+        }, new Date());
+        const diffMonths = (now.getFullYear() - earliest.getFullYear()) * 12 + (now.getMonth() - earliest.getMonth());
+        monthsBack = Math.max(11, diffMonths);
+      }
+
+      // Monthly revenue
       const monthlyRevenue: number[] = [];
       const monthLabels: string[] = [];
-      for (let i = 11; i >= 0; i--) {
+      for (let i = monthsBack; i >= 0; i--) {
         const d = new Date();
         d.setMonth(d.getMonth() - i);
         const m = d.getMonth();
@@ -556,9 +568,9 @@ export default function DashboardPage() {
         monthLabels.push(getMonthLabel(i));
       }
 
-      // Monthly invoice count (last 12 months)
+      // Monthly invoice count
       const monthlyCount: number[] = [];
-      for (let i = 11; i >= 0; i--) {
+      for (let i = monthsBack; i >= 0; i--) {
         const d = new Date();
         d.setMonth(d.getMonth() - i);
         const m = d.getMonth();
@@ -810,7 +822,14 @@ export default function DashboardPage() {
                     </span>
                   </div>
                 </div>
-                <p className="text-xs text-(--muted) mb-4">Last 12 months</p>
+                <p className="text-xs text-(--muted) mb-4">{
+                  period === "this-month" ? "This month" :
+                  period === "last-month" ? "Last month" :
+                  period === "3-months" ? "Last 3 months" :
+                  period === "6-months" ? "Last 6 months" :
+                  period === "year" ? "Last year" :
+                  period === "all" ? "All time" : "Last 12 months"
+                }</p>
                 <LineChart
                   data={metrics.monthlyRevenue}
                   labels={metrics.monthLabels}
@@ -845,7 +864,14 @@ export default function DashboardPage() {
                 <div className="flex items-center justify-between mb-1">
                   <h3 className="text-base font-bold text-black dark:text-white">Invoices Created</h3>
                 </div>
-                <p className="text-xs text-(--muted) mb-4">Last 12 months</p>
+                <p className="text-xs text-(--muted) mb-4">{
+                  period === "this-month" ? "This month" :
+                  period === "last-month" ? "Last month" :
+                  period === "3-months" ? "Last 3 months" :
+                  period === "6-months" ? "Last 6 months" :
+                  period === "year" ? "Last year" :
+                  period === "all" ? "All time" : "Last 12 months"
+                }</p>
                 <BarChart
                   data={metrics.monthlyCount}
                   labels={metrics.monthLabels}
