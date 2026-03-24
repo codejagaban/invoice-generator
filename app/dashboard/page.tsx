@@ -476,7 +476,11 @@ export default function DashboardPage() {
         0,
       );
 
-      // Monthly revenue (last 6 months)
+      // Chart data source: use filtered when filters are active, all invoices otherwise
+      const isDefaultFilter = period === "this-month" && statusFilter === "all";
+      const chartSource = isDefaultFilter ? invoices : filtered;
+
+      // Monthly revenue (last 12 months)
       const monthlyRevenue: number[] = [];
       const monthLabels: string[] = [];
       for (let i = 11; i >= 0; i--) {
@@ -484,7 +488,7 @@ export default function DashboardPage() {
         d.setMonth(d.getMonth() - i);
         const m = d.getMonth();
         const y = d.getFullYear();
-        const monthInvoices = filtered.filter((inv) => {
+        const monthInvoices = chartSource.filter((inv) => {
           const id = new Date(inv.date);
           return id.getMonth() === m && id.getFullYear() === y;
         });
@@ -494,7 +498,7 @@ export default function DashboardPage() {
         monthLabels.push(getMonthLabel(i));
       }
 
-      // Monthly invoice count (last 6 months)
+      // Monthly invoice count (last 12 months)
       const monthlyCount: number[] = [];
       for (let i = 11; i >= 0; i--) {
         const d = new Date();
@@ -502,7 +506,7 @@ export default function DashboardPage() {
         const m = d.getMonth();
         const y = d.getFullYear();
         monthlyCount.push(
-          filtered.filter((inv) => {
+          chartSource.filter((inv) => {
             const id = new Date(inv.date);
             return id.getMonth() === m && id.getFullYear() === y;
           }).length,
@@ -510,11 +514,12 @@ export default function DashboardPage() {
       }
 
       // Status breakdown
+      const statusSource = isDefaultFilter ? invoices : filtered;
       const statusCounts = {
-        draft: filtered.filter((inv) => inv.status === "draft").length,
-        sent: filtered.filter((inv) => inv.status === "sent").length,
-        paid: filtered.filter((inv) => inv.status === "paid").length,
-        cancelled: filtered.filter((inv) => inv.status === "cancelled").length,
+        draft: statusSource.filter((inv) => inv.status === "draft").length,
+        sent: statusSource.filter((inv) => inv.status === "sent").length,
+        paid: statusSource.filter((inv) => inv.status === "paid").length,
+        cancelled: statusSource.filter((inv) => inv.status === "cancelled").length,
       };
 
       // Recent invoices (last 5)
