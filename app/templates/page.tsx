@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { useConfirm } from "@/app/components/shared/ConfirmDialog";
 import Button from "@/app/components/shared/Button";
 import { InputWithRef as Input } from "@/app/components/shared/Input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/shared/Select";
 import Card, {
   CardContent,
   CardHeader,
@@ -349,7 +350,32 @@ export default function TemplatesPage() {
               </div>
 
               {/* Other */}
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid gap-4 sm:grid-cols-3">
+                <div>
+                  <label className="text-xs font-medium text-(--muted)">Currency</label>
+                  <Select value={editForm.currency} onValueChange={(value) => setEditForm((p) => ({ ...p, currency: value }))}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select currency" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {[
+                        { code: "USD", label: "US Dollar" },
+                        { code: "EUR", label: "Euro" },
+                        { code: "GBP", label: "British Pound" },
+                        { code: "CAD", label: "Canadian Dollar" },
+                        { code: "AUD", label: "Australian Dollar" },
+                        { code: "JPY", label: "Japanese Yen" },
+                        { code: "CHF", label: "Swiss Franc" },
+                        { code: "CNY", label: "Chinese Yuan" },
+                        { code: "INR", label: "Indian Rupee" },
+                        { code: "MXN", label: "Mexican Peso" },
+                        { code: "NGN", label: "Nigerian Naira" },
+                      ].map((c) => (
+                        <SelectItem key={c.code} value={c.code}>{c.label} ({c.code})</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
                 <div>
                   <label className="text-xs font-medium text-(--muted)">Notes</label>
                   <Input value={editForm.notes} onChange={(e) => setEditForm((p) => ({ ...p, notes: e.target.value }))} />
