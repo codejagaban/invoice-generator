@@ -394,7 +394,7 @@ export default function DashboardPage() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [defaultCurrency, setDefaultCurrency] = useState("GBP");
-  const [period, setPeriod] = useState<TimePeriod>("this-month");
+  const [period, setPeriod] = useState<TimePeriod>("all");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
 
   useEffect(() => {
@@ -535,7 +535,7 @@ export default function DashboardPage() {
       );
 
       // Chart data source: use filtered when filters are active, all invoices otherwise
-      const isDefaultFilter = period === "this-month" && statusFilter === "all";
+      const isDefaultFilter = period === "all" && statusFilter === "all";
       const chartSource = isDefaultFilter ? invoices : filtered;
 
       // Determine chart month range
@@ -714,9 +714,9 @@ export default function DashboardPage() {
                   ))}
                 </SelectContent>
               </Select>
-              {(period !== "this-month" || statusFilter !== "all") && (
+              {(period !== "all" || statusFilter !== "all") && (
                 <button
-                  onClick={() => { setPeriod("this-month"); setStatusFilter("all"); }}
+                  onClick={() => { setPeriod("all"); setStatusFilter("all"); }}
                   className="text-xs text-(--muted) hover:text-black dark:hover:text-white transition-colors"
                 >
                   Reset
