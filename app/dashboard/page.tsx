@@ -14,8 +14,10 @@ import {
   Clock,
   AlertTriangle,
   ArrowRight,
+  Calendar,
 } from "lucide-react";
 import Button from "@/app/components/shared/Button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/shared/Select";
 import Card from "@/app/components/shared/Card";
 import type { Invoice } from "@/app/lib/types";
 import { getInvoices, getSettings } from "@/app/lib/storage";
@@ -67,28 +69,33 @@ function isLastMonth(dateStr: string): boolean {
 
 // ─── Line Chart Component ───────────────────────────────────────────────────
 
+function formatYLabel(v: number): string {
+  if (v >= 1000000) return `${(v / 1000000).toFixed(1)}M`;
+  if (v >= 1000) return `${(v / 1000).toFixed(v >= 10000 ? 0 : 1)}k`;
+  return String(Math.round(v));
+}
+
 function LineChart({
   data,
   labels,
   color = "#6366f1",
-  formatValue,
 }: {
   data: number[];
   labels: string[];
   color?: string;
-  formatValue?: (v: number) => string;
 }) {
-  const width = 500;
-  const height = 160;
-  const padX = 40;
-  const padTop = 20;
+  const width = 700;
+  const height = 200;
+  const padLeft = 10;
+  const padRight = 10;
+  const padTop = 15;
   const padBottom = 24;
-  const chartW = width - padX * 2;
+  const chartW = width - padLeft - padRight;
   const chartH = height - padTop - padBottom;
   const max = Math.max(...data, 1);
 
   const points = data.map((v, i) => ({
-    x: padX + (i / Math.max(data.length - 1, 1)) * chartW,
+    x: padLeft + (i / Math.max(data.length - 1, 1)) * chartW,
     y: padTop + chartH - (v / max) * chartH,
   }));
 
@@ -106,67 +113,38 @@ function LineChart({
   const fillPath = `${linePath} L ${points[points.length - 1].x} ${padTop + chartH} L ${points[0].x} ${padTop + chartH} Z`;
 
   return (
-    <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-44" fill="none">
+    <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-64" fill="none">
       <defs>
         <linearGradient id="line-chart-grad" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor={color} stopOpacity="0.2" />
           <stop offset="100%" stopColor={color} stopOpacity="0" />
         </linearGradient>
         <clipPath id="chart-clip">
-          <rect x={padX} y={padTop} width={chartW} height={chartH} />
+          <rect x={padLeft} y={padTop} width={chartW} height={chartH} />
         </clipPath>
       </defs>
-      {/* Grid lines */}
-      {[0, 0.25, 0.5, 0.75, 1].map((pct) => (
-        <line
-          key={pct}
-          x1={padX}
-          y1={padTop + chartH * (1 - pct)}
-          x2={width - padX}
-          y2={padTop + chartH * (1 - pct)}
-          stroke="currentColor"
-          strokeWidth="0.5"
-          className="text-gray-200 dark:text-gray-800"
-        />
-      ))}
+      {/* Grid lines + Y labels */}
+      {[0, 0.25, 0.5, 0.75, 1].map((pct) => {
+        const y = padTop + chartH * (1 - pct);
+        return (
+          <g key={pct}>
+            <line x1={padLeft} y1={y} x2={width - padRight} y2={y} stroke="currentColor" strokeWidth="0.5" className="text-gray-200 dark:text-gray-800" />
+            <text x={padLeft + 4} y={y - 4} className="text-[8px] fill-gray-400 dark:fill-gray-500" style={{ fontFamily: "system-ui" }}>
+              {formatYLabel(max * pct)}
+            </text>
+          </g>
+        );
+      })}
       {/* Fill */}
-      <path
-        d={fillPath}
-        fill="url(#line-chart-grad)"
-        clipPath="url(#chart-clip)"
-      />
+      <path d={fillPath} fill="url(#line-chart-grad)" clipPath="url(#chart-clip)" />
       {/* Line */}
-      <path
-        d={linePath}
-        stroke={color}
-        strokeWidth="2.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        clipPath="url(#chart-clip)"
-      />
-      {/* Dots and labels */}
+      <path d={linePath} stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" clipPath="url(#chart-clip)" />
+      {/* Dots and X labels */}
       {points.map((p, i) => (
         <g key={i}>
-          <circle cx={p.x} cy={p.y} r="4" fill={color} />
-          <circle cx={p.x} cy={p.y} r="2" fill="white" />
-          {/* Value */}
-          <text
-            x={p.x}
-            y={p.y - 10}
-            textAnchor="middle"
-            className="text-[9px] fill-gray-500 dark:fill-gray-400"
-            style={{ fontFamily: "system-ui" }}
-          >
-            {formatValue ? formatValue(data[i]) : data[i]}
-          </text>
-          {/* Label */}
-          <text
-            x={p.x}
-            y={height - 4}
-            textAnchor="middle"
-            className="text-[10px] fill-gray-500 dark:fill-gray-400"
-            style={{ fontFamily: "system-ui" }}
-          >
+          <circle cx={p.x} cy={p.y} r="3.5" fill={color} />
+          <circle cx={p.x} cy={p.y} r="1.5" fill="white" />
+          <text x={p.x} y={height - 4} textAnchor="middle" className="text-[9px] fill-gray-500 dark:fill-gray-400" style={{ fontFamily: "system-ui" }}>
             {labels[i]}
           </text>
         </g>
@@ -181,43 +159,42 @@ function BarChart({
   data,
   labels,
   color = "#6366f1",
-  formatValue,
 }: {
   data: number[];
   labels: string[];
   color?: string;
-  formatValue?: (v: number) => string;
 }) {
-  const width = 500;
-  const height = 160;
-  const padX = 30;
-  const padTop = 20;
+  const width = 700;
+  const height = 200;
+  const padLeft = 10;
+  const padRight = 10;
+  const padTop = 15;
   const padBottom = 24;
+  const chartW = width - padLeft - padRight;
   const chartH = height - padTop - padBottom;
   const max = Math.max(...data, 1);
   const barCount = data.length;
-  const gap = 12;
+  const gap = 6;
   const totalGap = gap * (barCount - 1);
-  const barW = (width - padX * 2 - totalGap) / barCount;
+  const barW = (chartW - totalGap) / barCount;
 
   return (
-    <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-44" fill="none">
-      {/* Grid lines */}
-      {[0, 0.25, 0.5, 0.75, 1].map((pct) => (
-        <line
-          key={pct}
-          x1={padX}
-          y1={padTop + chartH * (1 - pct)}
-          x2={width - padX}
-          y2={padTop + chartH * (1 - pct)}
-          stroke="currentColor"
-          strokeWidth="0.5"
-          className="text-gray-200 dark:text-gray-800"
-        />
-      ))}
+    <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-64" fill="none">
+      {/* Grid lines + Y labels */}
+      {[0, 0.25, 0.5, 0.75, 1].map((pct) => {
+        const y = padTop + chartH * (1 - pct);
+        return (
+          <g key={pct}>
+            <line x1={padLeft} y1={y} x2={width - padRight} y2={y} stroke="currentColor" strokeWidth="0.5" className="text-gray-200 dark:text-gray-800" />
+            <text x={padLeft + 4} y={y - 4} className="text-[8px] fill-gray-400 dark:fill-gray-500" style={{ fontFamily: "system-ui" }}>
+              {formatYLabel(max * pct)}
+            </text>
+          </g>
+        );
+      })}
       {data.map((value, i) => {
         const barH = Math.max((value / max) * chartH, 2);
-        const x = padX + i * (barW + gap);
+        const x = padLeft + i * (barW + gap);
         const y = padTop + chartH - barH;
         return (
           <g key={i}>
@@ -226,26 +203,16 @@ function BarChart({
               y={y}
               width={barW}
               height={barH}
-              rx={4}
+              rx={3}
               fill={color}
               opacity={i === data.length - 1 ? 1 : 0.6}
             />
-            {/* Value */}
-            <text
-              x={x + barW / 2}
-              y={y - 6}
-              textAnchor="middle"
-              className="text-[9px] fill-gray-500 dark:fill-gray-400"
-              style={{ fontFamily: "system-ui" }}
-            >
-              {formatValue ? formatValue(value) : value}
-            </text>
             {/* Label */}
             <text
               x={x + barW / 2}
               y={height - 4}
               textAnchor="middle"
-              className="text-[10px] fill-gray-500 dark:fill-gray-400"
+              className="text-[9px] fill-gray-500 dark:fill-gray-400"
               style={{ fontFamily: "system-ui" }}
             >
               {labels[i]}
@@ -338,11 +305,36 @@ function StatusDonut({
 
 // ─── Main Dashboard ─────────────────────────────────────────────────────────
 
+type TimePeriod = "this-month" | "last-month" | "3-months" | "6-months" | "year" | "all";
+type StatusFilter = "all" | "draft" | "sent" | "paid" | "cancelled";
+
+function filterByPeriod(invoices: Invoice[], period: TimePeriod): Invoice[] {
+  if (period === "all") return invoices;
+  const now = new Date();
+  const start = new Date();
+  if (period === "this-month") { start.setDate(1); start.setHours(0, 0, 0, 0); }
+  else if (period === "last-month") { start.setMonth(now.getMonth() - 1); start.setDate(1); start.setHours(0, 0, 0, 0); }
+  else if (period === "3-months") { start.setMonth(now.getMonth() - 3); }
+  else if (period === "6-months") { start.setMonth(now.getMonth() - 6); }
+  else if (period === "year") { start.setFullYear(now.getFullYear() - 1); }
+
+  if (period === "last-month") {
+    const end = new Date(now.getFullYear(), now.getMonth(), 1);
+    return invoices.filter((inv) => {
+      const d = new Date(inv.date);
+      return d >= start && d < end;
+    });
+  }
+  return invoices.filter((inv) => new Date(inv.date) >= start);
+}
+
 export default function DashboardPage() {
   const dbReady = useDbReady();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [defaultCurrency, setDefaultCurrency] = useState("GBP");
+  const [period, setPeriod] = useState<TimePeriod>("this-month");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
 
   useEffect(() => {
     if (!dbReady) return;
@@ -403,9 +395,9 @@ export default function DashboardPage() {
     dueSoonInvoices: [],
     unpaidAmount: 0,
     unpaidCount: 0,
-    monthlyRevenue: Array(6).fill(0),
-    monthlyCount: Array(6).fill(0),
-    monthLabels: Array.from({ length: 6 }, (_, i) => getMonthLabel(5 - i)),
+    monthlyRevenue: Array(12).fill(0),
+    monthlyCount: Array(12).fill(0),
+    monthLabels: Array.from({ length: 12 }, (_, i) => getMonthLabel(11 - i)),
     statusCounts: { draft: 0, sent: 0, paid: 0, cancelled: 0 },
     recentInvoices: [],
     totalInvoices: 0,
@@ -418,6 +410,12 @@ export default function DashboardPage() {
     if (invoices.length === 0) return;
 
     (async () => {
+      // Apply filters
+      let filtered = filterByPeriod(invoices, period);
+      if (statusFilter !== "all") {
+        filtered = filtered.filter((inv) => inv.status === statusFilter);
+      }
+
       // Prefetch all exchange rates needed
       const currencies = [...new Set(invoices.map((inv) => inv.currency))];
       const rates = await prefetchRates(currencies, defaultCurrency);
@@ -425,8 +423,8 @@ export default function DashboardPage() {
       const convert = (inv: Invoice) =>
         convertWithRates(getInvoiceAmount(inv), inv.currency, rates);
 
-      const thisMonth = invoices.filter((inv) => isThisMonth(inv.date));
-      const lastMonth = invoices.filter((inv) => isLastMonth(inv.date));
+      const thisMonth = filtered.filter((inv) => isThisMonth(inv.date));
+      const lastMonth = filtered.filter((inv) => isLastMonth(inv.date));
 
       const thisMonthRevenue = thisMonth.reduce(
         (s, inv) => s + convert(inv),
@@ -448,7 +446,7 @@ export default function DashboardPage() {
         0,
       );
 
-      const overdueInvoices = invoices.filter(
+      const overdueInvoices = filtered.filter(
         (inv) =>
           inv.status !== "paid" &&
           inv.status !== "cancelled" &&
@@ -459,7 +457,7 @@ export default function DashboardPage() {
         0,
       );
 
-      const dueSoonInvoices = invoices.filter(
+      const dueSoonInvoices = filtered.filter(
         (inv) =>
           inv.status !== "paid" &&
           inv.status !== "cancelled" &&
@@ -467,7 +465,7 @@ export default function DashboardPage() {
           !isOverdue(inv.dueDate),
       );
 
-      const unpaidInvoices = invoices.filter(
+      const unpaidInvoices = filtered.filter(
         (inv) => inv.status !== "paid" && inv.status !== "cancelled",
       );
       const unpaidAmount = unpaidInvoices.reduce(
@@ -478,12 +476,12 @@ export default function DashboardPage() {
       // Monthly revenue (last 6 months)
       const monthlyRevenue: number[] = [];
       const monthLabels: string[] = [];
-      for (let i = 5; i >= 0; i--) {
+      for (let i = 11; i >= 0; i--) {
         const d = new Date();
         d.setMonth(d.getMonth() - i);
         const m = d.getMonth();
         const y = d.getFullYear();
-        const monthInvoices = invoices.filter((inv) => {
+        const monthInvoices = filtered.filter((inv) => {
           const id = new Date(inv.date);
           return id.getMonth() === m && id.getFullYear() === y;
         });
@@ -495,13 +493,13 @@ export default function DashboardPage() {
 
       // Monthly invoice count (last 6 months)
       const monthlyCount: number[] = [];
-      for (let i = 5; i >= 0; i--) {
+      for (let i = 11; i >= 0; i--) {
         const d = new Date();
         d.setMonth(d.getMonth() - i);
         const m = d.getMonth();
         const y = d.getFullYear();
         monthlyCount.push(
-          invoices.filter((inv) => {
+          filtered.filter((inv) => {
             const id = new Date(inv.date);
             return id.getMonth() === m && id.getFullYear() === y;
           }).length,
@@ -510,14 +508,14 @@ export default function DashboardPage() {
 
       // Status breakdown
       const statusCounts = {
-        draft: invoices.filter((inv) => inv.status === "draft").length,
-        sent: invoices.filter((inv) => inv.status === "sent").length,
-        paid: invoices.filter((inv) => inv.status === "paid").length,
-        cancelled: invoices.filter((inv) => inv.status === "cancelled").length,
+        draft: filtered.filter((inv) => inv.status === "draft").length,
+        sent: filtered.filter((inv) => inv.status === "sent").length,
+        paid: filtered.filter((inv) => inv.status === "paid").length,
+        cancelled: filtered.filter((inv) => inv.status === "cancelled").length,
       };
 
       // Recent invoices (last 5)
-      const recentInvoices = [...invoices]
+      const recentInvoices = [...filtered]
         .sort(
           (a, b) =>
             new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
@@ -525,7 +523,7 @@ export default function DashboardPage() {
         .slice(0, 5);
 
       // Unique customers
-      const totalCustomers = new Set(invoices.map((inv) => inv.customer.name)).size;
+      const totalCustomers = new Set(filtered.map((inv) => inv.customer.name)).size;
 
       setMetrics({
         thisMonthRevenue,
@@ -548,11 +546,11 @@ export default function DashboardPage() {
         monthLabels,
         statusCounts,
         recentInvoices,
-        totalInvoices: invoices.length,
+        totalInvoices: filtered.length,
         totalCustomers,
       });
     })();
-  }, [invoices, defaultCurrency, isLoading]);
+  }, [invoices, defaultCurrency, isLoading, period, statusFilter]);
 
   return (
     <div className="min-h-screen bg-(--background)">
@@ -582,6 +580,47 @@ export default function DashboardPage() {
           <InvoiceListSkeleton />
         ) : (
           <div className="space-y-6">
+            {/* ── Filters ─────────────────────────────────────────── */}
+            <div className="flex items-center gap-3 flex-wrap justify-end">
+              <div className="flex items-center gap-1.5 text-sm text-(--muted)">
+                <Calendar className="h-4 w-4" />
+                <span className="font-medium">Filters</span>
+              </div>
+              <Select value={period} onValueChange={(v) => setPeriod(v as TimePeriod)}>
+                <SelectTrigger className="w-40">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="this-month">This Month</SelectItem>
+                  <SelectItem value="last-month">Last Month</SelectItem>
+                  <SelectItem value="3-months">Last 3 Months</SelectItem>
+                  <SelectItem value="6-months">Last 6 Months</SelectItem>
+                  <SelectItem value="year">Last Year</SelectItem>
+                  <SelectItem value="all">All Time</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as StatusFilter)}>
+                <SelectTrigger className="w-36">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="draft">Draft</SelectItem>
+                  <SelectItem value="sent">Sent</SelectItem>
+                  <SelectItem value="paid">Paid</SelectItem>
+                  <SelectItem value="cancelled">Cancelled</SelectItem>
+                </SelectContent>
+              </Select>
+              {(period !== "this-month" || statusFilter !== "all") && (
+                <button
+                  onClick={() => { setPeriod("this-month"); setStatusFilter("all"); }}
+                  className="text-xs text-(--muted) hover:text-black dark:hover:text-white transition-colors"
+                >
+                  Reset
+                </button>
+              )}
+            </div>
+
             {/* ── Top Metric Cards (FinSet-style) ─────────────────── */}
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {/* Revenue Card */}
@@ -680,14 +719,11 @@ export default function DashboardPage() {
                     </span>
                   </div>
                 </div>
-                <p className="text-xs text-(--muted) mb-4">Last 6 months</p>
+                <p className="text-xs text-(--muted) mb-4">Last 12 months</p>
                 <LineChart
                   data={metrics.monthlyRevenue}
                   labels={metrics.monthLabels}
                   color="#6366f1"
-                  formatValue={(v) =>
-                    v >= 1000 ? `${(v / 1000).toFixed(1)}k` : String(v)
-                  }
                 />
               </Card>
 
@@ -717,7 +753,7 @@ export default function DashboardPage() {
                 <div className="flex items-center justify-between mb-1">
                   <h3 className="text-base font-bold text-black dark:text-white">Invoices Created</h3>
                 </div>
-                <p className="text-xs text-(--muted) mb-4">Last 6 months</p>
+                <p className="text-xs text-(--muted) mb-4">Last 12 months</p>
                 <BarChart
                   data={metrics.monthlyCount}
                   labels={metrics.monthLabels}
