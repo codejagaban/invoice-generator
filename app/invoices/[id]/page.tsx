@@ -30,6 +30,7 @@ import {
   updateInvoice,
   getDefaultCompanyDetails,
   getDefaultAccountDetails,
+  getAccountById,
 } from "@/app/lib/storage";
 import {
   formatDate,
@@ -73,7 +74,9 @@ export default function InvoiceDetailPage() {
     if (!invoice) return;
     try {
       setIsDownloadingPDF(true);
-      const account = await getDefaultAccountDetails();
+      const account = invoice.accountId
+        ? await getAccountById(invoice.accountId)
+        : await getDefaultAccountDetails();
       const company = invoice.company || (await getDefaultCompanyDetails());
       await downloadInvoicePDF(invoice, company || undefined, account || undefined);
     } catch (error) {
@@ -116,7 +119,9 @@ export default function InvoiceDetailPage() {
     setEmailResult(null);
 
     try {
-      const account = await getDefaultAccountDetails();
+      const account = invoice.accountId
+        ? await getAccountById(invoice.accountId)
+        : await getDefaultAccountDetails();
       const company = invoice.company || (await getDefaultCompanyDetails());
       const invoiceHtml = generateInvoiceEmailHTML(invoice, company || undefined, account || undefined);
       const pdfBase64 = await generateInvoicePDFBase64(invoice, company || undefined, account || undefined);

@@ -34,12 +34,12 @@ export async function pgGetInvoiceById(userId: string, id: string): Promise<Invo
 
 export async function pgCreateInvoice(userId: string, invoice: Invoice): Promise<Invoice> {
   await query(
-    `INSERT INTO invoices (id, user_id, invoice_number, date, due_date, status, customer, company, items, notes, tax_rate, currency, template_id, created_at, updated_at)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`,
+    `INSERT INTO invoices (id, user_id, invoice_number, date, due_date, status, customer, company, items, notes, tax_rate, currency, template_id, account_id, created_at, updated_at)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)`,
     [invoice.id, userId, invoice.invoiceNumber, invoice.date, invoice.dueDate, invoice.status,
      JSON.stringify(invoice.customer), invoice.company ? JSON.stringify(invoice.company) : null,
      JSON.stringify(invoice.items), invoice.notes || null, invoice.taxRate || null,
-     invoice.currency, invoice.templateId || null, invoice.createdAt, invoice.updatedAt]
+     invoice.currency, invoice.templateId || null, invoice.accountId || null, invoice.createdAt, invoice.updatedAt]
   );
   return invoice;
 }
@@ -79,6 +79,7 @@ function rowToInvoice(row: Record<string, unknown>): Invoice {
     taxRate: row.tax_rate as number | undefined,
     currency: row.currency as string,
     templateId: row.template_id as string | undefined,
+    accountId: row.account_id as string | undefined,
     createdAt: row.created_at as string,
     updatedAt: row.updated_at as string,
   };

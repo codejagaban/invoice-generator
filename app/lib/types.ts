@@ -42,6 +42,7 @@ export interface Invoice {
   taxRate?: number;
   currency: string;
   templateId?: string;
+  accountId?: string;
   createdAt: string;
   updatedAt: string;
 }

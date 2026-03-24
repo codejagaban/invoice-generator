@@ -36,6 +36,7 @@ import type {
   InvoiceItem,
   Customer,
   CompanyDetails,
+  AccountDetails,
   InvoiceTemplate,
 } from "@/app/lib/types";
 import {
@@ -62,7 +63,7 @@ import {
   generateInvoiceNumber,
   formatCurrency,
 } from "@/app/lib/invoice";
-import { createTemplate, getCustomers, getCompanyDetails, getSettings } from "@/app/lib/storage";
+import { createTemplate, getCustomers, getCompanyDetails, getSettings, getAccountDetails } from "@/app/lib/storage";
 import { useDbReady } from "@/app/components/DbScopeProvider";
 
 const COUNTRIES = [
@@ -126,6 +127,8 @@ export default function InvoiceForm({
   const [selectedCustomerId, setSelectedCustomerId] = useState<string>("");
   const [companies, setCompanies] = useState<CompanyDetails[]>([]);
   const [selectedCompanyId, setSelectedCompanyId] = useState<string>("");
+  const [accounts, setAccounts] = useState<AccountDetails[]>([]);
+  const [selectedAccountId, setSelectedAccountId] = useState<string>(initialData?.accountId || "");
 
   const [formData, setFormData] = useState({
     invoiceNumber: initialData?.invoiceNumber || generateInvoiceNumber(),
@@ -171,13 +174,19 @@ export default function InvoiceForm({
   useEffect(() => {
     if (!dbReady) return;
     (async () => {
-      const [storedCustomers, storedCompanies, settings] = await Promise.all([
+      const [storedCustomers, storedCompanies, storedAccounts, settings] = await Promise.all([
         getCustomers(),
         getCompanyDetails(),
+        getAccountDetails(),
         getSettings(),
       ]);
       setCustomers(storedCustomers);
       setCompanies(storedCompanies);
+      setAccounts(storedAccounts);
+      if (!initialData && storedAccounts.length > 0) {
+        const defaultAccount = storedAccounts.find((a) => a.isDefault);
+        if (defaultAccount) setSelectedAccountId(defaultAccount.id);
+      }
       if (!initialData) {
         setFormData((prev) => ({ ...prev, currency: settings.defaultCurrency }));
         // Auto-select default company
@@ -434,6 +443,7 @@ export default function InvoiceForm({
         taxRate: Number(formData.taxRate),
         currency: formData.currency,
         templateId,
+        accountId: selectedAccountId && selectedAccountId !== "none" ? selectedAccountId : undefined,
         createdAt: initialData?.createdAt || new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -963,6 +973,34 @@ export default function InvoiceForm({
           />
         </CardContent>
       </Card>
+
+      {/* Bank Account */}
+      {accounts.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Bank Account</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-(--muted) mb-3">
+              Select a bank account to include payment details on the invoice.
+            </p>
+            <Select value={selectedAccountId} onValueChange={setSelectedAccountId}>
+              <SelectTrigger>
+                <SelectValue placeholder="No bank account" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">No bank account</SelectItem>
+                {accounts.map((acc) => (
+                  <SelectItem key={acc.id} value={acc.id}>
+                    {acc.bankName} — {acc.accountNumber}
+                    {acc.isDefault ? " (Default)" : ""}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Actions */}
       <div className="flex gap-3">
