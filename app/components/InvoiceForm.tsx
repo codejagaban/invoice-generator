@@ -165,6 +165,7 @@ export default function InvoiceForm({
       },
     ],
   );
+  const [templateId, setTemplateId] = useState<string | undefined>(initialData?.templateId);
 
   useEffect(() => {
     if (!dbReady) return;
@@ -233,6 +234,9 @@ export default function InvoiceForm({
           }));
           setItems(populatedItems);
         }
+
+        // Store template ID for linking
+        setTemplateId(template.id);
 
         // Clear sessionStorage
         sessionStorage.removeItem("selectedTemplate");
@@ -350,6 +354,7 @@ export default function InvoiceForm({
         notes: formData.notes,
         taxRate: Number(formData.taxRate),
         currency: formData.currency,
+        usageCount: 0,
         createdAt: new Date().toISOString(),
       };
 
@@ -426,6 +431,7 @@ export default function InvoiceForm({
         notes: formData.notes,
         taxRate: Number(formData.taxRate),
         currency: formData.currency,
+        templateId,
         createdAt: initialData?.createdAt || new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };

@@ -88,6 +88,9 @@ export async function POST(request: NextRequest) {
       case "templates:delete":
         result = await pg.pgDeleteTemplate(userId, id);
         break;
+      case "templates:incrementUsage":
+        result = await pg.pgIncrementTemplateUsage(userId, id);
+        break;
 
       // Company Details
       case "company_details:getAll":
