@@ -80,9 +80,9 @@ export function formatDate(
   if (isNaN(date.getTime())) return dateString;
 
   if (format === "short") {
-    return date.toLocaleDateString("en-US", {
+    return date.toLocaleDateString("en-GB", {
       year: "numeric",
-      month: "2-digit",
+      month: "short",
       day: "2-digit",
     });
   } else {
