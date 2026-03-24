@@ -558,7 +558,50 @@ export async function downloadInvoicePDF(
     }
   };
 
-  const companyLogoSrc = toImageBlob(company?.logo);
+  // Generate an initials avatar as a PNG blob
+  const generateInitialsAvatar = (name: string): Blob => {
+    const canvas = document.createElement("canvas");
+    canvas.width = 200;
+    canvas.height = 200;
+    const ctx = canvas.getContext("2d")!;
+
+    // Deterministic background color from name
+    const colors = [
+      "#000000", "#1a1a2e", "#16213e", "#0f3460", "#1b262c",
+      "#2c3e50", "#34495e", "#4a148c", "#1b5e20", "#b71c1c",
+    ];
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    const bg = colors[Math.abs(hash) % colors.length];
+
+    ctx.fillStyle = bg;
+    ctx.beginPath();
+    ctx.roundRect(0, 0, 200, 200, 24);
+    ctx.fill();
+
+    // Initials
+    const words = name.trim().split(/\s+/);
+    const initials = words.length >= 2
+      ? (words[0][0] + words[words.length - 1][0]).toUpperCase()
+      : name.slice(0, 2).toUpperCase();
+
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 80px sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(initials, 100, 105);
+
+    const dataUrl = canvas.toDataURL("image/png");
+    const [header, base64] = dataUrl.split(",");
+    const mime = header.match(/data:(.*?);/)?.[1] || "image/png";
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    return new Blob([bytes], { type: mime });
+  };
+
+  const companyLogoSrc = toImageBlob(company?.logo)
+    ?? (company ? generateInitialsAvatar(company.name) : undefined);
   const customerLogoSrc = toImageBlob(invoice.customer.logo);
 
   const styles = StyleSheet.create({
