@@ -99,7 +99,8 @@ function LineChart({
     y: padTop + chartH - (v / max) * chartH,
   }));
 
-  // Smooth bezier path
+  // Smooth bezier path with clamped control points
+  const clampY = (y: number) => Math.max(padTop, Math.min(padTop + chartH, y));
   let linePath = `M ${points[0].x} ${points[0].y}`;
   for (let i = 0; i < points.length - 1; i++) {
     const p0 = points[Math.max(i - 1, 0)];
@@ -107,7 +108,9 @@ function LineChart({
     const p2 = points[i + 1];
     const p3 = points[Math.min(i + 2, points.length - 1)];
     const t = 0.3;
-    linePath += ` C ${p1.x + (p2.x - p0.x) * t} ${p1.y + (p2.y - p0.y) * t}, ${p2.x - (p3.x - p1.x) * t} ${p2.y - (p3.y - p1.y) * t}, ${p2.x} ${p2.y}`;
+    const cp1y = clampY(p1.y + (p2.y - p0.y) * t);
+    const cp2y = clampY(p2.y - (p3.y - p1.y) * t);
+    linePath += ` C ${p1.x + (p2.x - p0.x) * t} ${cp1y}, ${p2.x - (p3.x - p1.x) * t} ${cp2y}, ${p2.x} ${p2.y}`;
   }
 
   const fillPath = `${linePath} L ${points[points.length - 1].x} ${padTop + chartH} L ${points[0].x} ${padTop + chartH} Z`;
@@ -581,13 +584,13 @@ export default function DashboardPage() {
         ) : (
           <div className="space-y-6">
             {/* ── Filters ─────────────────────────────────────────── */}
-            <div className="flex items-center gap-3 flex-wrap justify-end">
+            <div className="flex items-center gap-2 sm:gap-3 sm:justify-end">
               <div className="flex items-center gap-1.5 text-sm text-(--muted)">
                 <Calendar className="h-4 w-4" />
                 <span className="font-medium">Filters</span>
               </div>
               <Select value={period} onValueChange={(v) => setPeriod(v as TimePeriod)}>
-                <SelectTrigger className="w-40">
+                <SelectTrigger className="flex-1 sm:flex-none sm:w-40">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -600,7 +603,7 @@ export default function DashboardPage() {
                 </SelectContent>
               </Select>
               <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as StatusFilter)}>
-                <SelectTrigger className="w-36">
+                <SelectTrigger className="flex-1 sm:flex-none sm:w-36">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
