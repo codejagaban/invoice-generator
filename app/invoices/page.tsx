@@ -590,7 +590,15 @@ export default function InvoicesDashboardPage() {
                                 className="px-6 py-4 whitespace-nowrap group/status"
                                 onClick={(e) => e.stopPropagation()}
                               >
-                                <label className="relative inline-flex items-center gap-1.5 cursor-pointer">
+                                <label className={`relative inline-flex items-center justify-center gap-1 cursor-pointer rounded-full px-2.5 py-1 text-xs font-medium w-fit ${
+                                  invoice.status === "paid"
+                                    ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
+                                    : invoice.status === "sent"
+                                      ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+                                      : invoice.status === "cancelled"
+                                        ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                                        : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
+                                }`}>
                                   <select
                                     value={invoice.status}
                                     onChange={(e) =>
@@ -600,24 +608,14 @@ export default function InvoicesDashboardPage() {
                                       )
                                     }
                                     disabled={updatingStatusId === invoice.id}
-                                    className="appearance-none cursor-pointer border-0 bg-transparent p-0 text-xs font-medium focus:outline-none disabled:opacity-50"
-                                    style={{
-                                      color:
-                                        invoice.status === "paid"
-                                          ? "#16a34a"
-                                          : invoice.status === "sent"
-                                            ? "#2563eb"
-                                            : invoice.status === "cancelled"
-                                              ? "#dc2626"
-                                              : "#666",
-                                    }}
+                                    className="appearance-none cursor-pointer border-0 bg-transparent p-0 text-xs font-medium focus:outline-none disabled:opacity-50 text-inherit"
                                   >
                                     <option value="draft">Draft</option>
                                     <option value="sent">Sent</option>
                                     <option value="paid">Paid</option>
                                     <option value="cancelled">Cancelled</option>
                                   </select>
-                                  <Pencil className="h-3 w-3 text-(--muted) opacity-0 group-hover/status:opacity-100 transition-opacity pointer-events-none" />
+                                  <Pencil className="h-3 w-3 opacity-0 group-hover/status:opacity-100 transition-opacity pointer-events-none" />
                                 </label>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-right font-semibold text-black dark:text-white">

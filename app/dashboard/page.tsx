@@ -27,7 +27,7 @@ import {
 } from "@/app/lib/invoice";
 import { useDbReady } from "@/app/components/DbScopeProvider";
 import { InvoiceListSkeleton } from "@/app/components/shared/Skeleton";
-import MiniChart from "@/app/components/shared/MiniChart";
+
 import { prefetchRates, convertWithRates } from "@/app/lib/currency";
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -336,64 +336,6 @@ function StatusDonut({
   );
 }
 
-// ─── Metric Card ────────────────────────────────────────────────────────────
-
-function MetricCard({
-  label,
-  value,
-  change,
-  sparkData,
-  sparkColor,
-  icon: Icon,
-  iconColor,
-}: {
-  label: string;
-  value: string;
-  change: number | null;
-  sparkData: number[];
-  sparkColor: string;
-  icon: React.ElementType;
-  iconColor: string;
-}) {
-  return (
-    <Card>
-      <div className="flex items-start justify-between gap-3">
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <div
-              className={`flex h-8 w-8 items-center justify-center rounded-lg ${iconColor}`}
-            >
-              <Icon className="h-4 w-4" />
-            </div>
-            <p className="text-xs font-medium uppercase tracking-wider text-(--muted)">
-              {label}
-            </p>
-          </div>
-          <p className="font-mono text-3xl font-bold tabular-nums tracking-tight text-black dark:text-white">
-            {value}
-          </p>
-          {change !== null && (
-            <div className="flex items-center gap-1">
-              {change >= 0 ? (
-                <TrendingUp className="h-3 w-3 text-emerald-500" />
-              ) : (
-                <TrendingDown className="h-3 w-3 text-red-500" />
-              )}
-              <span
-                className={`text-xs font-medium ${change >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}`}
-              >
-                {change >= 0 ? "+" : ""}
-                {change}% vs last month
-              </span>
-            </div>
-          )}
-        </div>
-        <MiniChart data={sparkData} color={sparkColor} className="w-20" />
-      </div>
-    </Card>
-  );
-}
-
 // ─── Main Dashboard ─────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
@@ -417,15 +359,20 @@ export default function DashboardPage() {
 
   type Metrics = {
     thisMonthRevenue: number;
+    lastMonthRevenue: number;
     revenueChange: number | null;
     thisMonthCount: number;
+    lastMonthCount: number;
     countChange: number | null;
     thisMonthPaidAmount: number;
+    lastMonthPaidAmount: number;
     paidChange: number | null;
     overdueInvoices: Invoice[];
     overdueAmount: number;
+    overdueCount: number;
     dueSoonInvoices: Invoice[];
     unpaidAmount: number;
+    unpaidCount: number;
     monthlyRevenue: number[];
     monthlyCount: number[];
     monthLabels: string[];
@@ -435,33 +382,34 @@ export default function DashboardPage() {
       paid: number;
       cancelled: number;
     };
-    sparkRevenue: number[];
-    sparkCount: number[];
-    sparkPaid: number[];
     recentInvoices: Invoice[];
     totalInvoices: number;
+    totalCustomers: number;
   };
 
   const emptyMetrics: Metrics = {
     thisMonthRevenue: 0,
+    lastMonthRevenue: 0,
     revenueChange: null,
     thisMonthCount: 0,
+    lastMonthCount: 0,
     countChange: null,
     thisMonthPaidAmount: 0,
+    lastMonthPaidAmount: 0,
     paidChange: null,
     overdueInvoices: [],
     overdueAmount: 0,
+    overdueCount: 0,
     dueSoonInvoices: [],
     unpaidAmount: 0,
+    unpaidCount: 0,
     monthlyRevenue: Array(6).fill(0),
     monthlyCount: Array(6).fill(0),
     monthLabels: Array.from({ length: 6 }, (_, i) => getMonthLabel(5 - i)),
     statusCounts: { draft: 0, sent: 0, paid: 0, cancelled: 0 },
-    sparkRevenue: Array(7).fill(0) as number[],
-    sparkCount: Array(7).fill(0) as number[],
-    sparkPaid: Array(7).fill(0) as number[],
     recentInvoices: [],
     totalInvoices: 0,
+    totalCustomers: 0,
   };
 
   const [metrics, setMetrics] = useState<Metrics>(emptyMetrics);
@@ -568,28 +516,6 @@ export default function DashboardPage() {
         cancelled: invoices.filter((inv) => inv.status === "cancelled").length,
       };
 
-      // Spark data (last 30 days, grouped into 7 buckets)
-      const now = new Date();
-      const bucketCount = 7;
-      const daysPerBucket = Math.ceil(30 / bucketCount);
-      const sparkRevenue = Array(bucketCount).fill(0) as number[];
-      const sparkCount = Array(bucketCount).fill(0) as number[];
-      const sparkPaid = Array(bucketCount).fill(0) as number[];
-      for (const inv of invoices) {
-        const d = new Date(inv.date);
-        const diff = Math.floor(
-          (now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24),
-        );
-        if (diff >= 0 && diff < 30) {
-          const bucket = bucketCount - 1 - Math.floor(diff / daysPerBucket);
-          if (bucket >= 0 && bucket < bucketCount) {
-            sparkRevenue[bucket] += convert(inv);
-            sparkCount[bucket]++;
-            if (inv.status === "paid") sparkPaid[bucket] += convert(inv);
-          }
-        }
-      }
-
       // Recent invoices (last 5)
       const recentInvoices = [...invoices]
         .sort(
@@ -598,26 +524,32 @@ export default function DashboardPage() {
         )
         .slice(0, 5);
 
+      // Unique customers
+      const totalCustomers = new Set(invoices.map((inv) => inv.customer.name)).size;
+
       setMetrics({
         thisMonthRevenue,
+        lastMonthRevenue,
         revenueChange: pctChange(thisMonthRevenue, lastMonthRevenue),
         thisMonthCount: thisMonth.length,
+        lastMonthCount: lastMonth.length,
         countChange: pctChange(thisMonth.length, lastMonth.length),
         thisMonthPaidAmount,
+        lastMonthPaidAmount,
         paidChange: pctChange(thisMonthPaidAmount, lastMonthPaidAmount),
         overdueInvoices,
         overdueAmount,
+        overdueCount: overdueInvoices.length,
         dueSoonInvoices,
         unpaidAmount,
+        unpaidCount: unpaidInvoices.length,
         monthlyRevenue,
         monthlyCount,
         monthLabels,
         statusCounts,
-        sparkRevenue,
-        sparkCount,
-        sparkPaid,
         recentInvoices,
         totalInvoices: invoices.length,
+        totalCustomers,
       });
     })();
   }, [invoices, defaultCurrency, isLoading]);
@@ -649,60 +581,106 @@ export default function DashboardPage() {
         {isLoading ? (
           <InvoiceListSkeleton />
         ) : (
-          <div className="space-y-8">
-            {/* ── Top Metric Cards ─────────────────────────────────── */}
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <MetricCard
-                label="Revenue"
-                value={formatCurrency(
-                  metrics.thisMonthRevenue,
-                  defaultCurrency,
-                )}
-                change={metrics.revenueChange}
-                sparkData={metrics.sparkRevenue}
-                sparkColor="#6366f1"
-                icon={TrendingUp}
-                iconColor="bg-indigo-100 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400"
-              />
-              <MetricCard
-                label="Invoices"
-                value={String(metrics.thisMonthCount)}
-                change={metrics.countChange}
-                sparkData={metrics.sparkCount}
-                sparkColor="#0ea5e9"
-                icon={FilePlus2}
-                iconColor="bg-sky-100 text-sky-600 dark:bg-sky-950 dark:text-sky-400"
-              />
-              <MetricCard
-                label="Collected"
-                value={formatCurrency(
-                  metrics.thisMonthPaidAmount,
-                  defaultCurrency,
-                )}
-                change={metrics.paidChange}
-                sparkData={metrics.sparkPaid}
-                sparkColor="#10b981"
-                icon={TrendingUp}
-                iconColor="bg-emerald-100 text-emerald-600 dark:bg-emerald-950 dark:text-emerald-400"
-              />
-              <MetricCard
-                label="Outstanding"
-                value={formatCurrency(metrics.unpaidAmount, defaultCurrency)}
-                change={null}
-                sparkData={[]}
-                sparkColor="#f59e0b"
-                icon={Clock}
-                iconColor="bg-amber-100 text-amber-600 dark:bg-amber-950 dark:text-amber-400"
-              />
+          <div className="space-y-6">
+            {/* ── Top Metric Cards (FinSet-style) ─────────────────── */}
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {/* Revenue Card */}
+              <Card>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-semibold text-(--muted)">Total Revenue</h3>
+                  <span className="text-[11px] text-(--muted) bg-(--surface) border border-(--border) rounded-md px-2 py-0.5">{defaultCurrency}</span>
+                </div>
+                <p className="text-3xl font-bold text-black dark:text-white tabular-nums tracking-tight">
+                  {formatCurrency(metrics.thisMonthRevenue, defaultCurrency)}
+                  <span className="text-lg font-normal text-(--muted)">.{(metrics.thisMonthRevenue % 1).toFixed(2).slice(2)}</span>
+                </p>
+                <div className="mt-3 flex items-center gap-4 text-xs">
+                  {metrics.revenueChange !== null && (
+                    <span className={`inline-flex items-center gap-1 font-medium ${metrics.revenueChange >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}`}>
+                      {metrics.revenueChange >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                      {metrics.revenueChange >= 0 ? "+" : ""}{metrics.revenueChange}%
+                    </span>
+                  )}
+                  <span className="text-(--muted)">{metrics.thisMonthCount} invoices</span>
+                </div>
+                <p className="mt-2 text-xs text-(--muted)">
+                  {metrics.lastMonthRevenue > 0
+                    ? metrics.thisMonthRevenue >= metrics.lastMonthRevenue
+                      ? `You earned extra ${formatCurrency(metrics.thisMonthRevenue - metrics.lastMonthRevenue, defaultCurrency)} compared to last month`
+                      : `Down ${formatCurrency(metrics.lastMonthRevenue - metrics.thisMonthRevenue, defaultCurrency)} compared to last month`
+                    : "No data from last month"}
+                </p>
+              </Card>
+
+              {/* Collected Card */}
+              <Card>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-semibold text-(--muted)">Collected</h3>
+                  <span className="text-[11px] text-(--muted) bg-(--surface) border border-(--border) rounded-md px-2 py-0.5">{defaultCurrency}</span>
+                </div>
+                <p className="text-3xl font-bold text-black dark:text-white tabular-nums tracking-tight">
+                  {formatCurrency(metrics.thisMonthPaidAmount, defaultCurrency)}
+                  <span className="text-lg font-normal text-(--muted)">.{(metrics.thisMonthPaidAmount % 1).toFixed(2).slice(2)}</span>
+                </p>
+                <div className="mt-3 flex items-center gap-4 text-xs">
+                  {metrics.paidChange !== null && (
+                    <span className={`inline-flex items-center gap-1 font-medium ${metrics.paidChange >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}`}>
+                      {metrics.paidChange >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                      {metrics.paidChange >= 0 ? "+" : ""}{metrics.paidChange}%
+                    </span>
+                  )}
+                  <span className="text-(--muted)">{metrics.statusCounts.paid} paid</span>
+                </div>
+                <p className="mt-2 text-xs text-(--muted)">
+                  {metrics.lastMonthPaidAmount > 0
+                    ? metrics.thisMonthPaidAmount >= metrics.lastMonthPaidAmount
+                      ? `Collected extra ${formatCurrency(metrics.thisMonthPaidAmount - metrics.lastMonthPaidAmount, defaultCurrency)} compared to last month`
+                      : `Down ${formatCurrency(metrics.lastMonthPaidAmount - metrics.thisMonthPaidAmount, defaultCurrency)} compared to last month`
+                    : "No collections last month"}
+                </p>
+              </Card>
+
+              {/* Outstanding Card */}
+              <Card>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-semibold text-(--muted)">Outstanding</h3>
+                  <span className="text-[11px] text-(--muted) bg-(--surface) border border-(--border) rounded-md px-2 py-0.5">{defaultCurrency}</span>
+                </div>
+                <p className="text-3xl font-bold text-black dark:text-white tabular-nums tracking-tight">
+                  {formatCurrency(metrics.unpaidAmount, defaultCurrency)}
+                  <span className="text-lg font-normal text-(--muted)">.{(metrics.unpaidAmount % 1).toFixed(2).slice(2)}</span>
+                </p>
+                <div className="mt-3 flex items-center gap-4 text-xs">
+                  <span className="text-(--muted)">{metrics.unpaidCount} unpaid</span>
+                  {metrics.overdueCount > 0 && (
+                    <span className="inline-flex items-center gap-1 font-medium text-red-600 dark:text-red-400">
+                      <AlertTriangle className="h-3 w-3" />
+                      {metrics.overdueCount} overdue
+                    </span>
+                  )}
+                </div>
+                <p className="mt-2 text-xs text-(--muted)">
+                  {metrics.overdueAmount > 0
+                    ? `${formatCurrency(metrics.overdueAmount, defaultCurrency)} is overdue`
+                    : "All invoices are on track"}
+                </p>
+              </Card>
             </div>
 
-            {/* ── Charts Row ──────────────────────────────────────── */}
+            {/* ── Revenue Overview + Statistics ────────────────────── */}
             <div className="grid gap-6 lg:grid-cols-3">
-              {/* Monthly Revenue */}
+              {/* Revenue Overview - large chart */}
               <Card className="lg:col-span-2">
-                <h3 className="text-sm font-semibold text-black dark:text-white mb-4">
-                  Monthly Revenue (Last 6 Months)
-                </h3>
+                <div className="flex items-center justify-between mb-1">
+                  <h3 className="text-base font-bold text-black dark:text-white">Revenue Overview</h3>
+                  <div className="flex items-center gap-3 text-xs text-(--muted)">
+                    <span className="flex items-center gap-1.5">
+                      <span className="h-2 w-2 rounded-full bg-indigo-500" />
+                      This period
+                    </span>
+                  </div>
+                </div>
+                <p className="text-xs text-(--muted) mb-4">Last 6 months</p>
                 <LineChart
                   data={metrics.monthlyRevenue}
                   labels={metrics.monthLabels}
@@ -713,192 +691,153 @@ export default function DashboardPage() {
                 />
               </Card>
 
-              {/* Status Breakdown */}
+              {/* Statistics - Donut + summary */}
               <Card>
-                <h3 className="text-sm font-semibold text-black dark:text-white mb-4">
-                  Invoice Status
-                </h3>
+                <h3 className="text-base font-bold text-black dark:text-white mb-1">Statistics</h3>
+                <p className="text-xs text-(--muted) mb-4">Invoice breakdown by status</p>
                 <StatusDonut
                   segments={[
-                    {
-                      label: "Paid",
-                      value: metrics.statusCounts.paid,
-                      color: "#10b981",
-                    },
-                    {
-                      label: "Sent",
-                      value: metrics.statusCounts.sent,
-                      color: "#3b82f6",
-                    },
-                    {
-                      label: "Draft",
-                      value: metrics.statusCounts.draft,
-                      color: "#9ca3af",
-                    },
-                    {
-                      label: "Cancelled",
-                      value: metrics.statusCounts.cancelled,
-                      color: "#ef4444",
-                    },
+                    { label: "Paid", value: metrics.statusCounts.paid, color: "#10b981" },
+                    { label: "Sent", value: metrics.statusCounts.sent, color: "#6366f1" },
+                    { label: "Draft", value: metrics.statusCounts.draft, color: "#9ca3af" },
+                    { label: "Cancelled", value: metrics.statusCounts.cancelled, color: "#ef4444" },
                   ]}
                 />
+                <div className="mt-4 pt-4 border-t border-(--border) text-center">
+                  <p className="text-xs text-(--muted)">Total invoices</p>
+                  <p className="text-2xl font-bold text-black dark:text-white">{metrics.totalInvoices}</p>
+                </div>
               </Card>
             </div>
 
-            {/* ── Alerts & Activity Row ───────────────────────────── */}
-            <div className="grid gap-6 lg:grid-cols-2">
-              {/* Overdue & Due Soon */}
+            {/* ── Invoices Created + Attention Required ────────────── */}
+            <div className="grid gap-6 lg:grid-cols-3">
+              {/* Invoices Created bar chart */}
+              <Card className="lg:col-span-2">
+                <div className="flex items-center justify-between mb-1">
+                  <h3 className="text-base font-bold text-black dark:text-white">Invoices Created</h3>
+                </div>
+                <p className="text-xs text-(--muted) mb-4">Last 6 months</p>
+                <BarChart
+                  data={metrics.monthlyCount}
+                  labels={metrics.monthLabels}
+                  color="#6366f1"
+                />
+              </Card>
+
+              {/* Attention Required */}
               <Card>
-                <h3 className="text-sm font-semibold text-black dark:text-white mb-4">
-                  Attention Required
-                </h3>
-                <div className="space-y-3">
-                  {metrics.overdueInvoices.length === 0 &&
-                  metrics.dueSoonInvoices.length === 0 ? (
-                    <p className="text-sm text-(--muted) py-4">
-                      All invoices are on track.
-                    </p>
+                <h3 className="text-base font-bold text-black dark:text-white mb-1">Attention</h3>
+                <p className="text-xs text-(--muted) mb-4">Overdue & due soon</p>
+                <div className="space-y-2">
+                  {metrics.overdueInvoices.length === 0 && metrics.dueSoonInvoices.length === 0 ? (
+                    <div className="text-center py-6">
+                      <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-950/30">
+                        <TrendingUp className="h-5 w-5 text-emerald-500" />
+                      </div>
+                      <p className="text-sm font-medium text-black dark:text-white">All clear</p>
+                      <p className="text-xs text-(--muted)">No overdue invoices</p>
+                    </div>
                   ) : (
                     <>
-                      {metrics.overdueInvoices.map((inv) => (
-                        <Link
-                          key={inv.id}
-                          href={`/invoices/${inv.id}`}
-                          className="flex items-center justify-between rounded-lg border border-red-200 bg-red-50 px-4 py-3 transition-colors hover:bg-red-100 dark:border-red-900/40 dark:bg-red-950/20 dark:hover:bg-red-950/40"
+                      {metrics.overdueInvoices.slice(0, 3).map((inv) => (
+                        <Link key={inv.id} href={`/invoices/${inv.id}`}
+                          className="flex items-center justify-between rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 transition-colors hover:bg-red-100 dark:border-red-900/40 dark:bg-red-950/20 dark:hover:bg-red-950/40"
                         >
-                          <div className="flex items-center gap-3">
-                            <AlertTriangle className="h-4 w-4 text-red-500 shrink-0" />
-                            <div>
-                              <p className="text-sm font-medium text-red-800 dark:text-red-300">
-                                {inv.invoiceNumber} — {inv.customer.name}
-                              </p>
-                              <p className="text-xs text-red-600 dark:text-red-400">
-                                Due {formatDate(inv.dueDate)}
-                              </p>
+                          <div className="flex items-center gap-2 min-w-0">
+                            <AlertTriangle className="h-3.5 w-3.5 text-red-500 shrink-0" />
+                            <div className="min-w-0">
+                              <p className="text-xs font-medium text-red-800 dark:text-red-300 truncate">{inv.invoiceNumber}</p>
+                              <p className="text-[10px] text-red-600 dark:text-red-400 truncate">{inv.customer.name}</p>
                             </div>
                           </div>
-                          <span className="text-sm font-semibold text-red-700 dark:text-red-300">
-                            {formatCurrency(
-                              getInvoiceAmount(inv),
-                              inv.currency,
-                            )}
+                          <span className="text-xs font-semibold text-red-700 dark:text-red-300 shrink-0 ml-2">
+                            {formatCurrency(getInvoiceAmount(inv), inv.currency)}
                           </span>
                         </Link>
                       ))}
-                      {metrics.dueSoonInvoices.map((inv) => (
-                        <Link
-                          key={inv.id}
-                          href={`/invoices/${inv.id}`}
-                          className="flex items-center justify-between rounded-lg border border-yellow-200 bg-yellow-50 px-4 py-3 transition-colors hover:bg-yellow-100 dark:border-yellow-900/40 dark:bg-yellow-950/20 dark:hover:bg-yellow-950/40"
+                      {metrics.dueSoonInvoices.slice(0, 3).map((inv) => (
+                        <Link key={inv.id} href={`/invoices/${inv.id}`}
+                          className="flex items-center justify-between rounded-lg border border-yellow-200 bg-yellow-50 px-3 py-2.5 transition-colors hover:bg-yellow-100 dark:border-yellow-900/40 dark:bg-yellow-950/20 dark:hover:bg-yellow-950/40"
                         >
-                          <div className="flex items-center gap-3">
-                            <Clock className="h-4 w-4 text-yellow-600 shrink-0" />
-                            <div>
-                              <p className="text-sm font-medium text-yellow-800 dark:text-yellow-300">
-                                {inv.invoiceNumber} — {inv.customer.name}
-                              </p>
-                              <p className="text-xs text-yellow-600 dark:text-yellow-400">
-                                Due {formatDate(inv.dueDate)}
-                              </p>
+                          <div className="flex items-center gap-2 min-w-0">
+                            <Clock className="h-3.5 w-3.5 text-yellow-600 shrink-0" />
+                            <div className="min-w-0">
+                              <p className="text-xs font-medium text-yellow-800 dark:text-yellow-300 truncate">{inv.invoiceNumber}</p>
+                              <p className="text-[10px] text-yellow-600 dark:text-yellow-400 truncate">{inv.customer.name}</p>
                             </div>
                           </div>
-                          <span className="text-sm font-semibold text-yellow-700 dark:text-yellow-300">
-                            {formatCurrency(
-                              getInvoiceAmount(inv),
-                              inv.currency,
-                            )}
+                          <span className="text-xs font-semibold text-yellow-700 dark:text-yellow-300 shrink-0 ml-2">
+                            {formatCurrency(getInvoiceAmount(inv), inv.currency)}
                           </span>
                         </Link>
                       ))}
+                      {(metrics.overdueInvoices.length + metrics.dueSoonInvoices.length) > 6 && (
+                        <Link href="/invoices" className="block text-center text-xs text-(--muted) hover:text-black dark:hover:text-white pt-1">
+                          View all →
+                        </Link>
+                      )}
                     </>
-                  )}
-                  {metrics.overdueInvoices.length > 0 && (
-                    <div className="pt-2 border-t border-(--border)">
-                      <p className="text-xs text-(--muted)">
-                        Total overdue:{" "}
-                        <span className="font-semibold text-red-600 dark:text-red-400">
-                          {formatCurrency(
-                            metrics.overdueAmount,
-                            defaultCurrency,
-                          )}
-                        </span>
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </Card>
-
-              {/* Recent Invoices */}
-              <Card>
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-sm font-semibold text-black dark:text-white">
-                    Recent Invoices
-                  </h3>
-                  <Link
-                    href="/invoices"
-                    className="text-xs text-(--muted) hover:text-black dark:hover:text-white flex items-center gap-1 transition-colors"
-                  >
-                    View all <ArrowRight className="h-3 w-3" />
-                  </Link>
-                </div>
-                <div className="space-y-3">
-                  {metrics.recentInvoices.length === 0 ? (
-                    <p className="text-sm text-(--muted) py-4">
-                      No invoices yet.
-                    </p>
-                  ) : (
-                    metrics.recentInvoices.map((inv) => (
-                      <Link
-                        key={inv.id}
-                        href={`/invoices/${inv.id}`}
-                        className="flex items-center justify-between py-2 border-b border-(--border) last:border-0 hover:bg-(--border)/20 -mx-2 px-2 rounded transition-colors"
-                      >
-                        <div>
-                          <p className="text-sm font-medium text-black dark:text-white">
-                            {inv.invoiceNumber}
-                          </p>
-                          <p className="text-xs text-(--muted)">
-                            {inv.customer.name} · {formatDate(inv.date)}
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm font-semibold text-black dark:text-white tabular-nums">
-                            {formatCurrency(
-                              getInvoiceAmount(inv),
-                              inv.currency,
-                            )}
-                          </p>
-                          <span
-                            className={`text-[10px] font-semibold uppercase ${
-                              inv.status === "paid"
-                                ? "text-emerald-600 dark:text-emerald-400"
-                                : inv.status === "sent"
-                                  ? "text-blue-600 dark:text-blue-400"
-                                  : inv.status === "cancelled"
-                                    ? "text-red-600 dark:text-red-400"
-                                    : "text-(--muted)"
-                            }`}
-                          >
-                            {inv.status}
-                          </span>
-                        </div>
-                      </Link>
-                    ))
                   )}
                 </div>
               </Card>
             </div>
 
-            {/* ── Monthly Invoice Count ───────────────────────────── */}
+            {/* ── Recent Invoices ─────────────────────────────────── */}
             <Card>
-              <h3 className="text-sm font-semibold text-black dark:text-white mb-4">
-                Invoices Created (Last 6 Months)
-              </h3>
-              <BarChart
-                data={metrics.monthlyCount}
-                labels={metrics.monthLabels}
-                color="#0ea5e9"
-              />
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-base font-bold text-black dark:text-white">Recent Invoices</h3>
+                  <p className="text-xs text-(--muted)">Latest activity across all invoices</p>
+                </div>
+                <Link
+                  href="/invoices"
+                  className="text-xs font-medium text-(--muted) hover:text-black dark:hover:text-white flex items-center gap-1 transition-colors"
+                >
+                  View all <ArrowRight className="h-3 w-3" />
+                </Link>
+              </div>
+              <div className="divide-y divide-(--border)">
+                {metrics.recentInvoices.length === 0 ? (
+                  <p className="text-sm text-(--muted) py-6 text-center">No invoices yet.</p>
+                ) : (
+                  metrics.recentInvoices.map((inv) => (
+                    <Link
+                      key={inv.id}
+                      href={`/invoices/${inv.id}`}
+                      className="flex items-center justify-between py-3 hover:bg-(--border)/10 -mx-2 px-2 rounded transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={`h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold ${
+                          inv.status === "paid" ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
+                            : inv.status === "sent" ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+                            : inv.status === "cancelled" ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                            : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
+                        }`}>
+                          {inv.customer.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-black dark:text-white">{inv.customer.name}</p>
+                          <p className="text-xs text-(--muted)">{inv.invoiceNumber} · {formatDate(inv.date)}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-semibold text-black dark:text-white tabular-nums">
+                          {formatCurrency(getInvoiceAmount(inv), inv.currency)}
+                        </p>
+                        <span className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                          inv.status === "paid" ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
+                            : inv.status === "sent" ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+                            : inv.status === "cancelled" ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                            : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
+                        }`}>
+                          {inv.status}
+                        </span>
+                      </div>
+                    </Link>
+                  ))
+                )}
+              </div>
             </Card>
           </div>
         )}
