@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { recipientEmail, subject, message, invoiceHtml, invoiceNumber } = body;
+    const { recipientEmail, subject, message, invoiceHtml, invoiceNumber, pdfBase64 } = body;
 
     if (!recipientEmail || !invoiceHtml) {
       return NextResponse.json(
@@ -37,6 +37,15 @@ export async function POST(request: NextRequest) {
 
     const fromAddress = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
 
+    const attachments = pdfBase64
+      ? [
+          {
+            filename: `Invoice_${invoiceNumber || "invoice"}.pdf`,
+            content: pdfBase64,
+          },
+        ]
+      : [];
+
     const { data, error } = await resend.emails.send({
       from: fromAddress,
       to: recipientEmail,
@@ -52,6 +61,7 @@ export async function POST(request: NextRequest) {
           </p>
         </div>
       `,
+      attachments,
     });
 
     if (error) {

@@ -40,7 +40,7 @@ import {
   isOverdue,
   isDueSoon,
 } from "@/app/lib/invoice";
-import { downloadInvoicePDF, generateInvoiceEmailHTML } from "@/app/lib/pdf";
+import { downloadInvoicePDF, generateInvoiceEmailHTML, generateInvoicePDFBase64 } from "@/app/lib/pdf";
 import { useDbReady } from "@/app/components/DbScopeProvider";
 
 export default function InvoiceDetailPage() {
@@ -119,6 +119,7 @@ export default function InvoiceDetailPage() {
       const account = await getDefaultAccountDetails();
       const company = invoice.company || (await getDefaultCompanyDetails());
       const invoiceHtml = generateInvoiceEmailHTML(invoice, company || undefined, account || undefined);
+      const pdfBase64 = await generateInvoicePDFBase64(invoice, company || undefined, account || undefined);
 
       const res = await fetch("/api/email", {
         method: "POST",
@@ -129,6 +130,7 @@ export default function InvoiceDetailPage() {
           message: emailForm.message,
           invoiceHtml,
           invoiceNumber: invoice.invoiceNumber,
+          pdfBase64,
         }),
       });
 

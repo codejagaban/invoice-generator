@@ -520,14 +520,14 @@ export function generateInvoiceEmailHTML(
 }
 
 /**
- * Download invoice as PDF using @react-pdf/renderer (client-side).
- * React component-based PDF — sharp vector text with proper layout.
+ * Generate invoice PDF as a Blob using @react-pdf/renderer (client-side).
+ * Shared by downloadInvoicePDF and generateInvoicePDFBase64.
  */
-export async function downloadInvoicePDF(
+async function generateInvoicePDFBlob(
   invoice: Invoice,
   company?: CompanyDetails,
   account?: AccountDetails,
-): Promise<void> {
+): Promise<Blob> {
   const ReactPDF = await import("@react-pdf/renderer");
   const React = (await import("react")).default;
   const { Document, Page, View, Text, Image, StyleSheet, Font, pdf } = ReactPDF;
@@ -1165,12 +1165,41 @@ export async function downloadInvoicePDF(
       ),
     );
 
-  const blob = await pdf(React.createElement(InvoiceDocument)).toBlob();
+  return await pdf(React.createElement(InvoiceDocument)).toBlob();
+}
 
+/**
+ * Download invoice as PDF using @react-pdf/renderer (client-side).
+ */
+export async function downloadInvoicePDF(
+  invoice: Invoice,
+  company?: CompanyDetails,
+  account?: AccountDetails,
+): Promise<void> {
+  const blob = await generateInvoicePDFBlob(invoice, company, account);
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
   link.download = `Invoice_${invoice.invoiceNumber}.pdf`;
   link.click();
   URL.revokeObjectURL(url);
+}
+
+/**
+ * Generate invoice PDF as base64 string (client-side).
+ * Used for email attachments.
+ */
+export async function generateInvoicePDFBase64(
+  invoice: Invoice,
+  company?: CompanyDetails,
+  account?: AccountDetails,
+): Promise<string> {
+  const blob = await generateInvoicePDFBlob(invoice, company, account);
+  const arrayBuffer = await blob.arrayBuffer();
+  const bytes = new Uint8Array(arrayBuffer);
+  let binary = "";
+  for (let i = 0; i < bytes.length; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
 }
