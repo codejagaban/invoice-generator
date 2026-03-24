@@ -25,7 +25,8 @@ export default function CreateInvoicePage() {
       }
       router.push(`/invoices/${invoice.id}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create invoice");
+      console.error("[CreateInvoice]", err);
+      setError("Failed to create invoice. Please try again.");
     }
   };
 

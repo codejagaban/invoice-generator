@@ -39,7 +39,8 @@ export default function EditInvoicePage() {
       await updateInvoice(id, updatedInvoice);
       router.push(`/invoices/${id}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to update invoice");
+      console.error("[EditInvoice]", err);
+      setError("Failed to update invoice. Please try again.");
     }
   };
 

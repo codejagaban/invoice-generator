@@ -18,10 +18,10 @@ export async function GET(_request: NextRequest) {
       { status: 200 },
     );
   } catch (error) {
+    console.error("Failed to fetch invoices:", error);
     return NextResponse.json(
       {
-        error:
-          error instanceof Error ? error.message : "Failed to fetch invoices",
+        error: "Failed to load invoices. Please try again.",
       },
       { status: 500 },
     );
@@ -49,10 +49,10 @@ export async function POST(request: NextRequest) {
       { status: 201 },
     );
   } catch (error) {
+    console.error("Failed to create invoice:", error);
     return NextResponse.json(
       {
-        error:
-          error instanceof Error ? error.message : "Failed to create invoice",
+        error: "Failed to create invoice. Please try again.",
       },
       { status: 500 },
     );

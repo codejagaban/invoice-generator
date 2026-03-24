@@ -44,10 +44,10 @@ export async function POST(request: NextRequest) {
       { status: 501 }, // Not Implemented
     );
   } catch (error) {
+    console.error("Failed to generate PDF:", error);
     return NextResponse.json(
       {
-        error:
-          error instanceof Error ? error.message : "Failed to generate PDF",
+        error: "Failed to generate PDF. Please try again.",
       },
       { status: 500 },
     );

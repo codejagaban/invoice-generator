@@ -30,10 +30,10 @@ export async function GET(
       { status: 200 },
     );
   } catch (error) {
+    console.error("Failed to fetch invoice:", error);
     return NextResponse.json(
       {
-        error:
-          error instanceof Error ? error.message : "Failed to fetch invoice",
+        error: "Failed to load invoice. Please try again.",
       },
       { status: 500 },
     );
@@ -65,10 +65,10 @@ export async function PATCH(
       { status: 200 },
     );
   } catch (error) {
+    console.error("Failed to update invoice:", error);
     return NextResponse.json(
       {
-        error:
-          error instanceof Error ? error.message : "Failed to update invoice",
+        error: "Failed to update invoice. Please try again.",
       },
       { status: 500 },
     );
@@ -98,10 +98,10 @@ export async function DELETE(
       { status: 200 },
     );
   } catch (error) {
+    console.error("Failed to delete invoice:", error);
     return NextResponse.json(
       {
-        error:
-          error instanceof Error ? error.message : "Failed to delete invoice",
+        error: "Failed to delete invoice. Please try again.",
       },
       { status: 500 },
     );

@@ -105,9 +105,8 @@ export default function CompanyForm({
 
       await onSubmit(company);
     } catch (error) {
-      setSubmitError(
-        error instanceof Error ? error.message : "Failed to save company details",
-      );
+      console.error("[CompanyForm]", error);
+      setSubmitError("Failed to save company details. Please try again.");
     } finally {
       setIsLoading(false);
     }

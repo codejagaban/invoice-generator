@@ -72,10 +72,11 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({ success: true, id: data?.id });
-  } catch (error) {
+  } catch (err) {
+    console.error("[email API]", err);
     return NextResponse.json(
       {
-        error: error instanceof Error ? error.message : "Failed to send email",
+        error: "Failed to send email. Please try again.",
       },
       { status: 500 },
     );

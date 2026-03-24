@@ -479,9 +479,9 @@ export default function InvoiceForm({
       await onSubmit(invoice);
       setErrors({});
     } catch (error) {
+      console.error("[InvoiceForm]", error);
       setErrors({
-        submit:
-          error instanceof Error ? error.message : "Failed to save invoice",
+        submit: "Failed to save invoice. Please try again.",
       });
     } finally {
       setIsLoading(false);

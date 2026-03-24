@@ -17,10 +17,10 @@ export async function GET(_request: NextRequest) {
       { status: 200 },
     );
   } catch (error) {
+    console.error("Failed to fetch templates:", error);
     return NextResponse.json(
       {
-        error:
-          error instanceof Error ? error.message : "Failed to fetch templates",
+        error: "Failed to load templates. Please try again.",
       },
       { status: 500 },
     );
@@ -48,10 +48,10 @@ export async function POST(request: NextRequest) {
       { status: 201 },
     );
   } catch (error) {
+    console.error("Failed to create template:", error);
     return NextResponse.json(
       {
-        error:
-          error instanceof Error ? error.message : "Failed to create template",
+        error: "Failed to save template. Please try again.",
       },
       { status: 500 },
     );
