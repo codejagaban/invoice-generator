@@ -7,6 +7,8 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
+import { FileText, ArrowLeft } from "lucide-react";
 import InvoiceForm from "@/app/components/InvoiceForm";
 import type { Invoice } from "@/app/lib/types";
 import { getInvoiceById, updateInvoice } from "@/app/lib/storage";
@@ -46,25 +48,30 @@ export default function EditInvoicePage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-black">
-        <p className="text-(--muted)">Loading...</p>
+      <div className="min-h-screen flex items-center justify-center bg-(--background)">
+        <div className="text-center">
+          <div className="mx-auto mb-3 h-8 w-8 animate-spin rounded-full border-2 border-(--border) border-t-black dark:border-t-white" />
+          <p className="text-sm text-(--muted)">Loading invoice...</p>
+        </div>
       </div>
     );
   }
 
   if (!invoice) {
     return (
-      <div className="min-h-screen bg-(--background)">
-        <header className="border-b border-b-(--border) bg-(--surface)">
-          <div className="mx-auto max-w-7xl px-6 py-6">
-            <h1 className="text-3xl font-bold text-black dark:text-white">
-              Invoice Not Found
-            </h1>
+      <div className="min-h-screen bg-(--background) flex items-center justify-center px-6">
+        <div className="text-center max-w-sm">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800">
+            <FileText className="h-7 w-7 text-(--muted)" />
           </div>
-        </header>
-        <main className="mx-auto max-w-7xl px-6 py-12">
-          <p className="text-(--muted)">{error}</p>
-        </main>
+          <h2 className="text-xl font-semibold text-black dark:text-white">Invoice not found</h2>
+          <p className="mt-2 text-sm text-(--muted)">
+            This invoice may have been deleted or the link is incorrect.
+          </p>
+          <Link href="/invoices" className="mt-6 inline-flex items-center gap-1.5 text-sm font-medium text-black dark:text-white hover:underline">
+            <ArrowLeft className="h-3.5 w-3.5" /> Back to Invoices
+          </Link>
+        </div>
       </div>
     );
   }
