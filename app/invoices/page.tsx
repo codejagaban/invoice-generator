@@ -344,18 +344,16 @@ export default function InvoicesDashboardPage() {
                           <td className="px-6 py-4 whitespace-nowrap text-right font-semibold text-black dark:text-white">
                             {formatCurrency(amount, invoice.currency)}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-right">
+                          <td className="px-6 py-0 whitespace-nowrap text-right">
                             {invoice.status !== "paid" && (
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                className="shrink-0 text-green-600 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-900/20"
-                                onClick={(e) => handleMarkAsPaid(e, invoice.id)}
+                              <button
+                                className="inline-flex items-center justify-center rounded p-1 text-green-600 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-900/20 disabled:opacity-50"
+                                onClick={(e) => { e.stopPropagation(); handleMarkAsPaid(e, invoice.id); }}
                                 disabled={markingPaidId === invoice.id}
                                 title="Mark as paid"
                               >
                                 <CheckCircle2 className="h-4 w-4" />
-                              </Button>
+                              </button>
                             )}
                           </td>
                         </tr>
