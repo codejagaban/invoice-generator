@@ -107,6 +107,10 @@ export async function updateTemplate(
   return pgCall({ store: "templates", action: "update", id, updates });
 }
 
+export async function incrementTemplateUsage(id: string): Promise<void> {
+  return pgCall({ store: "templates", action: "incrementUsage", id });
+}
+
 export async function deleteTemplate(id: string): Promise<boolean> {
   return pgCall({ store: "templates", action: "delete", id });
 }

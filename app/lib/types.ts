@@ -41,6 +41,7 @@ export interface Invoice {
   notes?: string;
   taxRate?: number;
   currency: string;
+  templateId?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -54,6 +55,7 @@ export interface InvoiceTemplate {
   notes?: string;
   taxRate?: number;
   currency: string;
+  usageCount: number;
   createdAt: string;
 }
 

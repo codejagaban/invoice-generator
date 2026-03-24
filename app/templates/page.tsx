@@ -17,7 +17,7 @@ import Card, {
   CardTitle,
 } from "@/app/components/shared/Card";
 import type { InvoiceTemplate } from "@/app/lib/types";
-import { getTemplates, deleteTemplate } from "@/app/lib/storage";
+import { getTemplates, deleteTemplate, incrementTemplateUsage } from "@/app/lib/storage";
 import { formatDate } from "@/app/lib/invoice";
 import { TemplateListSkeleton } from "@/app/components/shared/Skeleton";
 import EmptyState from "@/app/components/shared/EmptyState";
@@ -43,7 +43,12 @@ export default function TemplatesPage() {
     setTemplates(templates.filter((t) => t.id !== id));
   };
 
-  const handleUseTemplate = (template: InvoiceTemplate) => {
+  const handleUseTemplate = async (template: InvoiceTemplate) => {
+    // Increment usage count
+    await incrementTemplateUsage(template.id);
+    setTemplates((prev) =>
+      prev.map((t) => t.id === template.id ? { ...t, usageCount: t.usageCount + 1 } : t)
+    );
     // Store template in session for the create form to pick up
     sessionStorage.setItem("selectedTemplate", JSON.stringify(template));
     // Redirect to create invoice page
@@ -100,15 +105,13 @@ export default function TemplatesPage() {
                           {template.customer.name || "Template"}
                         </p>
                       </div>
-                      {template.items && template.items.length > 0 && (
-                        <div>
-                          <p className="text-xs text-(--muted)">Items</p>
+                      <div>
+                          <p className="text-xs text-(--muted)">Used</p>
                           <p className="font-medium text-black dark:text-white">
-                            {template.items.length} item
-                            {template.items.length !== 1 ? "s" : ""}
+                            {template.usageCount} time
+                            {template.usageCount !== 1 ? "s" : ""}
                           </p>
                         </div>
-                      )}
                       <div>
                         <p className="text-xs text-(--muted)">Created</p>
                         <p className="text-sm text-black dark:text-white">
