@@ -1,4 +1,12 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Invoicer — Free Professional Invoice Generator",
+  description:
+    "Create, manage, and send professional invoices in minutes. Free invoice generator with PDF export, email delivery with attachments, 170+ currencies, reusable templates, and analytics dashboard.",
+  alternates: { canonical: "/" },
+};
 import {
   FileText,
   FileDown,
@@ -196,9 +204,38 @@ function InvoicePreview() {
   );
 }
 
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: "Invoicer",
+  applicationCategory: "BusinessApplication",
+  operatingSystem: "Web",
+  description:
+    "Create, manage, and send professional invoices in minutes. Free invoice generator with PDF export, email delivery, 170+ currencies, and analytics.",
+  offers: {
+    "@type": "Offer",
+    price: "0",
+    priceCurrency: "USD",
+  },
+  featureList: [
+    "PDF invoice generation",
+    "Email delivery with PDF attachment",
+    "170+ currency support with live conversion",
+    "Reusable invoice templates",
+    "Analytics dashboard",
+    "Bulk invoice actions",
+    "Customer address book",
+    "Invoice status tracking",
+  ],
+};
+
 export default function Home() {
   return (
     <div className="min-h-screen bg-white dark:bg-black">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <main>
         {/* ── Hero ────────────────────────────────────────────── */}
         <section className="mx-auto max-w-5xl px-6 pt-20 pb-16 sm:pt-28 sm:pb-24">
