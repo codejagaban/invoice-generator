@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import { Onest } from "next/font/google";
+import { Inter } from "next/font/google";
 
-const onest = Onest({
+const inter = Inter({
   subsets: ["latin"],
 });
 import AppShell from "@/app/components/AppShell";
@@ -23,7 +23,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${onest.className} antialiased`}>
+      <body className={`${inter.className} antialiased`}>
         <SessionProviderWrapper>
           <DbScopeProvider>
             <AppShell>{children}</AppShell>
