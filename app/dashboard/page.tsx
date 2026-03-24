@@ -457,9 +457,9 @@ export default function DashboardPage() {
     monthlyCount: Array(6).fill(0),
     monthLabels: Array.from({ length: 6 }, (_, i) => getMonthLabel(5 - i)),
     statusCounts: { draft: 0, sent: 0, paid: 0, cancelled: 0 },
-    sparkRevenue: Array(7).fill(0),
-    sparkCount: Array(7).fill(0),
-    sparkPaid: Array(7).fill(0),
+    sparkRevenue: Array(7).fill(0) as number[],
+    sparkCount: Array(7).fill(0) as number[],
+    sparkPaid: Array(7).fill(0) as number[],
     recentInvoices: [],
     totalInvoices: 0,
   };
@@ -568,20 +568,25 @@ export default function DashboardPage() {
         cancelled: invoices.filter((inv) => inv.status === "cancelled").length,
       };
 
-      // Spark data (last 7 days)
+      // Spark data (last 30 days, grouped into 7 buckets)
       const now = new Date();
-      const sparkRevenue = Array(7).fill(0) as number[];
-      const sparkCount = Array(7).fill(0) as number[];
-      const sparkPaid = Array(7).fill(0) as number[];
+      const bucketCount = 7;
+      const daysPerBucket = Math.ceil(30 / bucketCount);
+      const sparkRevenue = Array(bucketCount).fill(0) as number[];
+      const sparkCount = Array(bucketCount).fill(0) as number[];
+      const sparkPaid = Array(bucketCount).fill(0) as number[];
       for (const inv of invoices) {
         const d = new Date(inv.date);
         const diff = Math.floor(
           (now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24),
         );
-        if (diff >= 0 && diff < 7) {
-          sparkRevenue[6 - diff] += convert(inv);
-          sparkCount[6 - diff]++;
-          if (inv.status === "paid") sparkPaid[6 - diff] += convert(inv);
+        if (diff >= 0 && diff < 30) {
+          const bucket = bucketCount - 1 - Math.floor(diff / daysPerBucket);
+          if (bucket >= 0 && bucket < bucketCount) {
+            sparkRevenue[bucket] += convert(inv);
+            sparkCount[bucket]++;
+            if (inv.status === "paid") sparkPaid[bucket] += convert(inv);
+          }
         }
       }
 
