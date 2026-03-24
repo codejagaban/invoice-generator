@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import { Golos_Text } from "next/font/google";
+import { Onest } from "next/font/google";
 
-const golos = Golos_Text({
+const onest = Onest({
   subsets: ["latin"],
 });
 import AppShell from "@/app/components/AppShell";
@@ -23,7 +23,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${golos.className} antialiased`}>
+      <body className={`${onest.className} antialiased`}>
         <SessionProviderWrapper>
           <DbScopeProvider>
             <AppShell>{children}</AppShell>

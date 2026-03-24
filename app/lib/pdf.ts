@@ -532,12 +532,12 @@ async function generateInvoicePDFBlob(
   const React = (await import("react")).default;
   const { Document, Page, View, Text, Image, StyleSheet, Font, pdf } = ReactPDF;
 
-  // Register Inter fonts
+  // Register Onest fonts
   Font.register({
-    family: "Inter",
+    family: "Onest",
     fonts: [
-      { src: "/fonts/Inter-Regular.ttf", fontWeight: 400 },
-      { src: "/fonts/Inter-Bold.ttf", fontWeight: 700 },
+      { src: "/fonts/Onest-Regular.ttf", fontWeight: 400 },
+      { src: "/fonts/Onest-Bold.ttf", fontWeight: 700 },
     ],
   });
 
@@ -619,7 +619,7 @@ async function generateInvoicePDFBlob(
 
   const styles = StyleSheet.create({
     page: {
-      fontFamily: "Inter",
+      fontFamily: "Onest",
       fontSize: 10,
       color: "#000",
       padding: 40,
