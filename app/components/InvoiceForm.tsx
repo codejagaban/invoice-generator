@@ -343,6 +343,8 @@ export default function InvoiceForm({
           city: formData.customerCity,
           state: formData.customerState,
           zipCode: formData.customerZipCode,
+          country: formData.customerCountry,
+          logo: formData.customerLogo || undefined,
         },
         items,
         notes: formData.notes,
