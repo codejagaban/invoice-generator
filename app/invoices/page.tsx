@@ -20,6 +20,7 @@ import {
 } from "@/app/components/shared/Select";
 import type { Invoice } from "@/app/lib/types";
 import { getInvoices, getSettings, updateInvoice } from "@/app/lib/storage";
+import { prefetchRates, convertWithRates } from "@/app/lib/currency";
 import {
   formatDate,
   formatCurrency,
@@ -110,15 +111,24 @@ export default function InvoicesDashboardPage() {
   }, [invoices, searchTerm, statusFilter, sortBy]);
 
 
-  const totalAmount = filteredInvoices.reduce((sum, inv) => {
-    return (
-      sum +
-      inv.items.reduce(
-        (itemSum, item) => itemSum + item.quantity * item.rate,
-        0,
-      )
-    );
-  }, 0);
+  const [rates, setRates] = useState<Map<string, number>>(new Map());
+
+  useEffect(() => {
+    if (invoices.length === 0) return;
+    (async () => {
+      const currencies = [...new Set(invoices.map((inv) => inv.currency))];
+      const r = await prefetchRates(currencies, defaultCurrency);
+      setRates(r);
+    })();
+  }, [invoices, defaultCurrency]);
+
+  const totalAmount = useMemo(() => {
+    if (rates.size === 0) return 0;
+    return filteredInvoices.reduce((sum, inv) => {
+      const amount = inv.items.reduce((s, item) => s + item.quantity * item.rate, 0);
+      return sum + convertWithRates(amount, inv.currency, rates);
+    }, 0);
+  }, [filteredInvoices, rates]);
 
   return (
     <div className="min-h-screen bg-(--background)">

@@ -5,7 +5,7 @@
 
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   FilePlus2,
@@ -28,6 +28,7 @@ import {
 import { useDbReady } from "@/app/components/DbScopeProvider";
 import { InvoiceListSkeleton } from "@/app/components/shared/Skeleton";
 import MiniChart from "@/app/components/shared/MiniChart";
+import { prefetchRates, convertWithRates } from "@/app/lib/currency";
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -377,123 +378,158 @@ export default function DashboardPage() {
     })();
   }, [dbReady]);
 
-  const metrics = useMemo(() => {
-    const thisMonth = invoices.filter((inv) => isThisMonth(inv.date));
-    const lastMonth = invoices.filter((inv) => isLastMonth(inv.date));
+  type Metrics = {
+    thisMonthRevenue: number;
+    revenueChange: number | null;
+    thisMonthCount: number;
+    countChange: number | null;
+    thisMonthPaidAmount: number;
+    paidChange: number | null;
+    overdueInvoices: Invoice[];
+    overdueAmount: number;
+    dueSoonInvoices: Invoice[];
+    unpaidAmount: number;
+    monthlyRevenue: number[];
+    monthlyCount: number[];
+    monthLabels: string[];
+    statusCounts: { draft: number; sent: number; paid: number; cancelled: number };
+    sparkRevenue: number[];
+    sparkCount: number[];
+    sparkPaid: number[];
+    recentInvoices: Invoice[];
+    totalInvoices: number;
+  };
 
-    const thisMonthRevenue = thisMonth.reduce((s, inv) => s + getInvoiceAmount(inv), 0);
-    const lastMonthRevenue = lastMonth.reduce((s, inv) => s + getInvoiceAmount(inv), 0);
+  const emptyMetrics: Metrics = {
+    thisMonthRevenue: 0, revenueChange: null, thisMonthCount: 0, countChange: null,
+    thisMonthPaidAmount: 0, paidChange: null, overdueInvoices: [], overdueAmount: 0,
+    dueSoonInvoices: [], unpaidAmount: 0, monthlyRevenue: Array(6).fill(0),
+    monthlyCount: Array(6).fill(0), monthLabels: Array.from({ length: 6 }, (_, i) => getMonthLabel(5 - i)),
+    statusCounts: { draft: 0, sent: 0, paid: 0, cancelled: 0 },
+    sparkRevenue: Array(7).fill(0), sparkCount: Array(7).fill(0), sparkPaid: Array(7).fill(0),
+    recentInvoices: [], totalInvoices: 0,
+  };
 
-    const thisMonthPaid = thisMonth.filter((inv) => inv.status === "paid");
-    const lastMonthPaid = lastMonth.filter((inv) => inv.status === "paid");
-    const thisMonthPaidAmount = thisMonthPaid.reduce((s, inv) => s + getInvoiceAmount(inv), 0);
-    const lastMonthPaidAmount = lastMonthPaid.reduce((s, inv) => s + getInvoiceAmount(inv), 0);
+  const [metrics, setMetrics] = useState<Metrics>(emptyMetrics);
 
-    const thisMonthSent = thisMonth.filter((inv) => inv.status === "sent").length;
-    const lastMonthSent = lastMonth.filter((inv) => inv.status === "sent").length;
+  useEffect(() => {
+    if (invoices.length === 0) return;
 
-    const overdueInvoices = invoices.filter(
-      (inv) => inv.status !== "paid" && inv.status !== "cancelled" && isOverdue(inv.dueDate),
-    );
-    const overdueAmount = overdueInvoices.reduce((s, inv) => s + getInvoiceAmount(inv), 0);
+    (async () => {
+      // Prefetch all exchange rates needed
+      const currencies = [...new Set(invoices.map((inv) => inv.currency))];
+      const rates = await prefetchRates(currencies, defaultCurrency);
 
-    const dueSoonInvoices = invoices.filter(
-      (inv) => inv.status !== "paid" && inv.status !== "cancelled" && isDueSoon(inv.dueDate) && !isOverdue(inv.dueDate),
-    );
+      const convert = (inv: Invoice) =>
+        convertWithRates(getInvoiceAmount(inv), inv.currency, rates);
 
-    const unpaidInvoices = invoices.filter(
-      (inv) => inv.status !== "paid" && inv.status !== "cancelled",
-    );
-    const unpaidAmount = unpaidInvoices.reduce((s, inv) => s + getInvoiceAmount(inv), 0);
+      const thisMonth = invoices.filter((inv) => isThisMonth(inv.date));
+      const lastMonth = invoices.filter((inv) => isLastMonth(inv.date));
 
-    // Monthly revenue for bar chart (last 6 months)
-    const monthlyRevenue: number[] = [];
-    const monthLabels: string[] = [];
-    for (let i = 5; i >= 0; i--) {
-      const d = new Date();
-      d.setMonth(d.getMonth() - i);
-      const m = d.getMonth();
-      const y = d.getFullYear();
-      const monthInvoices = invoices.filter((inv) => {
-        const id = new Date(inv.date);
-        return id.getMonth() === m && id.getFullYear() === y;
-      });
-      monthlyRevenue.push(monthInvoices.reduce((s, inv) => s + getInvoiceAmount(inv), 0));
-      monthLabels.push(getMonthLabel(i));
-    }
+      const thisMonthRevenue = thisMonth.reduce((s, inv) => s + convert(inv), 0);
+      const lastMonthRevenue = lastMonth.reduce((s, inv) => s + convert(inv), 0);
 
-    // Monthly invoice count for bar chart (last 6 months)
-    const monthlyCount: number[] = [];
-    for (let i = 5; i >= 0; i--) {
-      const d = new Date();
-      d.setMonth(d.getMonth() - i);
-      const m = d.getMonth();
-      const y = d.getFullYear();
-      monthlyCount.push(
-        invoices.filter((inv) => {
+      const thisMonthPaid = thisMonth.filter((inv) => inv.status === "paid");
+      const lastMonthPaid = lastMonth.filter((inv) => inv.status === "paid");
+      const thisMonthPaidAmount = thisMonthPaid.reduce((s, inv) => s + convert(inv), 0);
+      const lastMonthPaidAmount = lastMonthPaid.reduce((s, inv) => s + convert(inv), 0);
+
+      const overdueInvoices = invoices.filter(
+        (inv) => inv.status !== "paid" && inv.status !== "cancelled" && isOverdue(inv.dueDate),
+      );
+      const overdueAmount = overdueInvoices.reduce((s, inv) => s + convert(inv), 0);
+
+      const dueSoonInvoices = invoices.filter(
+        (inv) => inv.status !== "paid" && inv.status !== "cancelled" && isDueSoon(inv.dueDate) && !isOverdue(inv.dueDate),
+      );
+
+      const unpaidInvoices = invoices.filter(
+        (inv) => inv.status !== "paid" && inv.status !== "cancelled",
+      );
+      const unpaidAmount = unpaidInvoices.reduce((s, inv) => s + convert(inv), 0);
+
+      // Monthly revenue (last 6 months)
+      const monthlyRevenue: number[] = [];
+      const monthLabels: string[] = [];
+      for (let i = 5; i >= 0; i--) {
+        const d = new Date();
+        d.setMonth(d.getMonth() - i);
+        const m = d.getMonth();
+        const y = d.getFullYear();
+        const monthInvoices = invoices.filter((inv) => {
           const id = new Date(inv.date);
           return id.getMonth() === m && id.getFullYear() === y;
-        }).length,
-      );
-    }
-
-    // Status breakdown
-    const statusCounts = {
-      draft: invoices.filter((inv) => inv.status === "draft").length,
-      sent: invoices.filter((inv) => inv.status === "sent").length,
-      paid: invoices.filter((inv) => inv.status === "paid").length,
-      cancelled: invoices.filter((inv) => inv.status === "cancelled").length,
-    };
-
-    // Spark data (last 7 days)
-    const now = new Date();
-    const sparkRevenue = Array(7).fill(0);
-    const sparkCount = Array(7).fill(0);
-    const sparkPaid = Array(7).fill(0);
-    for (const inv of invoices) {
-      const d = new Date(inv.date);
-      const diff = Math.floor((now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24));
-      if (diff >= 0 && diff < 7) {
-        sparkRevenue[6 - diff] += getInvoiceAmount(inv);
-        sparkCount[6 - diff]++;
-        if (inv.status === "paid") sparkPaid[6 - diff] += getInvoiceAmount(inv);
+        });
+        monthlyRevenue.push(monthInvoices.reduce((s, inv) => s + convert(inv), 0));
+        monthLabels.push(getMonthLabel(i));
       }
-    }
 
-    // Recent invoices (last 5)
-    const recentInvoices = [...invoices]
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-      .slice(0, 5);
+      // Monthly invoice count (last 6 months)
+      const monthlyCount: number[] = [];
+      for (let i = 5; i >= 0; i--) {
+        const d = new Date();
+        d.setMonth(d.getMonth() - i);
+        const m = d.getMonth();
+        const y = d.getFullYear();
+        monthlyCount.push(
+          invoices.filter((inv) => {
+            const id = new Date(inv.date);
+            return id.getMonth() === m && id.getFullYear() === y;
+          }).length,
+        );
+      }
 
-    return {
-      thisMonthRevenue,
-      lastMonthRevenue,
-      revenueChange: pctChange(thisMonthRevenue, lastMonthRevenue),
-      thisMonthCount: thisMonth.length,
-      lastMonthCount: lastMonth.length,
-      countChange: pctChange(thisMonth.length, lastMonth.length),
-      thisMonthPaidAmount,
-      lastMonthPaidAmount,
-      paidChange: pctChange(thisMonthPaidAmount, lastMonthPaidAmount),
-      thisMonthSent,
-      lastMonthSent,
-      sentChange: pctChange(thisMonthSent, lastMonthSent),
-      overdueInvoices,
-      overdueAmount,
-      dueSoonInvoices,
-      unpaidAmount,
-      unpaidInvoices,
-      monthlyRevenue,
-      monthlyCount,
-      monthLabels,
-      statusCounts,
-      sparkRevenue,
-      sparkCount,
-      sparkPaid,
-      recentInvoices,
-      totalInvoices: invoices.length,
-    };
-  }, [invoices]);
+      // Status breakdown
+      const statusCounts = {
+        draft: invoices.filter((inv) => inv.status === "draft").length,
+        sent: invoices.filter((inv) => inv.status === "sent").length,
+        paid: invoices.filter((inv) => inv.status === "paid").length,
+        cancelled: invoices.filter((inv) => inv.status === "cancelled").length,
+      };
+
+      // Spark data (last 7 days)
+      const now = new Date();
+      const sparkRevenue = Array(7).fill(0) as number[];
+      const sparkCount = Array(7).fill(0) as number[];
+      const sparkPaid = Array(7).fill(0) as number[];
+      for (const inv of invoices) {
+        const d = new Date(inv.date);
+        const diff = Math.floor((now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24));
+        if (diff >= 0 && diff < 7) {
+          sparkRevenue[6 - diff] += convert(inv);
+          sparkCount[6 - diff]++;
+          if (inv.status === "paid") sparkPaid[6 - diff] += convert(inv);
+        }
+      }
+
+      // Recent invoices (last 5)
+      const recentInvoices = [...invoices]
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        .slice(0, 5);
+
+      setMetrics({
+        thisMonthRevenue,
+        revenueChange: pctChange(thisMonthRevenue, lastMonthRevenue),
+        thisMonthCount: thisMonth.length,
+        countChange: pctChange(thisMonth.length, lastMonth.length),
+        thisMonthPaidAmount,
+        paidChange: pctChange(thisMonthPaidAmount, lastMonthPaidAmount),
+        overdueInvoices,
+        overdueAmount,
+        dueSoonInvoices,
+        unpaidAmount,
+        monthlyRevenue,
+        monthlyCount,
+        monthLabels,
+        statusCounts,
+        sparkRevenue,
+        sparkCount,
+        sparkPaid,
+        recentInvoices,
+        totalInvoices: invoices.length,
+      });
+    })();
+  }, [invoices, defaultCurrency, isLoading]);
 
   return (
     <div className="min-h-screen bg-(--background)">
