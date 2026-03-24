@@ -348,7 +348,7 @@ function StatusDonut({
 
   return (
     <div className="flex items-center gap-6">
-      <svg width={size} height={size} className="shrink-0" onMouseLeave={() => setHoveredIdx(null)}>
+      <svg width={size + 12} height={size + 12} viewBox={`-6 -6 ${size + 12} ${size + 12}`} className="shrink-0" onMouseLeave={() => setHoveredIdx(null)}>
         {segments.map((seg, i) => {
           const dashLength = (seg.value / total) * circumference;
           const dashOffset = -offsets[i];
