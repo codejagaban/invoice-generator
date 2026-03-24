@@ -203,8 +203,9 @@ export default function InvoiceDetailPage() {
   }
 
   const daysRemaining = daysUntilDue(invoice.dueDate);
-  const overdue = isOverdue(invoice.dueDate);
-  const dueSoon = isDueSoon(invoice.dueDate);
+  const isPaidOrCancelled = invoice.status === "paid" || invoice.status === "cancelled";
+  const overdue = !isPaidOrCancelled && isOverdue(invoice.dueDate);
+  const dueSoon = !isPaidOrCancelled && isDueSoon(invoice.dueDate);
 
   const total = invoice.items.reduce(
     (sum, item) => sum + item.quantity * item.rate,

@@ -531,8 +531,9 @@ export default function InvoicesDashboardPage() {
                             (sum, item) => sum + item.quantity * item.rate,
                             0,
                           );
-                          const overdue = isOverdue(invoice.dueDate);
-                          const dueSoon = isDueSoon(invoice.dueDate);
+                          const isPaidOrCancelled = invoice.status === "paid" || invoice.status === "cancelled";
+                          const overdue = !isPaidOrCancelled && isOverdue(invoice.dueDate);
+                          const dueSoon = !isPaidOrCancelled && isDueSoon(invoice.dueDate);
                           const isSelected = selectedIds.has(invoice.id);
 
                           return (
@@ -578,13 +579,15 @@ export default function InvoicesDashboardPage() {
                                   {formatDate(invoice.dueDate)}
                                 </span>
                                 {overdue && (
-                                  <span className="ml-2 inline-block px-1.5 py-0.5 text-[10px] font-semibold rounded bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400">
-                                    OVERDUE
+                                  <span className="ml-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400">
+                                    <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
+                                    Overdue
                                   </span>
                                 )}
                                 {dueSoon && !overdue && (
-                                  <span className="ml-2 inline-block px-1.5 py-0.5 text-[10px] font-semibold rounded bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400">
-                                    DUE SOON
+                                  <span className="ml-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400">
+                                    <span className="h-1.5 w-1.5 rounded-full bg-yellow-500" />
+                                    Due Soon
                                   </span>
                                 )}
                               </td>
