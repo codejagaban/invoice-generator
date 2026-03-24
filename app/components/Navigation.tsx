@@ -12,6 +12,7 @@ import {
   Settings2,
   FilePlus2,
   Landmark,
+  BarChart3,
   LogIn,
   LogOut,
   ChevronDown,
@@ -32,6 +33,7 @@ export default function Navigation() {
   };
 
   const navItems = [
+    { href: "/dashboard", label: "Dashboard", icon: BarChart3 },
     { href: "/invoices", label: "Invoices", icon: FileText },
     { href: "/customers", label: "Customers", icon: Users },
     { href: "/templates", label: "Templates", icon: LayoutTemplate },
