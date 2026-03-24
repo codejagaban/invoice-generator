@@ -79,16 +79,19 @@ function LineChart({
   data,
   labels,
   color = "#6366f1",
+  formatValue,
 }: {
   data: number[];
   labels: string[];
   color?: string;
+  formatValue?: (v: number) => string;
 }) {
+  const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
   const width = 700;
   const height = 200;
   const padLeft = 10;
   const padRight = 10;
-  const padTop = 15;
+  const padTop = 25;
   const padBottom = 24;
   const chartW = width - padLeft - padRight;
   const chartH = height - padTop - padBottom;
@@ -114,9 +117,10 @@ function LineChart({
   }
 
   const fillPath = `${linePath} L ${points[points.length - 1].x} ${padTop + chartH} L ${points[0].x} ${padTop + chartH} Z`;
+  const fmtVal = formatValue || ((v: number) => formatYLabel(v));
 
   return (
-    <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-64" fill="none">
+    <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-64" fill="none" onMouseLeave={() => setHoveredIdx(null)}>
       <defs>
         <linearGradient id="line-chart-grad" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor={color} stopOpacity="0.2" />
@@ -142,12 +146,66 @@ function LineChart({
       <path d={fillPath} fill="url(#line-chart-grad)" clipPath="url(#chart-clip)" />
       {/* Line */}
       <path d={linePath} stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" clipPath="url(#chart-clip)" />
-      {/* Dots and X labels */}
+      {/* Hover vertical line */}
+      {hoveredIdx !== null && (
+        <line
+          x1={points[hoveredIdx].x}
+          y1={padTop}
+          x2={points[hoveredIdx].x}
+          y2={padTop + chartH}
+          stroke={color}
+          strokeWidth="1"
+          strokeDasharray="4 3"
+          opacity="0.4"
+        />
+      )}
+      {/* Dots, X labels, and hover targets */}
       {points.map((p, i) => (
         <g key={i}>
-          <circle cx={p.x} cy={p.y} r="3.5" fill={color} />
-          <circle cx={p.x} cy={p.y} r="1.5" fill="white" />
-          <text x={p.x} y={height - 4} textAnchor="middle" className="text-[9px] fill-gray-500 dark:fill-gray-400" style={{ fontFamily: "system-ui" }}>
+          {/* Invisible wider hit area */}
+          <rect
+            x={p.x - (chartW / data.length) / 2}
+            y={padTop}
+            width={chartW / data.length}
+            height={chartH + padBottom}
+            fill="transparent"
+            onMouseEnter={() => setHoveredIdx(i)}
+            style={{ cursor: "crosshair" }}
+          />
+          {/* Dot */}
+          <circle cx={p.x} cy={p.y} r={hoveredIdx === i ? 5 : 3.5} fill={color} className="transition-all duration-150" />
+          <circle cx={p.x} cy={p.y} r={hoveredIdx === i ? 2.5 : 1.5} fill="white" className="transition-all duration-150" />
+          {/* Tooltip */}
+          {hoveredIdx === i && (
+            <g>
+              <rect
+                x={p.x - 40}
+                y={p.y - 28}
+                width={80}
+                height={20}
+                rx={6}
+                fill={color}
+              />
+              <text
+                x={p.x}
+                y={p.y - 15}
+                textAnchor="middle"
+                className="text-[9px] font-semibold"
+                fill="white"
+                style={{ fontFamily: "system-ui" }}
+              >
+                {fmtVal(data[i])}
+              </text>
+            </g>
+          )}
+          {/* X label */}
+          <text
+            x={p.x}
+            y={height - 4}
+            textAnchor="middle"
+            className={`text-[9px] ${hoveredIdx === i ? "font-semibold fill-black dark:fill-white" : "fill-gray-500 dark:fill-gray-400"}`}
+            style={{ fontFamily: "system-ui" }}
+          >
             {labels[i]}
           </text>
         </g>
@@ -757,6 +815,7 @@ export default function DashboardPage() {
                   data={metrics.monthlyRevenue}
                   labels={metrics.monthLabels}
                   color="#6366f1"
+                  formatValue={(v) => formatCurrency(v, defaultCurrency)}
                 />
               </Card>
 
