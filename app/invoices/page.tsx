@@ -645,7 +645,7 @@ export default function InvoicesDashboardPage() {
                           setCurrentPage((p) => Math.max(1, p - 1))
                         }
                         disabled={currentPage === 1}
-                        className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-(--border) text-(--muted) hover:bg-(--surface) disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-(--border) text-(--muted) hover:bg-(--surface) cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                       >
                         <ChevronLeft className="h-4 w-4" />
                       </button>
@@ -675,8 +675,8 @@ export default function InvoicesDashboardPage() {
                               onClick={() => setCurrentPage(p)}
                               className={`inline-flex h-8 w-8 items-center justify-center rounded-md text-sm font-medium transition-colors ${
                                 currentPage === p
-                                  ? "bg-black text-white dark:bg-white dark:text-black"
-                                  : "border border-(--border) text-(--muted) hover:bg-(--surface)"
+                                  ? "bg-black text-white dark:bg-white dark:text-black cursor-pointer"
+                                  : "border border-(--border) text-(--muted) hover:bg-(--surface) cursor-pointer"
                               }`}
                             >
                               {p}
@@ -688,7 +688,7 @@ export default function InvoicesDashboardPage() {
                           setCurrentPage((p) => Math.min(totalPages, p + 1))
                         }
                         disabled={currentPage === totalPages}
-                        className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-(--border) text-(--muted) hover:bg-(--surface) disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-(--border) text-(--muted) hover:bg-(--surface) cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                       >
                         <ChevronRight className="h-4 w-4" />
                       </button>
