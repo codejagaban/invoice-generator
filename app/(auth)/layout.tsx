@@ -1,3 +1,11 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Sign In",
+  description: "Sign in to your Invoicer account to manage your invoices.",
+  robots: { index: false, follow: false },
+};
+
 export default function AuthLayout({
   children,
 }: {
