@@ -575,17 +575,20 @@ export async function downloadInvoicePDF(
       flex: 1,
     },
     header: {
+      flexDirection: "row",
+      justifyContent: "space-between",
       marginBottom: 24,
       paddingBottom: 16,
       borderBottomWidth: 1,
       borderBottomColor: "#ddd",
     },
-    companyBlock: {
-      marginTop: 16,
-      paddingTop: 12,
-      borderTopWidth: 1,
-      borderTopColor: "#eee",
+    headerLeft: {
+      flex: 1,
+    },
+    headerRight: {
+      flex: 1,
       alignItems: "flex-end",
+      justifyContent: "flex-end",
     },
     title: {
       fontSize: 28,
@@ -797,34 +800,38 @@ export async function downloadInvoicePDF(
           View,
           { style: styles.content },
 
-        // Header — invoice details
+        // Header
         React.createElement(
           View,
           { style: styles.header },
-          React.createElement(Text, { style: styles.title }, "INVOICE"),
+          // Left: Invoice details
           React.createElement(
-            Text,
-            { style: styles.invoiceNumber },
-            `Invoice #${invoice.invoiceNumber}`,
+            View,
+            { style: styles.headerLeft },
+            React.createElement(Text, { style: styles.title }, "INVOICE"),
+            React.createElement(
+              Text,
+              { style: styles.invoiceNumber },
+              `Invoice #${invoice.invoiceNumber}`,
+            ),
+            React.createElement(Text, { style: styles.label }, "INVOICE DATE"),
+            React.createElement(
+              Text,
+              { style: styles.value },
+              formatDate(invoice.date),
+            ),
+            React.createElement(Text, { style: styles.label }, "DUE DATE"),
+            React.createElement(
+              Text,
+              { style: styles.value },
+              formatDate(invoice.dueDate),
+            ),
           ),
-          React.createElement(Text, { style: styles.label }, "INVOICE DATE"),
-          React.createElement(
-            Text,
-            { style: styles.value },
-            formatDate(invoice.date),
-          ),
-          React.createElement(Text, { style: styles.label }, "DUE DATE"),
-          React.createElement(
-            Text,
-            { style: styles.value },
-            formatDate(invoice.dueDate),
-          ),
-
-          // Company details block
+          // Right: Company details
           company
             ? React.createElement(
                 View,
-                { style: styles.companyBlock },
+                { style: styles.headerRight },
                 companyLogoSrc
                   ? React.createElement(Image, {
                       source: companyLogoSrc as Blob,
