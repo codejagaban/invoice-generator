@@ -11,7 +11,7 @@ import { useConfirm } from "@/app/components/shared/ConfirmDialog";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { Pencil, Trash2, ArrowLeft, FileDown, Mail, CheckCircle2 } from "lucide-react";
-import StatusBadge from "@/app/components/shared/StatusBadge";
+
 import Button from "@/app/components/shared/Button";
 import { InputWithRef as Input } from "@/app/components/shared/Input";
 import Card from "@/app/components/shared/Card";
@@ -60,6 +60,8 @@ export default function InvoiceDetailPage() {
     message: "",
   });
   const [emailResult, setEmailResult] = useState<{ success?: boolean; error?: string } | null>(null);
+  const [statusMenuOpen, setStatusMenuOpen] = useState(false);
+  const [statusMenuPos, setStatusMenuPos] = useState({ top: 0, left: 0 });
 
   useEffect(() => {
     if (!dbReady) return;
@@ -69,6 +71,13 @@ export default function InvoiceDetailPage() {
       setIsLoading(false);
     })();
   }, [id, dbReady]);
+
+  const handleStatusChange = async (newStatus: Invoice["status"]) => {
+    if (!invoice) return;
+    const updated = await updateInvoice(id, { status: newStatus });
+    if (updated) setInvoice(updated);
+    setStatusMenuOpen(false);
+  };
 
   const handleDownloadPDF = async () => {
     if (!invoice) return;
@@ -250,7 +259,64 @@ export default function InvoiceDetailPage() {
                     {formatCurrency(totalWithTax, invoice.currency)}
                   </p>
                   <div className="mt-3 flex items-center gap-3 flex-wrap">
-                    <StatusBadge status={invoice.status} size="md" />
+                    <div className="relative">
+                      <button
+                        onClick={(e) => {
+                          const rect = e.currentTarget.getBoundingClientRect();
+                          setStatusMenuPos({ top: rect.bottom + 4, left: rect.left });
+                          setStatusMenuOpen(!statusMenuOpen);
+                        }}
+                        className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium cursor-pointer transition-all hover:ring-2 hover:ring-offset-1 ${
+                          invoice.status === "paid"
+                            ? "bg-emerald-100 text-emerald-700 hover:ring-emerald-300 dark:bg-emerald-900/30 dark:text-emerald-400"
+                            : invoice.status === "sent"
+                              ? "bg-blue-100 text-blue-700 hover:ring-blue-300 dark:bg-blue-900/30 dark:text-blue-400"
+                              : invoice.status === "cancelled"
+                                ? "bg-red-100 text-red-700 hover:ring-red-300 dark:bg-red-900/30 dark:text-red-400"
+                                : "bg-gray-100 text-gray-600 hover:ring-gray-300 dark:bg-gray-800 dark:text-gray-400"
+                        }`}
+                      >
+                        <span className={`h-1.5 w-1.5 rounded-full ${
+                          invoice.status === "paid" ? "bg-emerald-500"
+                            : invoice.status === "sent" ? "bg-blue-500"
+                            : invoice.status === "cancelled" ? "bg-red-500"
+                            : "bg-gray-400"
+                        }`} />
+                        {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
+                      </button>
+                      {statusMenuOpen && (
+                        <>
+                          <div className="fixed inset-0 z-40" onClick={() => setStatusMenuOpen(false)} />
+                          <div className="fixed z-50 w-36 rounded-lg border border-(--border) bg-white dark:bg-[#1a1a1a] shadow-lg py-1" style={{ top: statusMenuPos.top, left: statusMenuPos.left }}>
+                            {(["draft", "sent", "paid", "cancelled"] as const).map((s) => (
+                              <button
+                                key={s}
+                                onClick={() => handleStatusChange(s)}
+                                className={`w-full flex items-center gap-2 px-3 py-2 text-xs cursor-pointer rounded-md mx-1 transition-colors ${
+                                  invoice.status === s
+                                    ? "font-semibold bg-gray-100 dark:bg-gray-800"
+                                    : "hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                                }`}
+                                style={{ width: "calc(100% - 8px)" }}
+                              >
+                                <span className={`h-2 w-2 rounded-full ${
+                                  s === "paid" ? "bg-emerald-500"
+                                    : s === "sent" ? "bg-blue-500"
+                                    : s === "cancelled" ? "bg-red-500"
+                                    : "bg-gray-400"
+                                }`} />
+                                <span className="text-black dark:text-white">
+                                  {s.charAt(0).toUpperCase() + s.slice(1)}
+                                </span>
+                                {invoice.status === s && (
+                                  <CheckCircle2 className="h-3 w-3 ml-auto text-(--muted)" />
+                                )}
+                              </button>
+                            ))}
+                          </div>
+                        </>
+                      )}
+                    </div>
                     {overdue && (
                       <span className="inline-flex items-center gap-1.5 rounded-full bg-red-100 px-3 py-1 text-xs font-medium text-red-700 dark:bg-red-900/20 dark:text-red-400">
                         Overdue by {Math.abs(daysRemaining)} days
