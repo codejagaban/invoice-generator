@@ -225,11 +225,12 @@ function BarChart({
   labels: string[];
   color?: string;
 }) {
+  const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
   const width = 700;
   const height = 200;
   const padLeft = 10;
   const padRight = 10;
-  const padTop = 15;
+  const padTop = 25;
   const padBottom = 24;
   const chartW = width - padLeft - padRight;
   const chartH = height - padTop - padBottom;
@@ -240,7 +241,7 @@ function BarChart({
   const barW = (chartW - totalGap) / barCount;
 
   return (
-    <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-64" fill="none">
+    <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-64" fill="none" onMouseLeave={() => setHoveredIdx(null)}>
       {/* Grid lines + Y labels */}
       {[0, 0.25, 0.5, 0.75, 1].map((pct) => {
         const y = padTop + chartH * (1 - pct);
@@ -257,8 +258,12 @@ function BarChart({
         const barH = Math.max((value / max) * chartH, 2);
         const x = padLeft + i * (barW + gap);
         const y = padTop + chartH - barH;
+        const isHovered = hoveredIdx === i;
         return (
-          <g key={i}>
+          <g key={i} onMouseEnter={() => setHoveredIdx(i)} style={{ cursor: "pointer" }}>
+            {/* Hit area */}
+            <rect x={x} y={padTop} width={barW} height={chartH + padBottom} fill="transparent" />
+            {/* Bar */}
             <rect
               x={x}
               y={y}
@@ -266,14 +271,38 @@ function BarChart({
               height={barH}
               rx={3}
               fill={color}
-              opacity={i === data.length - 1 ? 1 : 0.6}
+              opacity={isHovered ? 1 : 0.6}
+              className="transition-opacity duration-150"
             />
+            {/* Tooltip */}
+            {isHovered && (
+              <g>
+                <rect
+                  x={x + barW / 2 - 24}
+                  y={y - 24}
+                  width={48}
+                  height={20}
+                  rx={6}
+                  fill={color}
+                />
+                <text
+                  x={x + barW / 2}
+                  y={y - 11}
+                  textAnchor="middle"
+                  className="text-[9px] font-semibold"
+                  fill="white"
+                  style={{ fontFamily: "system-ui" }}
+                >
+                  {value}
+                </text>
+              </g>
+            )}
             {/* Label */}
             <text
               x={x + barW / 2}
               y={height - 4}
               textAnchor="middle"
-              className="text-[9px] fill-gray-500 dark:fill-gray-400"
+              className={`text-[9px] ${isHovered ? "font-semibold fill-black dark:fill-white" : "fill-gray-500 dark:fill-gray-400"}`}
               style={{ fontFamily: "system-ui" }}
             >
               {labels[i]}
@@ -292,6 +321,7 @@ function StatusDonut({
 }: {
   segments: { label: string; value: number; color: string }[];
 }) {
+  const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
   const total = segments.reduce((s, seg) => s + seg.value, 0);
   if (total === 0) {
     return (
@@ -314,12 +344,15 @@ function StatusDonut({
     return acc;
   }, []);
 
+  const hoveredSeg = hoveredIdx !== null ? segments[hoveredIdx] : null;
+
   return (
     <div className="flex items-center gap-6">
-      <svg width={size} height={size} className="shrink-0">
+      <svg width={size} height={size} className="shrink-0" onMouseLeave={() => setHoveredIdx(null)}>
         {segments.map((seg, i) => {
           const dashLength = (seg.value / total) * circumference;
           const dashOffset = -offsets[i];
+          const isHovered = hoveredIdx === i;
           return (
             <circle
               key={seg.label}
@@ -328,27 +361,46 @@ function StatusDonut({
               r={radius}
               fill="none"
               stroke={seg.color}
-              strokeWidth={strokeWidth}
+              strokeWidth={isHovered ? strokeWidth + 6 : strokeWidth}
               strokeDasharray={`${dashLength} ${circumference - dashLength}`}
               strokeDashoffset={dashOffset}
               strokeLinecap="butt"
-              style={{ transform: "rotate(-90deg)", transformOrigin: "center" }}
+              style={{ transform: "rotate(-90deg)", transformOrigin: "center", cursor: "pointer", transition: "stroke-width 0.15s" }}
+              onMouseEnter={() => setHoveredIdx(i)}
             />
           );
         })}
         <text
           x="50%"
-          y="50%"
+          y={hoveredSeg ? "42%" : "50%"}
           textAnchor="middle"
           dominantBaseline="central"
           className="text-2xl font-bold fill-black dark:fill-white"
+          style={{ transition: "y 0.15s" }}
         >
-          {total}
+          {hoveredSeg ? hoveredSeg.value : total}
         </text>
+        {hoveredSeg && (
+          <text
+            x="50%"
+            y="60%"
+            textAnchor="middle"
+            dominantBaseline="central"
+            className="text-[9px] fill-gray-500 dark:fill-gray-400"
+            style={{ fontFamily: "system-ui" }}
+          >
+            {hoveredSeg.label} ({Math.round((hoveredSeg.value / total) * 100)}%)
+          </text>
+        )}
       </svg>
       <div className="space-y-2">
-        {segments.map((seg) => (
-          <div key={seg.label} className="flex items-center gap-2 text-sm">
+        {segments.map((seg, i) => (
+          <div
+            key={seg.label}
+            className={`flex items-center gap-2 text-sm cursor-pointer rounded-md px-1.5 py-0.5 -mx-1.5 transition-colors ${hoveredIdx === i ? "bg-gray-100 dark:bg-gray-800" : "hover:bg-gray-50 dark:hover:bg-gray-800/50"}`}
+            onMouseEnter={() => setHoveredIdx(i)}
+            onMouseLeave={() => setHoveredIdx(null)}
+          >
             <span
               className="h-2.5 w-2.5 rounded-full shrink-0"
               style={{ backgroundColor: seg.color }}
