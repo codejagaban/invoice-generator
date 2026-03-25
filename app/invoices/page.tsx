@@ -49,6 +49,12 @@ import {
 import { useDbReady } from "@/app/components/DbScopeProvider";
 import { InvoiceListSkeleton } from "@/app/components/shared/Skeleton";
 
+import {
+  FadeIn,
+  FadeInUp,
+  StaggerContainer,
+  StaggerItem,
+} from "@/app/components/shared/Motion";
 import EmptyState from "@/app/components/shared/EmptyState";
 import MiniChart, { groupByDay } from "@/app/components/shared/MiniChart";
 import { FileText } from "lucide-react";
@@ -279,8 +285,8 @@ export default function InvoicesDashboardPage() {
         ) : (
           <div className="space-y-6">
             {/* Stats */}
-            <div className="grid gap-4 sm:grid-cols-4">
-              <Card>
+            <StaggerContainer staggerDelay={0.06} className="grid gap-4 sm:grid-cols-4">
+              <StaggerItem><Card>
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
                     <p className="text-xs font-medium uppercase tracking-widest text-(--muted)">
@@ -296,8 +302,8 @@ export default function InvoicesDashboardPage() {
                     className="w-20"
                   />
                 </div>
-              </Card>
-              <Card>
+              </Card></StaggerItem>
+              <StaggerItem><Card>
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
                     <p className="text-xs font-medium uppercase tracking-widest text-(--muted)">
@@ -313,8 +319,8 @@ export default function InvoicesDashboardPage() {
                     className="w-20"
                   />
                 </div>
-              </Card>
-              <Card>
+              </Card></StaggerItem>
+              <StaggerItem><Card>
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
                     <p className="text-xs font-medium uppercase tracking-widest text-(--muted)">
@@ -334,8 +340,8 @@ export default function InvoicesDashboardPage() {
                     className="w-20"
                   />
                 </div>
-              </Card>
-              <Card>
+              </Card></StaggerItem>
+              <StaggerItem><Card>
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
                     <p className="text-xs font-medium uppercase tracking-widest text-(--muted)">
@@ -355,11 +361,11 @@ export default function InvoicesDashboardPage() {
                     className="w-20"
                   />
                 </div>
-              </Card>
-            </div>
+              </Card></StaggerItem>
+            </StaggerContainer>
 
             {/* Filters */}
-            <div className="mb-10">
+            <FadeIn delay={0.15}><div className="mb-10">
               <div className="space-y-4 sm:flex sm:gap-4 sm:space-y-0">
                 <Input
                   type="text"
@@ -404,7 +410,7 @@ export default function InvoicesDashboardPage() {
                   </SelectContent>
                 </Select>
               </div>
-            </div>
+            </div></FadeIn>
 
             {/* Invoice Table */}
             {filteredInvoices.length === 0 ? (
@@ -431,7 +437,7 @@ export default function InvoicesDashboardPage() {
               <>
                 {/* Bulk Action Bar */}
                 {selectedIds.size > 0 && (
-                  <div className="flex items-center gap-3 rounded-lg border border-(--border) bg-(--surface) px-4 py-3">
+                  <FadeInUp><div className="flex items-center gap-3 rounded-lg border border-(--border) bg-(--surface) px-4 py-3">
                     <span className="text-sm font-medium text-black dark:text-white">
                       {selectedIds.size} selected
                     </span>
@@ -481,10 +487,10 @@ export default function InvoicesDashboardPage() {
                         <X className="h-3.5 w-3.5" />
                       </Button>
                     </div>
-                  </div>
+                  </div></FadeInUp>
                 )}
 
-                <Card className="overflow-hidden p-0!">
+                <FadeInUp delay={0.2}><Card className="overflow-hidden p-0!">
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
@@ -672,11 +678,11 @@ export default function InvoicesDashboardPage() {
                       </tbody>
                     </table>
                   </div>
-                </Card>
+                </Card></FadeInUp>
 
                 {/* Pagination */}
                 {totalPages > 1 && (
-                  <div className="flex items-center justify-between pt-2">
+                  <FadeIn delay={0.3}><div className="flex items-center justify-between pt-2">
                     <p className="text-sm text-(--muted)">
                       Showing {(currentPage - 1) * perPage + 1}–
                       {Math.min(currentPage * perPage, filteredInvoices.length)}{" "}
@@ -736,7 +742,7 @@ export default function InvoicesDashboardPage() {
                         <ChevronRight className="h-4 w-4" />
                       </button>
                     </div>
-                  </div>
+                  </div></FadeIn>
                 )}
               </>
             )}

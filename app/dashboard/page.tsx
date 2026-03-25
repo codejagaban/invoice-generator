@@ -29,6 +29,7 @@ import {
 } from "@/app/lib/invoice";
 import { useDbReady } from "@/app/components/DbScopeProvider";
 import { InvoiceListSkeleton } from "@/app/components/shared/Skeleton";
+import { FadeIn, FadeInUp, StaggerContainer, StaggerItem } from "@/app/components/shared/Motion";
 
 import { prefetchRates, convertWithRates } from "@/app/lib/currency";
 
@@ -711,6 +712,7 @@ export default function DashboardPage() {
         ) : (
           <div className="space-y-6">
             {/* ── Filters ─────────────────────────────────────────── */}
+            <FadeIn>
             <div className="flex items-center gap-2 sm:gap-3 sm:justify-end">
               <div className="flex items-center gap-1.5 text-sm text-(--muted)">
                 <Calendar className="h-4 w-4" />
@@ -775,11 +777,12 @@ export default function DashboardPage() {
                 </button>
               )}
             </div>
+            </FadeIn>
 
             {/* ── Top Metric Cards (FinSet-style) ─────────────────── */}
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <StaggerContainer staggerDelay={0.08} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {/* Revenue Card */}
-              <Card>
+              <StaggerItem><Card>
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="text-sm font-semibold text-(--muted)">Total Revenue</h3>
                   <span className="text-[11px] text-(--muted) bg-(--surface) border border-(--border) rounded-md px-2 py-0.5">{defaultCurrency}</span>
@@ -804,10 +807,10 @@ export default function DashboardPage() {
                       : `Down ${formatCurrency(metrics.lastMonthRevenue - metrics.thisMonthRevenue, defaultCurrency)} compared to last month`
                     : "No data from last month"}
                 </p>
-              </Card>
+              </Card></StaggerItem>
 
               {/* Collected Card */}
-              <Card>
+              <StaggerItem><Card>
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="text-sm font-semibold text-(--muted)">Collected</h3>
                   <span className="text-[11px] text-(--muted) bg-(--surface) border border-(--border) rounded-md px-2 py-0.5">{defaultCurrency}</span>
@@ -832,10 +835,10 @@ export default function DashboardPage() {
                       : `Down ${formatCurrency(metrics.lastMonthPaidAmount - metrics.thisMonthPaidAmount, defaultCurrency)} compared to last month`
                     : "No collections last month"}
                 </p>
-              </Card>
+              </Card></StaggerItem>
 
               {/* Outstanding Card */}
-              <Card>
+              <StaggerItem><Card>
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="text-sm font-semibold text-(--muted)">Outstanding</h3>
                   <span className="text-[11px] text-(--muted) bg-(--surface) border border-(--border) rounded-md px-2 py-0.5">{defaultCurrency}</span>
@@ -858,13 +861,13 @@ export default function DashboardPage() {
                     ? `${formatCurrency(metrics.overdueAmount, defaultCurrency)} is overdue`
                     : "All invoices are on track"}
                 </p>
-              </Card>
-            </div>
+              </Card></StaggerItem>
+            </StaggerContainer>
 
             {/* ── Revenue Overview + Statistics ────────────────────── */}
             <div className="grid gap-6 lg:grid-cols-3">
               {/* Revenue Overview - large chart */}
-              <Card className="lg:col-span-2">
+              <FadeInUp delay={0.2} className="lg:col-span-2"><Card>
                 <div className="flex items-center justify-between mb-1">
                   <h3 className="text-base font-bold text-black dark:text-white">Revenue Overview</h3>
                   <div className="flex items-center gap-3 text-xs text-(--muted)">
@@ -888,10 +891,10 @@ export default function DashboardPage() {
                   color="#6366f1"
                   formatValue={(v) => formatCurrency(v, defaultCurrency)}
                 />
-              </Card>
+              </Card></FadeInUp>
 
               {/* Statistics - Donut + summary */}
-              <Card>
+              <FadeInUp delay={0.3}><Card>
                 <h3 className="text-base font-bold text-black dark:text-white mb-1">Statistics</h3>
                 <p className="text-xs text-(--muted) mb-4">Invoice breakdown by status</p>
                 <StatusDonut
@@ -906,7 +909,7 @@ export default function DashboardPage() {
                   <p className="text-xs text-(--muted)">Total invoices</p>
                   <p className="text-2xl font-bold text-black dark:text-white">{metrics.totalInvoices}</p>
                 </div>
-              </Card>
+              </Card></FadeInUp>
             </div>
 
             {/* ── Invoices Created + Attention Required ────────────── */}
