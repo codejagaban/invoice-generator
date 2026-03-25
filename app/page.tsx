@@ -4,7 +4,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Invoicer — Free Professional Invoice Generator",
   description:
-    "Create, manage, and send professional invoices in minutes. Free invoice generator with PDF export, email delivery with attachments, 170+ currencies, reusable templates, and analytics dashboard.",
+    "Create professional invoices in minutes with zero signup required. Start as a guest, save your work with an account. PDF export, email delivery, 170+ currencies, templates, and invoice tracking.",
   alternates: { canonical: "/" },
 };
 import {
@@ -24,9 +24,9 @@ import {
 const features = [
   {
     icon: FileText,
-    title: "Create in minutes",
+    title: "No signup required to start",
     description:
-      "Fill in the essentials — customer, line items, due date. A polished invoice ready to share in under two minutes.",
+      "Begin creating invoices instantly as a guest. No forms, no verification emails, no friction. Sign up later to save your work.",
     iconColor: "text-blue-600 dark:text-blue-400",
     iconBg: "bg-blue-50 dark:bg-blue-950/40",
     iconBorder: "border-blue-200 dark:border-blue-800",
@@ -35,9 +35,9 @@ const features = [
   },
   {
     icon: FileDown,
-    title: "Export to PDF",
+    title: "PDF export & email delivery",
     description:
-      "One-click PDF generation. Your company logo, contact details, and itemised totals — formatted precisely.",
+      "Export to PDF with your branding and company details. Or send directly to clients with the PDF automatically attached.",
     iconColor: "text-violet-600 dark:text-violet-400",
     iconBg: "bg-violet-50 dark:bg-violet-950/40",
     iconBorder: "border-violet-200 dark:border-violet-800",
@@ -46,9 +46,9 @@ const features = [
   },
   {
     icon: LayoutTemplate,
-    title: "Reusable templates",
+    title: "Save time with templates",
     description:
-      "Save any invoice as a template. Pre-fill recurring work in a single click — no re-typing, no repetition.",
+      "Save any invoice as a template. For recurring clients or standard services, populate an entire invoice in seconds.",
     iconColor: "text-emerald-600 dark:text-emerald-400",
     iconBg: "bg-emerald-50 dark:bg-emerald-950/40",
     iconBorder: "border-emerald-200 dark:border-emerald-800",
@@ -57,9 +57,9 @@ const features = [
   },
   {
     icon: Mail,
-    title: "Email with PDF attached",
+    title: "Track everything",
     description:
-      "Send invoices straight to your client's inbox with the PDF automatically attached. One click, done.",
+      "Monitor payment status, mark invoices as sent or paid, track overdue and due-soon items, and access analytics on revenue trends.",
     iconColor: "text-rose-600 dark:text-rose-400",
     iconBg: "bg-rose-50 dark:bg-rose-950/40",
     iconBorder: "border-rose-200 dark:border-rose-800",
@@ -71,31 +71,33 @@ const features = [
 const steps = [
   {
     number: "01",
-    title: "Set up your profile",
+    title: "Start immediately",
     description:
-      "Add your company name, address, and logo once. It auto-fills every invoice you create.",
+      "No signup required. Just add your company details, pick your invoice template, and start creating. Or continue as guest.",
   },
   {
     number: "02",
-    title: "Build your invoice",
+    title: "Build and customize",
     description:
-      "Choose a customer, add line items and rates, pick a currency and due date.",
+      "Fill in customer details, add line items, set your currency, apply discounts or taxes, and preview in real-time.",
   },
   {
     number: "03",
-    title: "Send or download",
+    title: "Send or save",
     description:
-      "Export a clean PDF or send directly to your client. Mark it paid when the money lands.",
+      "Email the invoice directly or export as PDF. Create an account to save all invoices, templates, and customer data.",
   },
 ];
 
 const perks = [
-  "Analytics dashboard with charts",
-  "Multi-currency with live conversion",
-  "Bulk actions on invoices",
-  "Customer address book",
-  "Invoice status tracking",
-  "Overdue & due-soon detection",
+  "Start as guest or sign up to save work",
+  "170+ currencies with live conversion rates",
+  "Professional PDF generation with branding",
+  "Customer management & address book",
+  "Revenue analytics & trend charts",
+  "Invoice status tracking & due date alerts",
+  "Bulk actions on multiple invoices",
+  "Email invoices directly to clients",
 ];
 
 const lineItems = [
@@ -216,21 +218,22 @@ const jsonLd = {
   applicationCategory: "BusinessApplication",
   operatingSystem: "Web",
   description:
-    "Create, manage, and send professional invoices in minutes. Free invoice generator with PDF export, email delivery, 170+ currencies, and analytics.",
+    "Create professional invoices in minutes. Start immediately as a guest, no signup required. Save your work by creating an account.",
   offers: {
     "@type": "Offer",
     price: "0",
     priceCurrency: "USD",
   },
   featureList: [
-    "PDF invoice generation",
-    "Email delivery with PDF attachment",
+    "Start as guest with no signup required",
+    "PDF invoice generation with branding",
+    "Email invoices directly to clients",
     "170+ currency support with live conversion",
     "Reusable invoice templates",
-    "Analytics dashboard",
-    "Bulk invoice actions",
-    "Customer address book",
-    "Invoice status tracking",
+    "Customer management and address book",
+    "Invoice status tracking and alerts",
+    "Analytics dashboard with revenue trends",
+    "Bulk actions on invoices",
   ],
 };
 
@@ -261,9 +264,9 @@ export default function Home() {
               </h1>
 
               <p className="mt-6 max-w-md text-lg leading-relaxed text-(--muted)">
-                Create, manage, and send professional invoices in minutes. Built
-                for freelancers and small businesses who need results, not
-                complexity.
+                Create and send professional invoices in minutes. Start
+                immediately as a guest, no signup required. Save your work and
+                track payments by creating an account.
               </p>
 
               <div className="mt-8 flex flex-wrap gap-3">
@@ -294,9 +297,9 @@ export default function Home() {
         <AnimatedSection className="border-y border-(--border) bg-(--surface)">
           <div className="mx-auto max-w-5xl px-6 grid grid-cols-3 divide-x divide-(--border)">
             {[
-              { value: "< 2 min", label: "To create an invoice" },
-              { value: "170+", label: "Currencies supported" },
-              { value: "1-click", label: "PDF & email delivery" },
+              { value: "< 2 min", label: "To create & send" },
+              { value: "170+", label: "Supported currencies" },
+              { value: "0", label: "Signup required to start" },
             ].map((stat) => (
               <div key={stat.label} className="py-6 px-4 text-center sm:px-8">
                 <p className="text-2xl font-bold text-black dark:text-white sm:text-3xl">
@@ -322,55 +325,53 @@ export default function Home() {
           <div className="mt-10 grid grid-cols-1 gap-10 sm:grid-cols-2">
             {features.map((feature, i) => (
               <AnimatedFeatureCard key={feature.title} index={i}>
-              <div
-                className="group relative transition-transform  duration-300 hover:-translate-y-0.5"
-              >
-                {/* 1px border wrapper — clips the rotating beam */}
-                <div className="relative overflow-hidden rounded-2xl p-px">
-                  {/* Static border background */}
-                  <div className="absolute inset-0 bg-(--border)" />
+                <div className="group relative transition-transform  duration-300 hover:-translate-y-0.5">
+                  {/* 1px border wrapper — clips the rotating beam */}
+                  <div className="relative overflow-hidden rounded-2xl p-px">
+                    {/* Static border background */}
+                    <div className="absolute inset-0 bg-(--border)" />
 
-                  {/* Rotating beam — fades in on hover */}
-                  <div
-                    className="pointer-events-none absolute opacity-0 transition-opacity duration-500 group-hover:opacity-100 "
-                    style={{
-                      width: "200%",
-                      height: "200%",
-                      top: "-50%",
-                      left: "-50%",
-                      animation: "border-rotate 2.5s linear infinite",
-                      background: `conic-gradient(transparent 240deg, ${feature.beamColor} 290deg, ${feature.beamColor} 345deg, transparent 360deg)`,
-                    }}
-                  />
-
-                  {/* Card content */}
-                  <div className="relative z-10 overflow-hidden rounded-[15px] bg-white dark:bg-black px-10 py-5">
-                    {/* Inner corner glow blob */}
+                    {/* Rotating beam — fades in on hover */}
                     <div
-                      className={`pointer-events-none absolute -bottom-8 -right-8 h-28 w-28 rounded-full blur-2xl transition-opacity duration-500 opacity-0 group-hover:opacity-20 ${feature.glow}`}
+                      className="pointer-events-none absolute opacity-0 transition-opacity duration-500 group-hover:opacity-100 "
+                      style={{
+                        width: "200%",
+                        height: "200%",
+                        top: "-50%",
+                        left: "-50%",
+                        animation: "border-rotate 2.5s linear infinite",
+                        background: `conic-gradient(transparent 240deg, ${feature.beamColor} 290deg, ${feature.beamColor} 345deg, transparent 360deg)`,
+                      }}
                     />
 
-                    {/* Icon */}
-                    <div className="pt-6 pb-4">
+                    {/* Card content */}
+                    <div className="relative z-10 overflow-hidden rounded-[15px] bg-white dark:bg-black px-10 py-5">
+                      {/* Inner corner glow blob */}
                       <div
-                        className={`inline-flex h-11 w-11 items-center justify-center rounded-xl border ${feature.iconBorder} ${feature.iconBg} ${feature.iconColor}`}
-                      >
-                        <feature.icon className="h-5 w-5" />
-                      </div>
-                    </div>
+                        className={`pointer-events-none absolute -bottom-8 -right-8 h-28 w-28 rounded-full blur-2xl transition-opacity duration-500 opacity-0 group-hover:opacity-20 ${feature.glow}`}
+                      />
 
-                    {/* Text */}
-                    <div className="pb-6">
-                      <h3 className="text-sm font-semibold text-black dark:text-white py-2">
-                        {feature.title}
-                      </h3>
-                      <p className="mt-1.5 text-sm leading-relaxed text-(--muted) py-2">
-                        {feature.description}
-                      </p>
+                      {/* Icon */}
+                      <div className="pt-6 pb-4">
+                        <div
+                          className={`inline-flex h-11 w-11 items-center justify-center rounded-xl border ${feature.iconBorder} ${feature.iconBg} ${feature.iconColor}`}
+                        >
+                          <feature.icon className="h-5 w-5" />
+                        </div>
+                      </div>
+
+                      {/* Text */}
+                      <div className="pb-6">
+                        <h3 className="text-sm font-semibold text-black dark:text-white py-2">
+                          {feature.title}
+                        </h3>
+                        <p className="mt-1.5 text-sm leading-relaxed text-(--muted) py-2">
+                          {feature.description}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
               </AnimatedFeatureCard>
             ))}
           </div>
@@ -418,11 +419,11 @@ export default function Home() {
           <div className="flex flex-col gap-10 sm:flex-row sm:items-start sm:justify-between">
             <div className="max-w-xs">
               <h2 className="text-2xl font-bold text-black dark:text-white">
-                Built to respect your time.
+                Powerful features for every business.
               </h2>
               <p className="mt-3 text-sm leading-relaxed text-(--muted)">
-                Everything you need to manage invoices professionally — from
-                creation to payment tracking.
+                Everything from invoice creation to detailed analytics, designed
+                to help you manage payments and grow your business.
               </p>
             </div>
             <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -443,10 +444,11 @@ export default function Home() {
         <AnimatedSection className="mx-auto max-w-5xl px-6 pb-20">
           <div className="rounded-2xl bg-black px-8 py-14 text-center dark:bg-white sm:px-14">
             <h3 className="text-2xl font-bold text-white dark:text-black sm:text-3xl">
-              Ready to send your first invoice?
+              Ready to create your first invoice?
             </h3>
             <p className="mt-3 text-sm text-gray-400 dark:text-gray-600">
-              Create, send, and track — all in one place.
+              Start now — no signup required. Save your work by creating an
+              account anytime.
             </p>
             <div className="mt-7">
               <Link
