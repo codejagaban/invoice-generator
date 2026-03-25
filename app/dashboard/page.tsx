@@ -42,7 +42,16 @@ function getMonthLabel(monthsAgo: number): string {
 }
 
 function getInvoiceAmount(inv: Invoice): number {
-  return inv.items.reduce((s, i) => s + i.quantity * i.rate, 0);
+  const subtotal = inv.items.reduce((s, i) => s + i.quantity * i.rate, 0);
+  let discount = 0;
+  if (inv.discountValue && inv.discountValue > 0) {
+    discount = inv.discountType === "percentage"
+      ? Math.round(subtotal * inv.discountValue) / 100
+      : Math.min(inv.discountValue, subtotal);
+  }
+  const afterDiscount = Math.round((subtotal - discount) * 100) / 100;
+  const tax = Math.round(afterDiscount * (inv.taxRate || 0)) / 100;
+  return Math.round((afterDiscount + tax) * 100) / 100;
 }
 
 function pctChange(current: number, previous: number): number | null {

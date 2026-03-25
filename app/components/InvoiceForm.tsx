@@ -50,7 +50,6 @@ import {
   Mail,
   Map,
   MapPin,
-  Percent,
   Plus,
   CheckCircle2,
   Trash2,
@@ -72,6 +71,7 @@ import {
   getAccountDetails,
 } from "@/app/lib/storage";
 import { useSession } from "next-auth/react";
+import { motion, AnimatePresence } from "motion/react";
 import { useDbReady } from "@/app/components/DbScopeProvider";
 
 const COUNTRIES = [
@@ -714,46 +714,48 @@ export default function InvoiceForm({
       </Card>
 
       {/* Company Information (From) — auth only */}
-      {!isGuest && <Card>
+      <Card>
         <CardHeader>
-          <CardTitle>Your Company</CardTitle>
+          <CardTitle>Your Company / Freelancer Details</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <label className="block text-sm font-medium text-(--muted) mb-1">
-                Select Company
-              </label>
-              <div className="relative">
-                <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-(--muted)">
-                  <Building2 className="h-4 w-4" />
-                </span>
-                <Select
-                  value={selectedCompanyId || undefined}
-                  onValueChange={(value) => handleCompanySelect(value)}
+          {!isGuest && (
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label className="block text-sm font-medium text-(--muted) mb-1">
+                  Select Company
+                </label>
+                <div className="relative">
+                  <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-(--muted)">
+                    <Building2 className="h-4 w-4" />
+                  </span>
+                  <Select
+                    value={selectedCompanyId || undefined}
+                    onValueChange={(value) => handleCompanySelect(value)}
+                  >
+                    <SelectTrigger className="pl-9">
+                      <SelectValue placeholder="Choose a saved company" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {companies.map((company) => (
+                        <SelectItem key={company.id} value={company.id}>
+                          {company.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="flex items-end">
+                <Link
+                  href="/company"
+                  className="text-sm text-blue-600 hover:underline dark:text-blue-400"
                 >
-                  <SelectTrigger className="pl-9">
-                    <SelectValue placeholder="Choose a saved company" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {companies.map((company) => (
-                      <SelectItem key={company.id} value={company.id}>
-                        {company.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  Manage companies
+                </Link>
               </div>
             </div>
-            <div className="flex items-end">
-              <Link
-                href="/company"
-                className="text-sm text-blue-600 hover:underline dark:text-blue-400"
-              >
-                Manage companies
-              </Link>
-            </div>
-          </div>
+          )}
           <div className="grid gap-4 sm:grid-cols-2">
             <Input
               label="Company Name"
@@ -784,8 +786,16 @@ export default function InvoiceForm({
               ? "Hide details"
               : "More details (phone, address, tax ID)"}
           </button>
+          <AnimatePresence>
           {showCompanyDetails && (
-            <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ height: { type: "spring", damping: 25, stiffness: 200 }, opacity: { duration: 0.2 } }}
+              style={{ overflow: "hidden" }}
+            >
+            <div className="space-y-4 pt-1">
               <div className="grid gap-4 sm:grid-cols-2">
                 <Input
                   label="Phone"
@@ -861,9 +871,11 @@ export default function InvoiceForm({
                 </div>
               </div>
             </div>
+            </motion.div>
           )}
+          </AnimatePresence>
         </CardContent>
-      </Card>}
+      </Card>
 
       {/* Customer Information */}
       <Card>
@@ -942,8 +954,16 @@ export default function InvoiceForm({
               ? "Hide details"
               : "More details (address, city, country)"}
           </button>
+          <AnimatePresence>
           {showCustomerDetails && (
-            <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ height: { type: "spring", damping: 25, stiffness: 200 }, opacity: { duration: 0.2 } }}
+              style={{ overflow: "hidden" }}
+            >
+            <div className="space-y-4 pt-1">
               <Input
                 label="Address"
                 name="customerAddress"
@@ -1005,7 +1025,9 @@ export default function InvoiceForm({
                 </div>
               </div>
             </div>
+            </motion.div>
           )}
+          </AnimatePresence>
         </CardContent>
       </Card>
 
@@ -1159,56 +1181,70 @@ export default function InvoiceForm({
             />
             {showTaxDiscount ? "Hide tax & discount" : "Add tax or discount"}
           </button>
+          <AnimatePresence>
           {showTaxDiscount && (
-            <div className="grid gap-4 sm:grid-cols-2 animate-in fade-in slide-in-from-top-2 duration-200">
-              <Input
-                label="Tax Rate (%)"
-                name="taxRate"
-                type="number"
-                value={formData.taxRate}
-                onChange={handleInputChange}
-                min="0"
-                max="100"
-                step="0.01"
-                leadingIcon={<Percent className="h-4 w-4" />}
-              />
-              <div>
-                <label className="block text-sm font-medium text-(--muted) mb-1">
-                  Discount
-                </label>
-                <div className="flex gap-2">
-                  <Select
-                    value={formData.discountType}
-                    onValueChange={(v) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        discountType: v as "percentage" | "fixed",
-                      }))
-                    }
-                  >
-                    <SelectTrigger className="w-24 shrink-0">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="percentage">%</SelectItem>
-                      <SelectItem value="fixed">Fixed</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Input
-                    name="discountValue"
-                    type="number"
-                    value={formData.discountValue}
-                    onChange={handleInputChange}
-                    min="0"
-                    step="0.01"
-                    placeholder={
-                      formData.discountType === "percentage" ? "0%" : "0.00"
-                    }
-                  />
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ height: { type: "spring", damping: 25, stiffness: 200 }, opacity: { duration: 0.2 } }}
+              style={{ overflow: "hidden" }}
+            >
+            <div className="space-y-4 pt-1">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Input
+                  label="Tax Rate (%)"
+                  name="taxRate"
+                  type="number"
+                  value={formData.taxRate}
+                  onChange={handleInputChange}
+                  min="0"
+                  max="100"
+                  step="0.01"
+                  placeholder="0"
+                />
+                <div>
+                  <label className="block text-sm font-medium text-(--muted) mb-1">
+                    Discount
+                  </label>
+                  <div className="flex gap-2">
+                    <Select
+                      value={formData.discountType}
+                      onValueChange={(v) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          discountType: v as "percentage" | "fixed",
+                        }))
+                      }
+                    >
+                      <SelectTrigger className="w-20 shrink-0">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="percentage">%</SelectItem>
+                        <SelectItem value="fixed">Fixed</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <div className="flex-1 min-w-0">
+                      <Input
+                        name="discountValue"
+                        type="number"
+                        value={formData.discountValue}
+                        onChange={handleInputChange}
+                        min="0"
+                        step="0.01"
+                        placeholder={
+                          formData.discountType === "percentage" ? "0" : "0.00"
+                        }
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
+            </motion.div>
           )}
+          </AnimatePresence>
           <div className="space-y-2 border-t pt-4 border-(--border)">
             <div className="flex justify-between text-sm">
               <span className="text-(--muted)">Subtotal:</span>

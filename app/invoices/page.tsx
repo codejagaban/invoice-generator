@@ -59,6 +59,19 @@ import EmptyState from "@/app/components/shared/EmptyState";
 import MiniChart, { groupByDay } from "@/app/components/shared/MiniChart";
 import { FileText } from "lucide-react";
 
+function getInvoiceTotal(inv: Invoice): number {
+  const subtotal = inv.items.reduce((s, i) => s + i.quantity * i.rate, 0);
+  let discount = 0;
+  if (inv.discountValue && inv.discountValue > 0) {
+    discount = inv.discountType === "percentage"
+      ? Math.round(subtotal * inv.discountValue) / 100
+      : Math.min(inv.discountValue, subtotal);
+  }
+  const afterDiscount = Math.round((subtotal - discount) * 100) / 100;
+  const tax = Math.round(afterDiscount * (inv.taxRate || 0)) / 100;
+  return Math.round((afterDiscount + tax) * 100) / 100;
+}
+
 export default function InvoicesDashboardPage() {
   const [confirm, ConfirmDialogUI] = useConfirm();
   const dbReady = useDbReady();
@@ -140,17 +153,7 @@ export default function InvoicesDashboardPage() {
         (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
       );
     } else if (sortBy === "amount") {
-      sorted.sort((a, b) => {
-        const amountA = a.items.reduce(
-          (sum, item) => sum + item.quantity * item.rate,
-          0,
-        );
-        const amountB = b.items.reduce(
-          (sum, item) => sum + item.quantity * item.rate,
-          0,
-        );
-        return amountB - amountA;
-      });
+      sorted.sort((a, b) => getInvoiceTotal(b) - getInvoiceTotal(a));
     } else if (sortBy === "name") {
       sorted.sort((a, b) => a.customer.name.localeCompare(b.customer.name));
     }
@@ -172,11 +175,7 @@ export default function InvoicesDashboardPage() {
   const totalAmount = useMemo(() => {
     if (rates.size === 0) return 0;
     return filteredInvoices.reduce((sum, inv) => {
-      const amount = inv.items.reduce(
-        (s, item) => s + item.quantity * item.rate,
-        0,
-      );
-      return sum + convertWithRates(amount, inv.currency, rates);
+      return sum + convertWithRates(getInvoiceTotal(inv), inv.currency, rates);
     }, 0);
   }, [filteredInvoices, rates]);
 
@@ -533,10 +532,7 @@ export default function InvoicesDashboardPage() {
                       </thead>
                       <tbody className="divide-y divide-(--border)">
                         {paginatedInvoices.map((invoice) => {
-                          const amount = invoice.items.reduce(
-                            (sum, item) => sum + item.quantity * item.rate,
-                            0,
-                          );
+                          const amount = getInvoiceTotal(invoice);
                           const isPaidOrCancelled = invoice.status === "paid" || invoice.status === "cancelled";
                           const overdue = !isPaidOrCancelled && isOverdue(invoice.dueDate);
                           const dueSoon = !isPaidOrCancelled && isDueSoon(invoice.dueDate);
