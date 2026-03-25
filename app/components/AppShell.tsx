@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Navigation from "./Navigation";
+import SyncBanner from "./SyncBanner";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const { data: session } = useSession();
@@ -16,6 +17,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     <>
       <Navigation />
       <div className={showSidebar ? "lg:pl-64" : ""}>
+        {session && <SyncBanner />}
         {children}
       </div>
     </>

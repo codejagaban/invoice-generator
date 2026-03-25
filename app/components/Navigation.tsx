@@ -87,64 +87,123 @@ export default function Navigation() {
 
   // Top bar for home page or unauthenticated users
   if (status === "loading" || !session || pathname === "/") {
+    const showGuestNav = !session && pathname !== "/";
     return (
-      <header className="border-b border-b-(--border) bg-(--surface) sticky top-0 z-50">
-        <nav className="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between">
-          <Link href="/">
-            <div className="h-8 w-8">{LogoIcon}</div>
-          </Link>
-
-          {/* Nav links — visible on non-home pages for guests */}
-          {pathname !== "/" && (
-            <div className="hidden sm:flex items-center gap-1">
-              {navItems.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    isActive(item.href)
-                      ? "bg-(--surface-raised) text-black dark:text-white"
-                      : "text-(--muted) hover:text-black dark:hover:text-white hover:bg-(--surface-raised)"
-                  }`}
+      <>
+        <header className="border-b border-b-(--border) bg-(--surface) sticky top-0 z-50">
+          <nav className="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between">
+            {/* Left: hamburger (mobile, non-home guest) + logo */}
+            <div className="flex items-center gap-2">
+              {showGuestNav && (
+                <button
+                  onClick={() => setMobileOpen(!mobileOpen)}
+                  className="sm:hidden p-2 rounded-lg hover:bg-(--surface-raised) transition-colors"
                 >
-                  <span className="inline-flex items-center gap-2">
-                    <item.icon className="h-4 w-4" aria-hidden="true" />
-                    {item.label}
-                  </span>
-                </Link>
-              ))}
+                  <Menu className="h-5 w-5 text-black dark:text-white" />
+                </button>
+              )}
+              <Link href="/">
+                <div className="h-8 w-8">{LogoIcon}</div>
+              </Link>
             </div>
-          )}
 
-          <div className="flex items-center gap-3">
-            <Link
-              href="/invoices/create"
-              className="hidden sm:inline-flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg font-medium hover:bg-gray-900 dark:bg-white dark:text-black dark:hover:bg-gray-100 transition-colors text-sm"
-            >
-              <FilePlus2 className="h-4 w-4" />
-              New Invoice
-            </Link>
-            {status === "loading" ? (
-              <div className="h-8 w-8 rounded-full bg-(--surface-raised) animate-pulse" />
-            ) : session ? (
-              <Link
-                href="/dashboard"
-                className="inline-flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg font-medium hover:bg-gray-900 dark:bg-white dark:text-black dark:hover:bg-gray-100 transition-colors text-sm"
-              >
-                Dashboard
-              </Link>
-            ) : (
-              <Link
-                href="/sign-in"
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-(--border) text-sm font-medium text-black dark:text-white hover:bg-(--surface-raised) transition-colors"
-              >
-                <LogIn className="h-4 w-4" />
-                Sign in
-              </Link>
+            {/* Center: nav links (desktop only, non-home guests) */}
+            {showGuestNav && (
+              <div className="hidden sm:flex items-center gap-1">
+                {navItems.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      isActive(item.href)
+                        ? "bg-(--surface-raised) text-black dark:text-white"
+                        : "text-(--muted) hover:text-black dark:hover:text-white hover:bg-(--surface-raised)"
+                    }`}
+                  >
+                    <span className="inline-flex items-center gap-2">
+                      <item.icon className="h-4 w-4" aria-hidden="true" />
+                      {item.label}
+                    </span>
+                  </Link>
+                ))}
+              </div>
             )}
-          </div>
-        </nav>
-      </header>
+
+            {/* Right: actions */}
+            <div className="flex items-center gap-3">
+              <Link
+                href="/invoices/create"
+                className="hidden sm:inline-flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg font-medium hover:bg-gray-900 dark:bg-white dark:text-black dark:hover:bg-gray-100 transition-colors text-sm"
+              >
+                <FilePlus2 className="h-4 w-4" />
+                New Invoice
+              </Link>
+              {status === "loading" ? (
+                <div className="h-8 w-8 rounded-full bg-(--surface-raised) animate-pulse" />
+              ) : session ? (
+                <Link
+                  href="/dashboard"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg font-medium hover:bg-gray-900 dark:bg-white dark:text-black dark:hover:bg-gray-100 transition-colors text-sm"
+                >
+                  Dashboard
+                </Link>
+              ) : (
+                <Link
+                  href="/sign-in"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-(--border) text-sm font-medium text-black dark:text-white hover:bg-(--surface-raised) transition-colors"
+                >
+                  <LogIn className="h-4 w-4" />
+                  Sign in
+                </Link>
+              )}
+            </div>
+          </nav>
+        </header>
+
+        {/* Mobile slide-out menu for guests */}
+        {showGuestNav && mobileOpen && (
+          <>
+            <div className="fixed inset-0 z-50 bg-black/25 backdrop-blur-[2px] sm:hidden" onClick={() => setMobileOpen(false)} />
+            <div className="fixed top-0 left-0 z-50 h-full w-64 bg-white dark:bg-[#1a1a1a] border-r border-(--border) shadow-xl sm:hidden">
+              <div className="flex items-center justify-between px-4 py-4 border-b border-(--border)">
+                <Link href="/" onClick={() => setMobileOpen(false)}>
+                  <div className="h-7 w-7">{LogoIcon}</div>
+                </Link>
+                <button onClick={() => setMobileOpen(false)} className="p-2 rounded-lg hover:bg-(--surface-raised)">
+                  <X className="h-5 w-5 text-(--muted)" />
+                </button>
+              </div>
+              <div className="px-3 py-4 space-y-1">
+                {navItems.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setMobileOpen(false)}
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                      isActive(item.href)
+                        ? "bg-(--surface-raised) text-black dark:text-white"
+                        : "text-(--muted) hover:text-black dark:hover:text-white hover:bg-(--surface-raised)"
+                    }`}
+                  >
+                    <item.icon className="h-4 w-4" />
+                    {item.label}
+                  </Link>
+                ))}
+                <div className="pt-3 border-t border-(--border) mt-3">
+                  <Link
+                    href="/invoices/create"
+                    onClick={() => setMobileOpen(false)}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium bg-black text-white dark:bg-white dark:text-black"
+                  >
+                    <FilePlus2 className="h-4 w-4" />
+                    New Invoice
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+      </>
     );
   }
 
