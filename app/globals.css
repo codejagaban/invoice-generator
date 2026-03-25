@@ -42,6 +42,7 @@
     background: var(--background);
     color: var(--foreground);
     line-height: 1.5;
+    overflow-y: scroll !important;
   }
 
   button {
@@ -56,13 +57,25 @@
 }
 
 @keyframes invoice-float {
-  0%, 100% { transform: translateY(0px); }
-  50%       { transform: translateY(-12px); }
+
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-12px);
+  }
 }
 
 @keyframes border-rotate {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @supports (animation-timeline: view()) {
