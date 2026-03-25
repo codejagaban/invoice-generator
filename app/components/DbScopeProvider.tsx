@@ -3,35 +3,30 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { setDbScope } from "@/app/lib/db";
-
-const GUEST_COOKIE = "guest_id";
+import { idbHasData } from "@/app/lib/idb-storage";
 
 const DbReadyContext = createContext(false);
+const HasLocalDataContext = createContext(false);
 
 /**
  * Returns true once the storage layer is ready.
- * Pages should skip data fetching until this is true.
  */
 export function useDbReady() {
   return useContext(DbReadyContext);
 }
 
-function getCookie(name: string): string | null {
-  const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
-  return match ? decodeURIComponent(match[1]) : null;
-}
-
-function setCookie(name: string, value: string, days: number) {
-  const expires = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toUTCString();
-  document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Lax`;
+/**
+ * Returns true if the user has local IndexedDB data that can be synced.
+ * Only relevant for authenticated users who previously used the app as guests.
+ */
+export function useHasLocalData() {
+  return useContext(HasLocalDataContext);
 }
 
 /**
- * Resolves the user ID for the storage layer:
- * - Authenticated users: use their session user ID
- * - Guests: create/reuse an anonymous Postgres user via cookie
- *
- * All data goes through Postgres — no more IndexedDB.
+ * Resolves the storage mode:
+ * - Authenticated users → Postgres (via /api/data)
+ * - Guests → IndexedDB (local, no server calls)
  */
 export default function DbScopeProvider({
   children,
@@ -40,53 +35,28 @@ export default function DbScopeProvider({
 }) {
   const { data: session, status } = useSession();
   const [ready, setReady] = useState(false);
+  const [hasLocalData, setHasLocalData] = useState(false);
 
   useEffect(() => {
     if (status === "loading") return;
 
     async function resolve() {
-      // Authenticated user — use their real user ID
       if (session?.user?.id) {
-        // If they have a guest cookie, migrate guest data to their account
-        const guestId = getCookie(GUEST_COOKIE);
-        if (guestId) {
-          try {
-            await fetch("/api/migrate-guest", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ guestId }),
-            });
-          } catch (err) {
-            console.warn("Guest data migration failed:", err);
-          }
-          // Clear the cookie
-          document.cookie = `${GUEST_COOKIE}=; max-age=0; path=/`;
+        // Authenticated user → use Postgres
+        setDbScope(session.user.id, true);
+
+        // Check if they have local IndexedDB data from when they were a guest
+        try {
+          const hasData = await idbHasData();
+          setHasLocalData(hasData);
+        } catch {
+          // IndexedDB not available or error — ignore
         }
-        setDbScope(session.user.id);
-        setReady(true);
-        return;
+      } else {
+        // Guest → use IndexedDB (no server calls needed)
+        setDbScope("local", false);
       }
 
-      // Guest — check for existing cookie
-      const existingId = getCookie(GUEST_COOKIE);
-      if (existingId) {
-        // Validate it's still active
-        const res = await fetch(`/api/guest?id=${encodeURIComponent(existingId)}`);
-        const data = await res.json();
-        if (data.valid) {
-          setDbScope(existingId);
-          setReady(true);
-          return;
-        }
-      }
-
-      // No valid guest session — create one
-      const res = await fetch("/api/guest", { method: "POST" });
-      const data = await res.json();
-      if (data.id) {
-        setCookie(GUEST_COOKIE, data.id, 7);
-        setDbScope(data.id);
-      }
       setReady(true);
     }
 
@@ -95,7 +65,9 @@ export default function DbScopeProvider({
 
   return (
     <DbReadyContext.Provider value={ready}>
-      {children}
+      <HasLocalDataContext.Provider value={hasLocalData}>
+        {children}
+      </HasLocalDataContext.Provider>
     </DbReadyContext.Provider>
   );
 }

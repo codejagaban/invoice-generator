@@ -71,6 +71,7 @@ import {
   getSettings,
   getAccountDetails,
 } from "@/app/lib/storage";
+import { useSession } from "next-auth/react";
 import { useDbReady } from "@/app/components/DbScopeProvider";
 
 const COUNTRIES = [
@@ -223,6 +224,8 @@ export default function InvoiceForm({
   initialData,
   onSubmit,
 }: InvoiceFormProps) {
+  const { data: session } = useSession();
+  const isGuest = !session;
   const dbReady = useDbReady();
   const [isLoading, setIsLoading] = useState(false);
   const [showCompanyDetails, setShowCompanyDetails] = useState(
@@ -710,8 +713,8 @@ export default function InvoiceForm({
         </CardContent>
       </Card>
 
-      {/* Company Information (From) */}
-      <Card>
+      {/* Company Information (From) — auth only */}
+      {!isGuest && <Card>
         <CardHeader>
           <CardTitle>Your Company</CardTitle>
         </CardHeader>
@@ -860,7 +863,7 @@ export default function InvoiceForm({
             </div>
           )}
         </CardContent>
-      </Card>
+      </Card>}
 
       {/* Customer Information */}
       <Card>
@@ -868,41 +871,43 @@ export default function InvoiceForm({
           <CardTitle>Customer Information</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <label className="block text-sm font-medium text-(--muted) mb-1">
-                Select Customer
-              </label>
-              <div className="relative">
-                <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-(--muted)">
-                  <User className="h-4 w-4" />
-                </span>
-                <Select
-                  value={selectedCustomerId || undefined}
-                  onValueChange={(value) => handleCustomerSelect(value)}
+          {!isGuest && (
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label className="block text-sm font-medium text-(--muted) mb-1">
+                  Select Customer
+                </label>
+                <div className="relative">
+                  <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-(--muted)">
+                    <User className="h-4 w-4" />
+                  </span>
+                  <Select
+                    value={selectedCustomerId || undefined}
+                    onValueChange={(value) => handleCustomerSelect(value)}
+                  >
+                    <SelectTrigger className="pl-9">
+                      <SelectValue placeholder="Choose an existing customer" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {customers.map((customer) => (
+                        <SelectItem key={customer.id} value={customer.id}>
+                          {customer.name} ({customer.email})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="flex items-end">
+                <Link
+                  href="/customers"
+                  className="text-sm text-blue-600 hover:underline dark:text-blue-400"
                 >
-                  <SelectTrigger className="pl-9">
-                    <SelectValue placeholder="Choose an existing customer" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {customers.map((customer) => (
-                      <SelectItem key={customer.id} value={customer.id}>
-                        {customer.name} ({customer.email})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  Manage customers
+                </Link>
               </div>
             </div>
-            <div className="flex items-end">
-              <Link
-                href="/customers"
-                className="text-sm text-blue-600 hover:underline dark:text-blue-400"
-              >
-                Manage customers
-              </Link>
-            </div>
-          </div>
+          )}
           <div className="grid gap-4 sm:grid-cols-2">
             <Input
               label="Customer Name"
@@ -1267,8 +1272,8 @@ export default function InvoiceForm({
         </CardContent>
       </Card>
 
-      {/* Bank Account */}
-      {accounts.length > 0 && (
+      {/* Bank Account — auth only */}
+      {!isGuest && accounts.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle>Bank Account</CardTitle>
@@ -1308,15 +1313,17 @@ export default function InvoiceForm({
           <CheckCircle2 className="h-4 w-4 text-green-400" />
           {initialData ? "Update Invoice" : "Create Invoice"}
         </Button>
-        <Button
-          type="button"
-          variant="secondary"
-          onClick={() => setShowSaveTemplateModal(true)}
-          className="order-3 w-full sm:order-2 sm:w-auto"
-        >
-          <BookmarkPlus className="h-4 w-4 text-blue-500" />
-          Save as Template
-        </Button>
+        {!isGuest && (
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => setShowSaveTemplateModal(true)}
+            className="order-3 w-full sm:order-2 sm:w-auto"
+          >
+            <BookmarkPlus className="h-4 w-4 text-blue-500" />
+            Save as Template
+          </Button>
+        )}
         <Button
           type="button"
           variant="secondary"
