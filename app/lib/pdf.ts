@@ -18,8 +18,15 @@ export function generateInvoiceHTML(
     (sum, item) => sum + item.quantity * item.rate,
     0,
   );
-  const tax = (subtotal * (invoice.taxRate || 0)) / 100;
-  const total = subtotal + tax;
+  let discountAmount = 0;
+  if (invoice.discountValue && invoice.discountValue > 0) {
+    discountAmount = invoice.discountType === "percentage"
+      ? (subtotal * invoice.discountValue) / 100
+      : Math.min(invoice.discountValue, subtotal);
+  }
+  const afterDiscount = subtotal - discountAmount;
+  const tax = (afterDiscount * (invoice.taxRate || 0)) / 100;
+  const total = afterDiscount + tax;
 
   // Build "City, State ZIP" line, omitting empty parts
   const cityLine = (city?: string, state?: string, zip?: string): string => {
@@ -278,6 +285,12 @@ export function generateInvoiceHTML(
               <span class="total-label">Subtotal:</span>
               <span>${formatCurrency(subtotal, invoice.currency)}</span>
             </div>
+            ${discountAmount > 0 ? `
+              <div class="total-row">
+                <span class="total-label">Discount${invoice.discountType === "percentage" ? ` (${invoice.discountValue}%)` : ""}:</span>
+                <span style="color:#dc2626">-${formatCurrency(discountAmount, invoice.currency)}</span>
+              </div>
+            ` : ""}
             ${
               invoice.taxRate
                 ? `
@@ -351,8 +364,15 @@ export function generateInvoiceEmailHTML(
     (sum, item) => sum + item.quantity * item.rate,
     0,
   );
-  const tax = (subtotal * (invoice.taxRate || 0)) / 100;
-  const total = subtotal + tax;
+  let discountAmount = 0;
+  if (invoice.discountValue && invoice.discountValue > 0) {
+    discountAmount = invoice.discountType === "percentage"
+      ? (subtotal * invoice.discountValue) / 100
+      : Math.min(invoice.discountValue, subtotal);
+  }
+  const afterDiscount = subtotal - discountAmount;
+  const tax = (afterDiscount * (invoice.taxRate || 0)) / 100;
+  const total = afterDiscount + tax;
 
   const cityLine = (city?: string, state?: string, zip?: string): string => {
     const stateZip = [state, zip].filter(Boolean).join(" ");
@@ -442,6 +462,11 @@ export function generateInvoiceEmailHTML(
               <td style="padding:8px 0;font-weight:600;border-bottom:1px solid #eee;">Subtotal</td>
               <td style="padding:8px 0;text-align:right;border-bottom:1px solid #eee;">${formatCurrency(subtotal, invoice.currency)}</td>
             </tr>
+            ${discountAmount > 0 ? `
+            <tr>
+              <td style="padding:8px 0;font-weight:600;border-bottom:1px solid #eee;">Discount${invoice.discountType === "percentage" ? ` (${invoice.discountValue}%)` : ""}</td>
+              <td style="padding:8px 0;text-align:right;border-bottom:1px solid #eee;color:#dc2626;">-${formatCurrency(discountAmount, invoice.currency)}</td>
+            </tr>` : ""}
             ${
               invoice.taxRate
                 ? `
@@ -836,8 +861,15 @@ async function generateInvoicePDFBlob(
     (sum, item) => sum + item.quantity * item.rate,
     0,
   );
-  const tax = (subtotal * (invoice.taxRate || 0)) / 100;
-  const total = subtotal + tax;
+  let discountAmount = 0;
+  if (invoice.discountValue && invoice.discountValue > 0) {
+    discountAmount = invoice.discountType === "percentage"
+      ? (subtotal * invoice.discountValue) / 100
+      : Math.min(invoice.discountValue, subtotal);
+  }
+  const afterDiscount = subtotal - discountAmount;
+  const tax = (afterDiscount * (invoice.taxRate || 0)) / 100;
+  const total = afterDiscount + tax;
 
   const cityLine = (city?: string, state?: string, zip?: string): string => {
     const stateZip = [state, zip].filter(Boolean).join(" ");
@@ -1049,6 +1081,22 @@ async function generateInvoicePDFBlob(
                 formatCurrency(subtotal, invoice.currency),
               ),
             ),
+            discountAmount > 0
+              ? React.createElement(
+                  View,
+                  { style: styles.totalsRow },
+                  React.createElement(
+                    Text,
+                    { style: styles.totalsLabel },
+                    `Discount${invoice.discountType === "percentage" ? ` (${invoice.discountValue}%)` : ""}:`,
+                  ),
+                  React.createElement(
+                    Text,
+                    { style: { ...styles.totalsValue, color: "#dc2626" } },
+                    `-${formatCurrency(discountAmount, invoice.currency)}`,
+                  ),
+                )
+              : null,
             invoice.taxRate
               ? React.createElement(
                   View,

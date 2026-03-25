@@ -3,14 +3,16 @@
  * Functions for calculating totals, formatting currency, and invoice operations
  */
 
-import type { InvoiceItem, InvoiceSummary } from "./types";
+import type { DiscountType, InvoiceItem, InvoiceSummary } from "./types";
 
 /**
- * Calculate invoice totals including subtotal, tax, and final total
+ * Calculate invoice totals including subtotal, discounts, tax, and final total
  */
 export function calculateInvoiceSummary(
   items: InvoiceItem[],
   globalTaxRate: number = 0,
+  discountType?: DiscountType,
+  discountValue?: number,
 ): InvoiceSummary {
   let subtotal = 0;
   let itemDiscount = 0;
@@ -33,12 +35,32 @@ export function calculateInvoiceSummary(
   }
 
   const subtotalAfterDiscount = subtotal - itemDiscount;
-  const total = subtotalAfterDiscount + taxAmount;
+
+  // Apply global discount
+  let globalDiscount = 0;
+  if (discountValue && discountValue > 0) {
+    if (discountType === "percentage") {
+      globalDiscount = (subtotalAfterDiscount * discountValue) / 100;
+    } else {
+      globalDiscount = Math.min(discountValue, subtotalAfterDiscount);
+    }
+  }
+
+  const subtotalAfterAllDiscounts = subtotalAfterDiscount - globalDiscount;
+
+  // Recalculate tax on discounted amount if global discount applied
+  if (globalDiscount > 0) {
+    taxAmount = (subtotalAfterAllDiscounts * globalTaxRate) / 100;
+  }
+
+  const total = subtotalAfterAllDiscounts + taxAmount;
 
   return {
     subtotal,
     itemDiscount,
     subtotalAfterDiscount,
+    globalDiscount,
+    subtotalAfterAllDiscounts,
     taxAmount,
     total,
   };
