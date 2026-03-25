@@ -15,6 +15,11 @@ import {
   ArrowRight,
   Check,
 } from "lucide-react";
+import {
+  AnimatedSection,
+  AnimatedDiv,
+  AnimatedFeatureCard,
+} from "./components/HomeAnimations";
 
 const features = [
   {
@@ -239,7 +244,7 @@ export default function Home() {
       <main>
         {/* ── Hero ────────────────────────────────────────────── */}
         <section className="mx-auto max-w-5xl px-6 pt-20 pb-16 sm:pt-28 sm:pb-24">
-          <div className="lg:grid lg:grid-cols-[3fr_2fr] lg:items-center lg:gap-12">
+          <AnimatedDiv className="lg:grid lg:grid-cols-[3fr_2fr] lg:items-center lg:gap-12">
             {/* Left: copy */}
             <div>
               {/* Pill badge */}
@@ -282,11 +287,11 @@ export default function Home() {
             <div className="hidden lg:block">
               <InvoicePreview />
             </div>
-          </div>
+          </AnimatedDiv>
         </section>
 
         {/* ── Stats strip ─────────────────────────────────────── */}
-        <div className="border-y border-(--border) bg-(--surface)">
+        <AnimatedSection className="border-y border-(--border) bg-(--surface)">
           <div className="mx-auto max-w-5xl px-6 grid grid-cols-3 divide-x divide-(--border)">
             {[
               { value: "< 2 min", label: "To create an invoice" },
@@ -303,7 +308,7 @@ export default function Home() {
               </div>
             ))}
           </div>
-        </div>
+        </AnimatedSection>
 
         {/* ── Features grid ───────────────────────────────────── */}
         <section className="mx-auto max-w-5xl px-6 py-20 sm:py-24">
@@ -315,9 +320,9 @@ export default function Home() {
           </p>
 
           <div className="mt-10 grid grid-cols-1 gap-10 sm:grid-cols-2">
-            {features.map((feature) => (
+            {features.map((feature, i) => (
+              <AnimatedFeatureCard key={feature.title} index={i}>
               <div
-                key={feature.title}
                 className="group relative transition-transform  duration-300 hover:-translate-y-0.5"
               >
                 {/* 1px border wrapper — clips the rotating beam */}
@@ -366,13 +371,14 @@ export default function Home() {
                   </div>
                 </div>
               </div>
+              </AnimatedFeatureCard>
             ))}
           </div>
         </section>
 
         {/* ── How it works ────────────────────────────────────── */}
         <div className="border-t border-(--border)" />
-        <section className="mx-auto max-w-5xl px-6 py-20 sm:py-24">
+        <AnimatedSection className="mx-auto max-w-5xl px-6 py-20 sm:py-24">
           <h2 className="text-2xl font-bold text-black dark:text-white">
             Up and running in three steps.
           </h2>
@@ -405,10 +411,10 @@ export default function Home() {
               ))}
             </div>
           </div>
-        </section>
+        </AnimatedSection>
 
         {/* ── Perks ───────────────────────────────────────────── */}
-        <section className="mx-auto max-w-5xl px-6 py-20 sm:py-24">
+        <AnimatedSection className="mx-auto max-w-5xl px-6 py-20 sm:py-24">
           <div className="flex flex-col gap-10 sm:flex-row sm:items-start sm:justify-between">
             <div className="max-w-xs">
               <h2 className="text-2xl font-bold text-black dark:text-white">
@@ -431,10 +437,10 @@ export default function Home() {
               ))}
             </ul>
           </div>
-        </section>
+        </AnimatedSection>
 
         {/* ── CTA ─────────────────────────────────────────────── */}
-        <div className="mx-auto max-w-5xl px-6 pb-20">
+        <AnimatedSection className="mx-auto max-w-5xl px-6 pb-20">
           <div className="rounded-2xl bg-black px-8 py-14 text-center dark:bg-white sm:px-14">
             <h3 className="text-2xl font-bold text-white dark:text-black sm:text-3xl">
               Ready to send your first invoice?
@@ -452,7 +458,7 @@ export default function Home() {
               </Link>
             </div>
           </div>
-        </div>
+        </AnimatedSection>
       </main>
 
       <footer className="border-t border-(--border) bg-(--surface)">
