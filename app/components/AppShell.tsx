@@ -18,7 +18,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     <>
       <Navigation />
       <div className={showSidebar ? "lg:pl-64" : ""}>
-        {!session && !isAuthPage && <GuestPersistenceBanner />}
+        {!session && !isAuthPage && !isHomePage && <GuestPersistenceBanner />}
         {session && <SyncBanner />}
         {children}
       </div>
