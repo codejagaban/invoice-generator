@@ -33,15 +33,17 @@ export default function Navigation() {
     return pathname.startsWith(href);
   };
 
-  const navItems = [
-    { href: "/dashboard", label: "Dashboard", icon: BarChart3 },
-    { href: "/invoices", label: "Invoices", icon: FileText },
-    { href: "/customers", label: "Customers", icon: Users },
-    { href: "/templates", label: "Templates", icon: LayoutTemplate },
-    { href: "/account", label: "Accounts", icon: Landmark },
-    { href: "/company", label: "Companies", icon: Building2 },
-    { href: "/settings", label: "Settings", icon: Settings2 },
+  const allNavItems = [
+    { href: "/dashboard", label: "Dashboard", icon: BarChart3, authOnly: false },
+    { href: "/invoices", label: "Invoices", icon: FileText, authOnly: false },
+    { href: "/customers", label: "Customers", icon: Users, authOnly: true },
+    { href: "/templates", label: "Templates", icon: LayoutTemplate, authOnly: true },
+    { href: "/account", label: "Accounts", icon: Landmark, authOnly: true },
+    { href: "/company", label: "Companies", icon: Building2, authOnly: true },
+    { href: "/settings", label: "Settings", icon: Settings2, authOnly: true },
   ] as const;
+
+  const navItems = allNavItems.filter((item) => !item.authOnly || !!session);
 
   // Close dropdown on outside click
   useEffect(() => {
