@@ -213,6 +213,39 @@ const CURRENCIES = [
   { code: "NGN", label: "Nigerian Naira" },
 ];
 
+const CURRENCY_SYMBOLS: Record<string, string> = {
+  USD: "$",
+  EUR: "€",
+  GBP: "£",
+  CAD: "C$",
+  AUD: "A$",
+  JPY: "¥",
+  CHF: "Fr",
+  CNY: "¥",
+  INR: "₹",
+  MXN: "MX$",
+  NGN: "₦",
+};
+
+const getCurrencySymbol = (currencyCode: string): string => {
+  const mappedSymbol = CURRENCY_SYMBOLS[currencyCode];
+  if (mappedSymbol) return mappedSymbol;
+
+  try {
+    const parts = new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: currencyCode,
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).formatToParts(0);
+    const symbol = parts.find((part) => part.type === "currency")?.value;
+    if (!symbol || symbol === currencyCode) return "¤";
+    return symbol;
+  } catch {
+    return "¤";
+  }
+};
+
 interface InvoiceFormProps {
   initialData?: Invoice;
   onSubmit: (data: Invoice) => Promise<void>;
@@ -663,13 +696,13 @@ export default function InvoiceForm({
               error={errors.invoiceNumber}
               leadingIcon={<Hash className="h-4 w-4" />}
             />
-            <div>
-              <label className="block text-sm font-medium text-(--muted) mb-1">
+            <div className="p-1">
+              <label className="block text-sm font-medium text-black dark:text-white mb-2">
                 Currency
               </label>
               <div className="relative">
-                <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-(--muted)">
-                  <DollarSign className="h-4 w-4" />
+                <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-8 text-center text-(--muted) text-base leading-none">
+                  {getCurrencySymbol(formData.currency)}
                 </span>
                 <Select
                   value={formData.currency}
@@ -677,7 +710,7 @@ export default function InvoiceForm({
                     setFormData((prev) => ({ ...prev, currency: value }))
                   }
                 >
-                  <SelectTrigger className="pl-9">
+                  <SelectTrigger className="pl-12">
                     <SelectValue placeholder="Select currency" />
                   </SelectTrigger>
                   <SelectContent>
@@ -787,92 +820,95 @@ export default function InvoiceForm({
               : "More details (phone, address, tax ID)"}
           </button>
           <AnimatePresence>
-          {showCompanyDetails && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ height: { type: "spring", damping: 25, stiffness: 200 }, opacity: { duration: 0.2 } }}
-              style={{ overflow: "hidden" }}
-            >
-            <div className="space-y-4 pt-1">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <Input
-                  label="Phone"
-                  name="companyPhone"
-                  value={formData.companyPhone}
-                  onChange={handleInputChange}
-                />
-                <Input
-                  label="Tax ID"
-                  name="companyTaxId"
-                  value={formData.companyTaxId}
-                  onChange={handleInputChange}
-                />
-              </div>
-              <Input
-                label="Address"
-                name="companyAddress"
-                value={formData.companyAddress}
-                onChange={handleInputChange}
-                leadingIcon={<MapPin className="h-4 w-4" />}
-              />
-              <div className="grid gap-4 sm:grid-cols-3">
-                <Input
-                  label="City"
-                  name="companyCity"
-                  value={formData.companyCity}
-                  onChange={handleInputChange}
-                  leadingIcon={<Building2 className="h-4 w-4" />}
-                />
-                <Input
-                  label="State/Province"
-                  name="companyState"
-                  value={formData.companyState}
-                  onChange={handleInputChange}
-                  leadingIcon={<Map className="h-4 w-4" />}
-                />
-                <Input
-                  label="Zip/Postal Code"
-                  name="companyZipCode"
-                  value={formData.companyZipCode}
-                  onChange={handleInputChange}
-                  leadingIcon={<Hash className="h-4 w-4" />}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-(--muted) mb-1">
-                  Country
-                </label>
-                <div className="relative">
-                  <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-(--muted)">
-                    <Globe className="h-4 w-4" />
-                  </span>
-                  <Select
-                    value={formData.companyCountry || undefined}
-                    onValueChange={(value) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        companyCountry: value,
-                      }))
-                    }
-                  >
-                    <SelectTrigger className="pl-9">
-                      <SelectValue placeholder="Select country" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {COUNTRIES.map((country) => (
-                        <SelectItem key={country} value={country}>
-                          {country}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+            {showCompanyDetails && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{
+                  height: { type: "spring", damping: 25, stiffness: 200 },
+                  opacity: { duration: 0.2 },
+                }}
+                style={{ overflow: "hidden" }}
+              >
+                <div className="space-y-4 pt-1 px-1 pb-1">
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <Input
+                      label="Phone"
+                      name="companyPhone"
+                      value={formData.companyPhone}
+                      onChange={handleInputChange}
+                    />
+                    <Input
+                      label="Tax ID"
+                      name="companyTaxId"
+                      value={formData.companyTaxId}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  <Input
+                    label="Address"
+                    name="companyAddress"
+                    value={formData.companyAddress}
+                    onChange={handleInputChange}
+                    leadingIcon={<MapPin className="h-4 w-4" />}
+                  />
+                  <div className="grid gap-4 sm:grid-cols-3">
+                    <Input
+                      label="City"
+                      name="companyCity"
+                      value={formData.companyCity}
+                      onChange={handleInputChange}
+                      leadingIcon={<Building2 className="h-4 w-4" />}
+                    />
+                    <Input
+                      label="State/Province"
+                      name="companyState"
+                      value={formData.companyState}
+                      onChange={handleInputChange}
+                      leadingIcon={<Map className="h-4 w-4" />}
+                    />
+                    <Input
+                      label="Zip/Postal Code"
+                      name="companyZipCode"
+                      value={formData.companyZipCode}
+                      onChange={handleInputChange}
+                      leadingIcon={<Hash className="h-4 w-4" />}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-(--muted) mb-1">
+                      Country
+                    </label>
+                    <div className="relative">
+                      <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-(--muted)">
+                        <Globe className="h-4 w-4" />
+                      </span>
+                      <Select
+                        value={formData.companyCountry || undefined}
+                        onValueChange={(value) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            companyCountry: value,
+                          }))
+                        }
+                      >
+                        <SelectTrigger className="pl-9">
+                          <SelectValue placeholder="Select country" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {COUNTRIES.map((country) => (
+                            <SelectItem key={country} value={country}>
+                              {country}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-            </motion.div>
-          )}
+              </motion.div>
+            )}
           </AnimatePresence>
         </CardContent>
       </Card>
@@ -955,78 +991,81 @@ export default function InvoiceForm({
               : "More details (address, city, country)"}
           </button>
           <AnimatePresence>
-          {showCustomerDetails && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ height: { type: "spring", damping: 25, stiffness: 200 }, opacity: { duration: 0.2 } }}
-              style={{ overflow: "hidden" }}
-            >
-            <div className="space-y-4 pt-1">
-              <Input
-                label="Address"
-                name="customerAddress"
-                value={formData.customerAddress}
-                onChange={handleInputChange}
-                leadingIcon={<MapPin className="h-4 w-4" />}
-              />
-              <div className="grid gap-4 sm:grid-cols-3">
-                <Input
-                  label="City"
-                  name="customerCity"
-                  value={formData.customerCity}
-                  onChange={handleInputChange}
-                  leadingIcon={<Building2 className="h-4 w-4" />}
-                />
-                <Input
-                  label="State/Province"
-                  name="customerState"
-                  value={formData.customerState}
-                  onChange={handleInputChange}
-                  leadingIcon={<Map className="h-4 w-4" />}
-                />
-                <Input
-                  label="Zip/Postal Code"
-                  name="customerZipCode"
-                  value={formData.customerZipCode}
-                  onChange={handleInputChange}
-                  leadingIcon={<Hash className="h-4 w-4" />}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-(--muted) mb-1">
-                  Country
-                </label>
-                <div className="relative">
-                  <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-(--muted)">
-                    <Globe className="h-4 w-4" />
-                  </span>
-                  <Select
-                    value={formData.customerCountry}
-                    onValueChange={(value) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        customerCountry: value,
-                      }))
-                    }
-                  >
-                    <SelectTrigger className="pl-9">
-                      <SelectValue placeholder="Select country" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {COUNTRIES.map((country) => (
-                        <SelectItem key={country} value={country}>
-                          {country}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+            {showCustomerDetails && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{
+                  height: { type: "spring", damping: 25, stiffness: 200 },
+                  opacity: { duration: 0.2 },
+                }}
+                style={{ overflow: "hidden" }}
+              >
+                <div className="space-y-4 pt-1 px-1 pb-1">
+                  <Input
+                    label="Address"
+                    name="customerAddress"
+                    value={formData.customerAddress}
+                    onChange={handleInputChange}
+                    leadingIcon={<MapPin className="h-4 w-4" />}
+                  />
+                  <div className="grid gap-4 sm:grid-cols-3">
+                    <Input
+                      label="City"
+                      name="customerCity"
+                      value={formData.customerCity}
+                      onChange={handleInputChange}
+                      leadingIcon={<Building2 className="h-4 w-4" />}
+                    />
+                    <Input
+                      label="State/Province"
+                      name="customerState"
+                      value={formData.customerState}
+                      onChange={handleInputChange}
+                      leadingIcon={<Map className="h-4 w-4" />}
+                    />
+                    <Input
+                      label="Zip/Postal Code"
+                      name="customerZipCode"
+                      value={formData.customerZipCode}
+                      onChange={handleInputChange}
+                      leadingIcon={<Hash className="h-4 w-4" />}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-(--muted) mb-1">
+                      Country
+                    </label>
+                    <div className="relative">
+                      <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-(--muted)">
+                        <Globe className="h-4 w-4" />
+                      </span>
+                      <Select
+                        value={formData.customerCountry}
+                        onValueChange={(value) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            customerCountry: value,
+                          }))
+                        }
+                      >
+                        <SelectTrigger className="pl-9">
+                          <SelectValue placeholder="Select country" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {COUNTRIES.map((country) => (
+                            <SelectItem key={country} value={country}>
+                              {country}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-            </motion.div>
-          )}
+              </motion.div>
+            )}
           </AnimatePresence>
         </CardContent>
       </Card>
@@ -1182,68 +1221,73 @@ export default function InvoiceForm({
             {showTaxDiscount ? "Hide tax & discount" : "Add tax or discount"}
           </button>
           <AnimatePresence>
-          {showTaxDiscount && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ height: { type: "spring", damping: 25, stiffness: 200 }, opacity: { duration: 0.2 } }}
-              style={{ overflow: "hidden" }}
-            >
-            <div className="space-y-4 pt-1">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <Input
-                  label="Tax Rate (%)"
-                  name="taxRate"
-                  type="number"
-                  value={formData.taxRate}
-                  onChange={handleInputChange}
-                  min="0"
-                  max="100"
-                  step="0.01"
-                  placeholder="0"
-                />
-                <div>
-                  <label className="block text-sm font-medium text-(--muted) mb-1">
-                    Discount
-                  </label>
-                  <div className="flex gap-2">
-                    <Select
-                      value={formData.discountType}
-                      onValueChange={(v) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          discountType: v as "percentage" | "fixed",
-                        }))
-                      }
-                    >
-                      <SelectTrigger className="w-20 shrink-0">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="percentage">%</SelectItem>
-                        <SelectItem value="fixed">Fixed</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <div className="flex-1 min-w-0">
-                      <Input
-                        name="discountValue"
-                        type="number"
-                        value={formData.discountValue}
-                        onChange={handleInputChange}
-                        min="0"
-                        step="0.01"
-                        placeholder={
-                          formData.discountType === "percentage" ? "0" : "0.00"
-                        }
-                      />
+            {showTaxDiscount && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{
+                  height: { type: "spring", damping: 25, stiffness: 200 },
+                  opacity: { duration: 0.2 },
+                }}
+                style={{ overflow: "hidden" }}
+              >
+                <div className="space-y-4 pt-1 px-1 pb-1">
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <Input
+                      label="Tax Rate (%)"
+                      name="taxRate"
+                      type="number"
+                      value={formData.taxRate}
+                      onChange={handleInputChange}
+                      min="0"
+                      max="100"
+                      step="0.01"
+                      placeholder="0"
+                    />
+                    <div>
+                      <label className="block text-sm font-medium text-(--muted) mb-1">
+                        Discount
+                      </label>
+                      <div className="flex gap-2">
+                        <Select
+                          value={formData.discountType}
+                          onValueChange={(v) =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              discountType: v as "percentage" | "fixed",
+                            }))
+                          }
+                        >
+                          <SelectTrigger className="w-20 shrink-0">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="percentage">%</SelectItem>
+                            <SelectItem value="fixed">Fixed</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <div className="flex-1 min-w-0">
+                          <Input
+                            name="discountValue"
+                            type="number"
+                            value={formData.discountValue}
+                            onChange={handleInputChange}
+                            min="0"
+                            step="0.01"
+                            placeholder={
+                              formData.discountType === "percentage"
+                                ? "0"
+                                : "0.00"
+                            }
+                          />
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </div>
-            </motion.div>
-          )}
+              </motion.div>
+            )}
           </AnimatePresence>
           <div className="space-y-2 border-t pt-4 border-(--border)">
             <div className="flex justify-between text-sm">
