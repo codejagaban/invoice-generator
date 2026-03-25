@@ -17,7 +17,13 @@ import {
   Calendar,
 } from "lucide-react";
 import Button from "@/app/components/shared/Button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/shared/Select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/app/components/shared/Select";
 import Card from "@/app/components/shared/Card";
 import type { Invoice } from "@/app/lib/types";
 import { getInvoices, getSettings, saveSettings } from "@/app/lib/storage";
@@ -29,9 +35,15 @@ import {
 } from "@/app/lib/invoice";
 import { useDbReady } from "@/app/components/DbScopeProvider";
 import { InvoiceListSkeleton } from "@/app/components/shared/Skeleton";
-import { FadeIn, FadeInUp, StaggerContainer, StaggerItem } from "@/app/components/shared/Motion";
+import {
+  FadeIn,
+  FadeInUp,
+  StaggerContainer,
+  StaggerItem,
+} from "@/app/components/shared/Motion";
 
 import { prefetchRates, convertWithRates } from "@/app/lib/currency";
+import { getCurrencySymbol } from "@/app/lib/currency-symbols";
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -45,9 +57,10 @@ function getInvoiceAmount(inv: Invoice): number {
   const subtotal = inv.items.reduce((s, i) => s + i.quantity * i.rate, 0);
   let discount = 0;
   if (inv.discountValue && inv.discountValue > 0) {
-    discount = inv.discountType === "percentage"
-      ? Math.round(subtotal * inv.discountValue) / 100
-      : Math.min(inv.discountValue, subtotal);
+    discount =
+      inv.discountType === "percentage"
+        ? Math.round(subtotal * inv.discountValue) / 100
+        : Math.min(inv.discountValue, subtotal);
   }
   const afterDiscount = Math.round((subtotal - discount) * 100) / 100;
   const tax = Math.round(afterDiscount * (inv.taxRate || 0)) / 100;
@@ -83,6 +96,17 @@ function formatYLabel(v: number): string {
   if (v >= 1000000) return `${(v / 1000000).toFixed(1)}M`;
   if (v >= 1000) return `${(v / 1000).toFixed(v >= 10000 ? 0 : 1)}k`;
   return String(Math.round(v));
+}
+
+function formatCurrencyWithSymbol(amount: number, currency: string): string {
+  const safeAmount = Number.isFinite(amount) ? amount : 0;
+  const totalCents = Math.round(safeAmount * 100);
+  const sign = totalCents < 0 ? "-" : "";
+  const absCents = Math.abs(totalCents);
+  const whole = Math.floor(absCents / 100).toLocaleString("en-US");
+  const cents = String(absCents % 100).padStart(2, "0");
+
+  return `${sign}${getCurrencySymbol(currency)}${whole}.${cents}`;
 }
 
 function LineChart({
@@ -130,7 +154,12 @@ function LineChart({
   const fmtVal = formatValue || ((v: number) => formatYLabel(v));
 
   return (
-    <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-64" fill="none" onMouseLeave={() => setHoveredIdx(null)}>
+    <svg
+      viewBox={`0 0 ${width} ${height}`}
+      className="w-full h-64"
+      fill="none"
+      onMouseLeave={() => setHoveredIdx(null)}
+    >
       <defs>
         <linearGradient id="line-chart-grad" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor={color} stopOpacity="0.2" />
@@ -145,17 +174,41 @@ function LineChart({
         const y = padTop + chartH * (1 - pct);
         return (
           <g key={pct}>
-            <line x1={padLeft} y1={y} x2={width - padRight} y2={y} stroke="currentColor" strokeWidth="0.5" className="text-gray-200 dark:text-gray-800" />
-            <text x={padLeft + 4} y={y - 4} className="text-[8px] fill-gray-400 dark:fill-gray-500" style={{ fontFamily: "system-ui" }}>
+            <line
+              x1={padLeft}
+              y1={y}
+              x2={width - padRight}
+              y2={y}
+              stroke="currentColor"
+              strokeWidth="0.5"
+              className="text-gray-200 dark:text-gray-800"
+            />
+            <text
+              x={padLeft + 4}
+              y={y - 4}
+              className="text-[8px] fill-gray-400 dark:fill-gray-500"
+              style={{ fontFamily: "system-ui" }}
+            >
               {formatYLabel(max * pct)}
             </text>
           </g>
         );
       })}
       {/* Fill */}
-      <path d={fillPath} fill="url(#line-chart-grad)" clipPath="url(#chart-clip)" />
+      <path
+        d={fillPath}
+        fill="url(#line-chart-grad)"
+        clipPath="url(#chart-clip)"
+      />
       {/* Line */}
-      <path d={linePath} stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" clipPath="url(#chart-clip)" />
+      <path
+        d={linePath}
+        stroke={color}
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        clipPath="url(#chart-clip)"
+      />
       {/* Hover vertical line */}
       {hoveredIdx !== null && (
         <line
@@ -174,7 +227,7 @@ function LineChart({
         <g key={i}>
           {/* Invisible wider hit area */}
           <rect
-            x={p.x - (chartW / data.length) / 2}
+            x={p.x - chartW / data.length / 2}
             y={padTop}
             width={chartW / data.length}
             height={chartH + padBottom}
@@ -183,8 +236,20 @@ function LineChart({
             style={{ cursor: "crosshair" }}
           />
           {/* Dot */}
-          <circle cx={p.x} cy={p.y} r={hoveredIdx === i ? 5 : 3.5} fill={color} className="transition-all duration-150" />
-          <circle cx={p.x} cy={p.y} r={hoveredIdx === i ? 2.5 : 1.5} fill="white" className="transition-all duration-150" />
+          <circle
+            cx={p.x}
+            cy={p.y}
+            r={hoveredIdx === i ? 5 : 3.5}
+            fill={color}
+            className="transition-all duration-150"
+          />
+          <circle
+            cx={p.x}
+            cy={p.y}
+            r={hoveredIdx === i ? 2.5 : 1.5}
+            fill="white"
+            className="transition-all duration-150"
+          />
           {/* Tooltip */}
           {hoveredIdx === i && (
             <g>
@@ -251,14 +316,32 @@ function BarChart({
   const barW = (chartW - totalGap) / barCount;
 
   return (
-    <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-64" fill="none" onMouseLeave={() => setHoveredIdx(null)}>
+    <svg
+      viewBox={`0 0 ${width} ${height}`}
+      className="w-full h-64"
+      fill="none"
+      onMouseLeave={() => setHoveredIdx(null)}
+    >
       {/* Grid lines + Y labels */}
       {[0, 0.25, 0.5, 0.75, 1].map((pct) => {
         const y = padTop + chartH * (1 - pct);
         return (
           <g key={pct}>
-            <line x1={padLeft} y1={y} x2={width - padRight} y2={y} stroke="currentColor" strokeWidth="0.5" className="text-gray-200 dark:text-gray-800" />
-            <text x={padLeft + 4} y={y - 4} className="text-[8px] fill-gray-400 dark:fill-gray-500" style={{ fontFamily: "system-ui" }}>
+            <line
+              x1={padLeft}
+              y1={y}
+              x2={width - padRight}
+              y2={y}
+              stroke="currentColor"
+              strokeWidth="0.5"
+              className="text-gray-200 dark:text-gray-800"
+            />
+            <text
+              x={padLeft + 4}
+              y={y - 4}
+              className="text-[8px] fill-gray-400 dark:fill-gray-500"
+              style={{ fontFamily: "system-ui" }}
+            >
               {formatYLabel(max * pct)}
             </text>
           </g>
@@ -270,9 +353,19 @@ function BarChart({
         const y = padTop + chartH - barH;
         const isHovered = hoveredIdx === i;
         return (
-          <g key={i} onMouseEnter={() => setHoveredIdx(i)} style={{ cursor: "pointer" }}>
+          <g
+            key={i}
+            onMouseEnter={() => setHoveredIdx(i)}
+            style={{ cursor: "pointer" }}
+          >
             {/* Hit area */}
-            <rect x={x} y={padTop} width={barW} height={chartH + padBottom} fill="transparent" />
+            <rect
+              x={x}
+              y={padTop}
+              width={barW}
+              height={chartH + padBottom}
+              fill="transparent"
+            />
             {/* Bar */}
             <rect
               x={x}
@@ -359,7 +452,12 @@ function StatusDonut({
 
   return (
     <div className="flex items-center gap-6">
-      <svg width={size} height={size} className="shrink-0" onMouseLeave={() => setHoveredIdx(null)}>
+      <svg
+        width={size}
+        height={size}
+        className="shrink-0"
+        onMouseLeave={() => setHoveredIdx(null)}
+      >
         {segments.map((seg, i) => {
           const dashLength = (seg.value / total) * circumference;
           const dashOffset = -offsets[i];
@@ -376,7 +474,12 @@ function StatusDonut({
               strokeDasharray={`${dashLength} ${circumference - dashLength}`}
               strokeDashoffset={dashOffset}
               strokeLinecap="butt"
-              style={{ transform: "rotate(-90deg)", transformOrigin: "center", cursor: "pointer", transition: "stroke-width 0.15s" }}
+              style={{
+                transform: "rotate(-90deg)",
+                transformOrigin: "center",
+                cursor: "pointer",
+                transition: "stroke-width 0.15s",
+              }}
               onMouseEnter={() => setHoveredIdx(i)}
             />
           );
@@ -428,18 +531,33 @@ function StatusDonut({
 
 // ─── Main Dashboard ─────────────────────────────────────────────────────────
 
-type TimePeriod = "this-month" | "last-month" | "3-months" | "6-months" | "year" | "all";
+type TimePeriod =
+  | "this-month"
+  | "last-month"
+  | "3-months"
+  | "6-months"
+  | "year"
+  | "all";
 type StatusFilter = "all" | "draft" | "sent" | "paid" | "cancelled";
 
 function filterByPeriod(invoices: Invoice[], period: TimePeriod): Invoice[] {
   if (period === "all") return invoices;
   const now = new Date();
   const start = new Date();
-  if (period === "this-month") { start.setDate(1); start.setHours(0, 0, 0, 0); }
-  else if (period === "last-month") { start.setMonth(now.getMonth() - 1); start.setDate(1); start.setHours(0, 0, 0, 0); }
-  else if (period === "3-months") { start.setMonth(now.getMonth() - 3); }
-  else if (period === "6-months") { start.setMonth(now.getMonth() - 6); }
-  else if (period === "year") { start.setFullYear(now.getFullYear() - 1); }
+  if (period === "this-month") {
+    start.setDate(1);
+    start.setHours(0, 0, 0, 0);
+  } else if (period === "last-month") {
+    start.setMonth(now.getMonth() - 1);
+    start.setDate(1);
+    start.setHours(0, 0, 0, 0);
+  } else if (period === "3-months") {
+    start.setMonth(now.getMonth() - 3);
+  } else if (period === "6-months") {
+    start.setMonth(now.getMonth() - 6);
+  } else if (period === "year") {
+    start.setFullYear(now.getFullYear() - 1);
+  }
 
   if (period === "last-month") {
     const end = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -608,7 +726,9 @@ export default function DashboardPage() {
           const d = new Date(inv.date);
           return d < min ? d : min;
         }, new Date());
-        const diffMonths = (now.getFullYear() - earliest.getFullYear()) * 12 + (now.getMonth() - earliest.getMonth());
+        const diffMonths =
+          (now.getFullYear() - earliest.getFullYear()) * 12 +
+          (now.getMonth() - earliest.getMonth());
         monthsBack = Math.max(11, diffMonths);
       }
 
@@ -651,7 +771,8 @@ export default function DashboardPage() {
         draft: statusSource.filter((inv) => inv.status === "draft").length,
         sent: statusSource.filter((inv) => inv.status === "sent").length,
         paid: statusSource.filter((inv) => inv.status === "paid").length,
-        cancelled: statusSource.filter((inv) => inv.status === "cancelled").length,
+        cancelled: statusSource.filter((inv) => inv.status === "cancelled")
+          .length,
       };
 
       // Recent invoices (last 5)
@@ -663,7 +784,8 @@ export default function DashboardPage() {
         .slice(0, 5);
 
       // Unique customers
-      const totalCustomers = new Set(filtered.map((inv) => inv.customer.name)).size;
+      const totalCustomers = new Set(filtered.map((inv) => inv.customer.name))
+        .size;
 
       setMetrics({
         thisMonthRevenue,
@@ -722,203 +844,303 @@ export default function DashboardPage() {
           <div className="space-y-6">
             {/* ── Filters ─────────────────────────────────────────── */}
             <FadeIn>
-            <div className="flex items-center gap-2 sm:gap-3 sm:justify-end">
-              <div className="flex items-center gap-1.5 text-sm text-(--muted)">
-                <Calendar className="h-4 w-4" />
-                <span className="font-medium">Filters</span>
-              </div>
-              <Select value={period} onValueChange={(v) => setPeriod(v as TimePeriod)}>
-                <SelectTrigger className="flex-1 sm:flex-none sm:w-40">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="this-month">This Month</SelectItem>
-                  <SelectItem value="last-month">Last Month</SelectItem>
-                  <SelectItem value="3-months">Last 3 Months</SelectItem>
-                  <SelectItem value="6-months">Last 6 Months</SelectItem>
-                  <SelectItem value="year">Last Year</SelectItem>
-                  <SelectItem value="all">All Time</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as StatusFilter)}>
-                <SelectTrigger className="flex-1 sm:flex-none sm:w-36">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="draft">Draft</SelectItem>
-                  <SelectItem value="sent">Sent</SelectItem>
-                  <SelectItem value="paid">Paid</SelectItem>
-                  <SelectItem value="cancelled">Cancelled</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={defaultCurrency} onValueChange={async (v) => {
-                setDefaultCurrency(v);
-                await saveSettings({ defaultCurrency: v, updatedAt: new Date().toISOString() });
-              }}>
-                <SelectTrigger className="flex-1 sm:flex-none sm:w-28">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {[
-                    { code: "USD", label: "USD" },
-                    { code: "EUR", label: "EUR" },
-                    { code: "GBP", label: "GBP" },
-                    { code: "CAD", label: "CAD" },
-                    { code: "AUD", label: "AUD" },
-                    { code: "JPY", label: "JPY" },
-                    { code: "CHF", label: "CHF" },
-                    { code: "CNY", label: "CNY" },
-                    { code: "INR", label: "INR" },
-                    { code: "MXN", label: "MXN" },
-                    { code: "NGN", label: "NGN" },
-                  ].map((c) => (
-                    <SelectItem key={c.code} value={c.code}>{c.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {(period !== "all" || statusFilter !== "all") && (
-                <button
-                  onClick={() => { setPeriod("all"); setStatusFilter("all"); }}
-                  className="text-xs text-(--muted) hover:text-black dark:hover:text-white transition-colors"
+              <div className="flex items-center gap-2 sm:gap-3 sm:justify-end">
+                <div className="flex items-center gap-1.5 text-sm text-(--muted)">
+                  <Calendar className="h-4 w-4" />
+                  <span className="font-medium">Filters</span>
+                </div>
+                <Select
+                  value={period}
+                  onValueChange={(v) => setPeriod(v as TimePeriod)}
                 >
-                  Reset
-                </button>
-              )}
-            </div>
+                  <SelectTrigger className="flex-1 sm:flex-none sm:w-40">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="this-month">This Month</SelectItem>
+                    <SelectItem value="last-month">Last Month</SelectItem>
+                    <SelectItem value="3-months">Last 3 Months</SelectItem>
+                    <SelectItem value="6-months">Last 6 Months</SelectItem>
+                    <SelectItem value="year">Last Year</SelectItem>
+                    <SelectItem value="all">All Time</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select
+                  value={statusFilter}
+                  onValueChange={(v) => setStatusFilter(v as StatusFilter)}
+                >
+                  <SelectTrigger className="flex-1 sm:flex-none sm:w-36">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Status</SelectItem>
+                    <SelectItem value="draft">Draft</SelectItem>
+                    <SelectItem value="sent">Sent</SelectItem>
+                    <SelectItem value="paid">Paid</SelectItem>
+                    <SelectItem value="cancelled">Cancelled</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select
+                  value={defaultCurrency}
+                  onValueChange={async (v) => {
+                    setDefaultCurrency(v);
+                    await saveSettings({
+                      defaultCurrency: v,
+                      updatedAt: new Date().toISOString(),
+                    });
+                  }}
+                >
+                  <SelectTrigger className="flex-1 sm:flex-none sm:w-28">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[
+                      { code: "USD", label: "USD" },
+                      { code: "EUR", label: "EUR" },
+                      { code: "GBP", label: "GBP" },
+                      { code: "CAD", label: "CAD" },
+                      { code: "AUD", label: "AUD" },
+                      { code: "JPY", label: "JPY" },
+                      { code: "CHF", label: "CHF" },
+                      { code: "CNY", label: "CNY" },
+                      { code: "INR", label: "INR" },
+                      { code: "MXN", label: "MXN" },
+                      { code: "NGN", label: "NGN" },
+                    ].map((c) => (
+                      <SelectItem key={c.code} value={c.code}>
+                        {c.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {(period !== "all" || statusFilter !== "all") && (
+                  <button
+                    onClick={() => {
+                      setPeriod("all");
+                      setStatusFilter("all");
+                    }}
+                    className="text-xs text-(--muted) hover:text-black dark:hover:text-white transition-colors"
+                  >
+                    Reset
+                  </button>
+                )}
+              </div>
             </FadeIn>
 
             {/* ── Top Metric Cards (FinSet-style) ─────────────────── */}
-            <StaggerContainer staggerDelay={0.08} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <StaggerContainer
+              staggerDelay={0.08}
+              className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+            >
               {/* Revenue Card */}
-              <StaggerItem><Card>
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-sm font-semibold text-(--muted)">Total Revenue</h3>
-                  <span className="text-[11px] text-(--muted) bg-(--surface) border border-(--border) rounded-md px-2 py-0.5">{defaultCurrency}</span>
-                </div>
-                <p className="text-3xl font-bold text-black dark:text-white tabular-nums tracking-tight">
-                  {formatCurrency(metrics.thisMonthRevenue, defaultCurrency)}
-                  <span className="text-lg font-normal text-(--muted)">.{(metrics.thisMonthRevenue % 1).toFixed(2).slice(2)}</span>
-                </p>
-                <div className="mt-3 flex items-center gap-4 text-xs">
-                  {metrics.revenueChange !== null && (
-                    <span className={`inline-flex items-center gap-1 font-medium ${metrics.revenueChange >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}`}>
-                      {metrics.revenueChange >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                      {metrics.revenueChange >= 0 ? "+" : ""}{metrics.revenueChange}%
+              <StaggerItem>
+                <Card>
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-sm font-semibold text-(--muted)">
+                      Total Revenue
+                    </h3>
+                    <span className="text-[11px] text-(--muted) bg-(--surface) border border-(--border) rounded-md px-2 py-0.5">
+                      {getCurrencySymbol(defaultCurrency)}
                     </span>
-                  )}
-                  <span className="text-(--muted)">{metrics.thisMonthCount} invoices</span>
-                </div>
-                <p className="mt-2 text-xs text-(--muted)">
-                  {metrics.lastMonthRevenue > 0
-                    ? metrics.thisMonthRevenue >= metrics.lastMonthRevenue
-                      ? `You earned extra ${formatCurrency(metrics.thisMonthRevenue - metrics.lastMonthRevenue, defaultCurrency)} compared to last month`
-                      : `Down ${formatCurrency(metrics.lastMonthRevenue - metrics.thisMonthRevenue, defaultCurrency)} compared to last month`
-                    : "No data from last month"}
-                </p>
-              </Card></StaggerItem>
+                  </div>
+                  <p className="text-3xl font-bold text-black dark:text-white tabular-nums tracking-tight">
+                    {formatCurrencyWithSymbol(
+                      metrics.thisMonthRevenue,
+                      defaultCurrency,
+                    )}
+                  </p>
+                  <div className="mt-3 flex items-center gap-4 text-xs">
+                    {metrics.revenueChange !== null && (
+                      <span
+                        className={`inline-flex items-center gap-1 font-medium ${metrics.revenueChange >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}`}
+                      >
+                        {metrics.revenueChange >= 0 ? (
+                          <TrendingUp className="h-3 w-3" />
+                        ) : (
+                          <TrendingDown className="h-3 w-3" />
+                        )}
+                        {metrics.revenueChange >= 0 ? "+" : ""}
+                        {metrics.revenueChange}%
+                      </span>
+                    )}
+                    <span className="text-(--muted)">
+                      {metrics.thisMonthCount} invoices
+                    </span>
+                  </div>
+                  <p className="mt-2 text-xs text-(--muted)">
+                    {metrics.lastMonthRevenue > 0
+                      ? metrics.thisMonthRevenue >= metrics.lastMonthRevenue
+                        ? `You earned extra ${formatCurrencyWithSymbol(metrics.thisMonthRevenue - metrics.lastMonthRevenue, defaultCurrency)} compared to last month`
+                        : `Down ${formatCurrencyWithSymbol(metrics.lastMonthRevenue - metrics.thisMonthRevenue, defaultCurrency)} compared to last month`
+                      : "No data from last month"}
+                  </p>
+                </Card>
+              </StaggerItem>
 
               {/* Collected Card */}
-              <StaggerItem><Card>
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-sm font-semibold text-(--muted)">Collected</h3>
-                  <span className="text-[11px] text-(--muted) bg-(--surface) border border-(--border) rounded-md px-2 py-0.5">{defaultCurrency}</span>
-                </div>
-                <p className="text-3xl font-bold text-black dark:text-white tabular-nums tracking-tight">
-                  {formatCurrency(metrics.thisMonthPaidAmount, defaultCurrency)}
-                  <span className="text-lg font-normal text-(--muted)">.{(metrics.thisMonthPaidAmount % 1).toFixed(2).slice(2)}</span>
-                </p>
-                <div className="mt-3 flex items-center gap-4 text-xs">
-                  {metrics.paidChange !== null && (
-                    <span className={`inline-flex items-center gap-1 font-medium ${metrics.paidChange >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}`}>
-                      {metrics.paidChange >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                      {metrics.paidChange >= 0 ? "+" : ""}{metrics.paidChange}%
+              <StaggerItem>
+                <Card>
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-sm font-semibold text-(--muted)">
+                      Collected
+                    </h3>
+                    <span className="text-[11px] text-(--muted) bg-(--surface) border border-(--border) rounded-md px-2 py-0.5">
+                      {getCurrencySymbol(defaultCurrency)}
                     </span>
-                  )}
-                  <span className="text-(--muted)">{metrics.statusCounts.paid} paid</span>
-                </div>
-                <p className="mt-2 text-xs text-(--muted)">
-                  {metrics.lastMonthPaidAmount > 0
-                    ? metrics.thisMonthPaidAmount >= metrics.lastMonthPaidAmount
-                      ? `Collected extra ${formatCurrency(metrics.thisMonthPaidAmount - metrics.lastMonthPaidAmount, defaultCurrency)} compared to last month`
-                      : `Down ${formatCurrency(metrics.lastMonthPaidAmount - metrics.thisMonthPaidAmount, defaultCurrency)} compared to last month`
-                    : "No collections last month"}
-                </p>
-              </Card></StaggerItem>
+                  </div>
+                  <p className="text-3xl font-bold text-black dark:text-white tabular-nums tracking-tight">
+                    {formatCurrencyWithSymbol(
+                      metrics.thisMonthPaidAmount,
+                      defaultCurrency,
+                    )}
+                  </p>
+                  <div className="mt-3 flex items-center gap-4 text-xs">
+                    {metrics.paidChange !== null && (
+                      <span
+                        className={`inline-flex items-center gap-1 font-medium ${metrics.paidChange >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}`}
+                      >
+                        {metrics.paidChange >= 0 ? (
+                          <TrendingUp className="h-3 w-3" />
+                        ) : (
+                          <TrendingDown className="h-3 w-3" />
+                        )}
+                        {metrics.paidChange >= 0 ? "+" : ""}
+                        {metrics.paidChange}%
+                      </span>
+                    )}
+                    <span className="text-(--muted)">
+                      {metrics.statusCounts.paid} paid
+                    </span>
+                  </div>
+                  <p className="mt-2 text-xs text-(--muted)">
+                    {metrics.lastMonthPaidAmount > 0
+                      ? metrics.thisMonthPaidAmount >=
+                        metrics.lastMonthPaidAmount
+                        ? `Collected extra ${formatCurrencyWithSymbol(metrics.thisMonthPaidAmount - metrics.lastMonthPaidAmount, defaultCurrency)} compared to last month`
+                        : `Down ${formatCurrencyWithSymbol(metrics.lastMonthPaidAmount - metrics.thisMonthPaidAmount, defaultCurrency)} compared to last month`
+                      : "No collections last month"}
+                  </p>
+                </Card>
+              </StaggerItem>
 
               {/* Outstanding Card */}
-              <StaggerItem><Card>
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-sm font-semibold text-(--muted)">Outstanding</h3>
-                  <span className="text-[11px] text-(--muted) bg-(--surface) border border-(--border) rounded-md px-2 py-0.5">{defaultCurrency}</span>
-                </div>
-                <p className="text-3xl font-bold text-black dark:text-white tabular-nums tracking-tight">
-                  {formatCurrency(metrics.unpaidAmount, defaultCurrency)}
-                  <span className="text-lg font-normal text-(--muted)">.{(metrics.unpaidAmount % 1).toFixed(2).slice(2)}</span>
-                </p>
-                <div className="mt-3 flex items-center gap-4 text-xs">
-                  <span className="text-(--muted)">{metrics.unpaidCount} unpaid</span>
-                  {metrics.overdueCount > 0 && (
-                    <span className="inline-flex items-center gap-1 font-medium text-red-600 dark:text-red-400">
-                      <AlertTriangle className="h-3 w-3" />
-                      {metrics.overdueCount} overdue
+              <StaggerItem>
+                <Card>
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-sm font-semibold text-(--muted)">
+                      Outstanding
+                    </h3>
+                    <span className="text-[11px] text-(--muted) bg-(--surface) border border-(--border) rounded-md px-2 py-0.5">
+                      {getCurrencySymbol(defaultCurrency)}
                     </span>
-                  )}
-                </div>
-                <p className="mt-2 text-xs text-(--muted)">
-                  {metrics.overdueAmount > 0
-                    ? `${formatCurrency(metrics.overdueAmount, defaultCurrency)} is overdue`
-                    : "All invoices are on track"}
-                </p>
-              </Card></StaggerItem>
+                  </div>
+                  <p className="text-3xl font-bold text-black dark:text-white tabular-nums tracking-tight">
+                    {formatCurrencyWithSymbol(
+                      metrics.unpaidAmount,
+                      defaultCurrency,
+                    )}
+                  </p>
+                  <div className="mt-3 flex items-center gap-4 text-xs">
+                    <span className="text-(--muted)">
+                      {metrics.unpaidCount} unpaid
+                    </span>
+                    {metrics.overdueCount > 0 && (
+                      <span className="inline-flex items-center gap-1 font-medium text-red-600 dark:text-red-400">
+                        <AlertTriangle className="h-3 w-3" />
+                        {metrics.overdueCount} overdue
+                      </span>
+                    )}
+                  </div>
+                  <p className="mt-2 text-xs text-(--muted)">
+                    {metrics.overdueAmount > 0
+                      ? `${formatCurrencyWithSymbol(metrics.overdueAmount, defaultCurrency)} is overdue`
+                      : "All invoices are on track"}
+                  </p>
+                </Card>
+              </StaggerItem>
             </StaggerContainer>
 
             {/* ── Revenue Overview + Statistics ────────────────────── */}
             <div className="grid gap-6 lg:grid-cols-3">
               {/* Revenue Overview - large chart */}
-              <FadeInUp delay={0.2} className="lg:col-span-2"><Card>
-                <div className="flex items-center justify-between mb-1">
-                  <h3 className="text-base font-bold text-black dark:text-white">Revenue Overview</h3>
-                  <div className="flex items-center gap-3 text-xs text-(--muted)">
-                    <span className="flex items-center gap-1.5">
-                      <span className="h-2 w-2 rounded-full bg-indigo-500" />
-                      This period
-                    </span>
+              <FadeInUp delay={0.2} className="lg:col-span-2">
+                <Card>
+                  <div className="flex items-center justify-between mb-1">
+                    <h3 className="text-base font-bold text-black dark:text-white">
+                      Revenue Overview
+                    </h3>
+                    <div className="flex items-center gap-3 text-xs text-(--muted)">
+                      <span className="flex items-center gap-1.5">
+                        <span className="h-2 w-2 rounded-full bg-indigo-500" />
+                        This period
+                      </span>
+                    </div>
                   </div>
-                </div>
-                <p className="text-xs text-(--muted) mb-4">{
-                  period === "this-month" ? "This month" :
-                  period === "last-month" ? "Last month" :
-                  period === "3-months" ? "Last 3 months" :
-                  period === "6-months" ? "Last 6 months" :
-                  period === "year" ? "Last year" :
-                  period === "all" ? "All time" : "Last 12 months"
-                }</p>
-                <LineChart
-                  data={metrics.monthlyRevenue}
-                  labels={metrics.monthLabels}
-                  color="#6366f1"
-                  formatValue={(v) => formatCurrency(v, defaultCurrency)}
-                />
-              </Card></FadeInUp>
+                  <p className="text-xs text-(--muted) mb-4">
+                    {period === "this-month"
+                      ? "This month"
+                      : period === "last-month"
+                        ? "Last month"
+                        : period === "3-months"
+                          ? "Last 3 months"
+                          : period === "6-months"
+                            ? "Last 6 months"
+                            : period === "year"
+                              ? "Last year"
+                              : period === "all"
+                                ? "All time"
+                                : "Last 12 months"}
+                  </p>
+                  <LineChart
+                    data={metrics.monthlyRevenue}
+                    labels={metrics.monthLabels}
+                    color="#6366f1"
+                    formatValue={(v) => formatCurrency(v, defaultCurrency)}
+                  />
+                </Card>
+              </FadeInUp>
 
               {/* Statistics - Donut + summary */}
-              <FadeInUp delay={0.3}><Card>
-                <h3 className="text-base font-bold text-black dark:text-white mb-1">Statistics</h3>
-                <p className="text-xs text-(--muted) mb-4">Invoice breakdown by status</p>
-                <StatusDonut
-                  segments={[
-                    { label: "Paid", value: metrics.statusCounts.paid, color: "#10b981" },
-                    { label: "Sent", value: metrics.statusCounts.sent, color: "#6366f1" },
-                    { label: "Draft", value: metrics.statusCounts.draft, color: "#9ca3af" },
-                    { label: "Cancelled", value: metrics.statusCounts.cancelled, color: "#ef4444" },
-                  ]}
-                />
-                <div className="mt-4 pt-4 border-t border-(--border) text-center">
-                  <p className="text-xs text-(--muted)">Total invoices</p>
-                  <p className="text-2xl font-bold text-black dark:text-white">{metrics.totalInvoices}</p>
-                </div>
-              </Card></FadeInUp>
+              <FadeInUp delay={0.3}>
+                <Card>
+                  <h3 className="text-base font-bold text-black dark:text-white mb-1">
+                    Statistics
+                  </h3>
+                  <p className="text-xs text-(--muted) mb-4">
+                    Invoice breakdown by status
+                  </p>
+                  <StatusDonut
+                    segments={[
+                      {
+                        label: "Paid",
+                        value: metrics.statusCounts.paid,
+                        color: "#10b981",
+                      },
+                      {
+                        label: "Sent",
+                        value: metrics.statusCounts.sent,
+                        color: "#6366f1",
+                      },
+                      {
+                        label: "Draft",
+                        value: metrics.statusCounts.draft,
+                        color: "#9ca3af",
+                      },
+                      {
+                        label: "Cancelled",
+                        value: metrics.statusCounts.cancelled,
+                        color: "#ef4444",
+                      },
+                    ]}
+                  />
+                  <div className="mt-4 pt-4 border-t border-(--border) text-center">
+                    <p className="text-xs text-(--muted)">Total invoices</p>
+                    <p className="text-2xl font-bold text-black dark:text-white">
+                      {metrics.totalInvoices}
+                    </p>
+                  </div>
+                </Card>
+              </FadeInUp>
             </div>
 
             {/* ── Invoices Created + Attention Required ────────────── */}
@@ -926,16 +1148,25 @@ export default function DashboardPage() {
               {/* Invoices Created bar chart */}
               <Card className="lg:col-span-2">
                 <div className="flex items-center justify-between mb-1">
-                  <h3 className="text-base font-bold text-black dark:text-white">Invoices Created</h3>
+                  <h3 className="text-base font-bold text-black dark:text-white">
+                    Invoices Created
+                  </h3>
                 </div>
-                <p className="text-xs text-(--muted) mb-4">{
-                  period === "this-month" ? "This month" :
-                  period === "last-month" ? "Last month" :
-                  period === "3-months" ? "Last 3 months" :
-                  period === "6-months" ? "Last 6 months" :
-                  period === "year" ? "Last year" :
-                  period === "all" ? "All time" : "Last 12 months"
-                }</p>
+                <p className="text-xs text-(--muted) mb-4">
+                  {period === "this-month"
+                    ? "This month"
+                    : period === "last-month"
+                      ? "Last month"
+                      : period === "3-months"
+                        ? "Last 3 months"
+                        : period === "6-months"
+                          ? "Last 6 months"
+                          : period === "year"
+                            ? "Last year"
+                            : period === "all"
+                              ? "All time"
+                              : "Last 12 months"}
+                </p>
                 <BarChart
                   data={metrics.monthlyCount}
                   labels={metrics.monthLabels}
@@ -945,53 +1176,85 @@ export default function DashboardPage() {
 
               {/* Attention Required */}
               <Card>
-                <h3 className="text-base font-bold text-black dark:text-white mb-1">Attention</h3>
-                <p className="text-xs text-(--muted) mb-4">Overdue & due soon</p>
+                <h3 className="text-base font-bold text-black dark:text-white mb-1">
+                  Attention
+                </h3>
+                <p className="text-xs text-(--muted) mb-4">
+                  Overdue & due soon
+                </p>
                 <div className="space-y-2">
-                  {metrics.overdueInvoices.length === 0 && metrics.dueSoonInvoices.length === 0 ? (
+                  {metrics.overdueInvoices.length === 0 &&
+                  metrics.dueSoonInvoices.length === 0 ? (
                     <div className="text-center py-6">
                       <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-950/30">
                         <TrendingUp className="h-5 w-5 text-emerald-500" />
                       </div>
-                      <p className="text-sm font-medium text-black dark:text-white">All clear</p>
-                      <p className="text-xs text-(--muted)">No overdue invoices</p>
+                      <p className="text-sm font-medium text-black dark:text-white">
+                        All clear
+                      </p>
+                      <p className="text-xs text-(--muted)">
+                        No overdue invoices
+                      </p>
                     </div>
                   ) : (
                     <>
                       {metrics.overdueInvoices.slice(0, 3).map((inv) => (
-                        <Link key={inv.id} href={`/invoices/${inv.id}`}
+                        <Link
+                          key={inv.id}
+                          href={`/invoices/${inv.id}`}
                           className="flex items-center justify-between rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 transition-colors hover:bg-red-100 dark:border-red-900/40 dark:bg-red-950/20 dark:hover:bg-red-950/40"
                         >
                           <div className="flex items-center gap-2 min-w-0">
                             <AlertTriangle className="h-3.5 w-3.5 text-red-500 shrink-0" />
                             <div className="min-w-0">
-                              <p className="text-xs font-medium text-red-800 dark:text-red-300 truncate">{inv.invoiceNumber}</p>
-                              <p className="text-[10px] text-red-600 dark:text-red-400 truncate">{inv.customer.name}</p>
+                              <p className="text-xs font-medium text-red-800 dark:text-red-300 truncate">
+                                {inv.invoiceNumber}
+                              </p>
+                              <p className="text-[10px] text-red-600 dark:text-red-400 truncate">
+                                {inv.customer.name}
+                              </p>
                             </div>
                           </div>
                           <span className="text-xs font-semibold text-red-700 dark:text-red-300 shrink-0 ml-2">
-                            {formatCurrency(getInvoiceAmount(inv), inv.currency)}
+                            {formatCurrency(
+                              getInvoiceAmount(inv),
+                              inv.currency,
+                            )}
                           </span>
                         </Link>
                       ))}
                       {metrics.dueSoonInvoices.slice(0, 3).map((inv) => (
-                        <Link key={inv.id} href={`/invoices/${inv.id}`}
+                        <Link
+                          key={inv.id}
+                          href={`/invoices/${inv.id}`}
                           className="flex items-center justify-between rounded-lg border border-yellow-200 bg-yellow-50 px-3 py-2.5 transition-colors hover:bg-yellow-100 dark:border-yellow-900/40 dark:bg-yellow-950/20 dark:hover:bg-yellow-950/40"
                         >
                           <div className="flex items-center gap-2 min-w-0">
                             <Clock className="h-3.5 w-3.5 text-yellow-600 shrink-0" />
                             <div className="min-w-0">
-                              <p className="text-xs font-medium text-yellow-800 dark:text-yellow-300 truncate">{inv.invoiceNumber}</p>
-                              <p className="text-[10px] text-yellow-600 dark:text-yellow-400 truncate">{inv.customer.name}</p>
+                              <p className="text-xs font-medium text-yellow-800 dark:text-yellow-300 truncate">
+                                {inv.invoiceNumber}
+                              </p>
+                              <p className="text-[10px] text-yellow-600 dark:text-yellow-400 truncate">
+                                {inv.customer.name}
+                              </p>
                             </div>
                           </div>
                           <span className="text-xs font-semibold text-yellow-700 dark:text-yellow-300 shrink-0 ml-2">
-                            {formatCurrency(getInvoiceAmount(inv), inv.currency)}
+                            {formatCurrency(
+                              getInvoiceAmount(inv),
+                              inv.currency,
+                            )}
                           </span>
                         </Link>
                       ))}
-                      {(metrics.overdueInvoices.length + metrics.dueSoonInvoices.length) > 6 && (
-                        <Link href="/invoices" className="block text-center text-xs text-(--muted) hover:text-black dark:hover:text-white pt-1">
+                      {metrics.overdueInvoices.length +
+                        metrics.dueSoonInvoices.length >
+                        6 && (
+                        <Link
+                          href="/invoices"
+                          className="block text-center text-xs text-(--muted) hover:text-black dark:hover:text-white pt-1"
+                        >
                           View all →
                         </Link>
                       )}
@@ -1005,8 +1268,12 @@ export default function DashboardPage() {
             <Card>
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <h3 className="text-base font-bold text-black dark:text-white">Recent Invoices</h3>
-                  <p className="text-xs text-(--muted)">Latest activity across all invoices</p>
+                  <h3 className="text-base font-bold text-black dark:text-white">
+                    Recent Invoices
+                  </h3>
+                  <p className="text-xs text-(--muted)">
+                    Latest activity across all invoices
+                  </p>
                 </div>
                 <Link
                   href="/invoices"
@@ -1017,7 +1284,9 @@ export default function DashboardPage() {
               </div>
               <div className="divide-y divide-(--border)">
                 {metrics.recentInvoices.length === 0 ? (
-                  <p className="text-sm text-(--muted) py-6 text-center">No invoices yet.</p>
+                  <p className="text-sm text-(--muted) py-6 text-center">
+                    No invoices yet.
+                  </p>
                 ) : (
                   metrics.recentInvoices.map((inv) => (
                     <Link
@@ -1026,29 +1295,43 @@ export default function DashboardPage() {
                       className="flex items-center justify-between py-3 hover:bg-(--border)/10 -mx-2 px-2 rounded transition-colors"
                     >
                       <div className="flex items-center gap-3">
-                        <div className={`h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold ${
-                          inv.status === "paid" ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
-                            : inv.status === "sent" ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
-                            : inv.status === "cancelled" ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-                            : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
-                        }`}>
+                        <div
+                          className={`h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold ${
+                            inv.status === "paid"
+                              ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
+                              : inv.status === "sent"
+                                ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+                                : inv.status === "cancelled"
+                                  ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                                  : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
+                          }`}
+                        >
                           {inv.customer.name.charAt(0).toUpperCase()}
                         </div>
                         <div>
-                          <p className="text-sm font-medium text-black dark:text-white">{inv.customer.name}</p>
-                          <p className="text-xs text-(--muted)">{inv.invoiceNumber} · {formatDate(inv.date)}</p>
+                          <p className="text-sm font-medium text-black dark:text-white">
+                            {inv.customer.name}
+                          </p>
+                          <p className="text-xs text-(--muted)">
+                            {inv.invoiceNumber} · {formatDate(inv.date)}
+                          </p>
                         </div>
                       </div>
                       <div className="text-right">
                         <p className="text-sm font-semibold text-black dark:text-white tabular-nums">
                           {formatCurrency(getInvoiceAmount(inv), inv.currency)}
                         </p>
-                        <span className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold ${
-                          inv.status === "paid" ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
-                            : inv.status === "sent" ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
-                            : inv.status === "cancelled" ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-                            : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
-                        }`}>
+                        <span
+                          className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                            inv.status === "paid"
+                              ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
+                              : inv.status === "sent"
+                                ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+                                : inv.status === "cancelled"
+                                  ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                                  : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
+                          }`}
+                        >
                           {inv.status}
                         </span>
                       </div>
