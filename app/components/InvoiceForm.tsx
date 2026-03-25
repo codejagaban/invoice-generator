@@ -1110,7 +1110,7 @@ export default function InvoiceForm({
                               : parseFloat(e.target.value),
                           )
                         }
-                        min="0.01"
+                        min={item.type === "hours" ? "0" : "0.01"}
                         step={item.type === "hours" ? "0.25" : "0.01"}
                         leadingIcon={
                           item.type === "hours" ? (
@@ -1214,30 +1214,32 @@ export default function InvoiceForm({
                       step="0.01"
                       placeholder="0"
                     />
-                    <div>
-                      <label className="block text-sm font-medium text-(--muted) mb-1">
+                    <div className="p-1">
+                      <label className="block text-sm font-medium text-black dark:text-white mb-2">
                         Discount
                       </label>
-                      <div className="flex gap-2">
-                        <Select
-                          value={formData.discountType}
-                          onValueChange={(v) =>
-                            setFormData((prev) => ({
-                              ...prev,
-                              discountType: v as "percentage" | "fixed",
-                            }))
-                          }
-                        >
-                          <SelectTrigger className="w-20 shrink-0">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="percentage">%</SelectItem>
-                            <SelectItem value="fixed">Fixed</SelectItem>
-                          </SelectContent>
-                        </Select>
+                      <div className="flex items-start gap-2">
+                        <div className="w-20 shrink-0">
+                          <Select
+                            value={formData.discountType}
+                            onValueChange={(v) =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                discountType: v as "percentage" | "fixed",
+                              }))
+                            }
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="percentage">%</SelectItem>
+                              <SelectItem value="fixed">Fixed</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
                         <div className="flex-1 min-w-0">
-                          <Input
+                          <input
                             name="discountValue"
                             type="number"
                             value={formData.discountValue}
@@ -1249,6 +1251,7 @@ export default function InvoiceForm({
                                 ? "0"
                                 : "0.00"
                             }
+                            className="flex h-10 w-full rounded-lg border border-(--border) bg-(--surface) px-3 py-2 text-sm text-black ring-offset-white placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 dark:text-white dark:ring-offset-[#111111] dark:focus-visible:ring-white"
                           />
                         </div>
                       </div>
