@@ -199,6 +199,8 @@ const COUNTRIES = [
   "Zimbabwe",
 ];
 
+import { getCurrencySymbol } from "@/app/lib/currency-symbols";
+
 const CURRENCIES = [
   { code: "USD", label: "US Dollar" },
   { code: "EUR", label: "Euro" },
@@ -212,39 +214,6 @@ const CURRENCIES = [
   { code: "MXN", label: "Mexican Peso" },
   { code: "NGN", label: "Nigerian Naira" },
 ];
-
-const CURRENCY_SYMBOLS: Record<string, string> = {
-  USD: "$",
-  EUR: "€",
-  GBP: "£",
-  CAD: "C$",
-  AUD: "A$",
-  JPY: "¥",
-  CHF: "Fr",
-  CNY: "¥",
-  INR: "₹",
-  MXN: "MX$",
-  NGN: "₦",
-};
-
-const getCurrencySymbol = (currencyCode: string): string => {
-  const mappedSymbol = CURRENCY_SYMBOLS[currencyCode];
-  if (mappedSymbol) return mappedSymbol;
-
-  try {
-    const parts = new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: currencyCode,
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).formatToParts(0);
-    const symbol = parts.find((part) => part.type === "currency")?.value;
-    if (!symbol || symbol === currencyCode) return "¤";
-    return symbol;
-  } catch {
-    return "¤";
-  }
-};
 
 interface InvoiceFormProps {
   initialData?: Invoice;
