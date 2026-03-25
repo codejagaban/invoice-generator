@@ -1277,8 +1277,8 @@ export default function InvoiceForm({
       )}
 
       {/* Actions */}
-      <div className="flex gap-3">
-        <Button type="submit" isLoading={isLoading}>
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+        <Button type="submit" isLoading={isLoading} className="w-full sm:w-auto">
           <CheckCircle2 className="h-4 w-4 text-green-400" />
           {initialData ? "Update Invoice" : "Create Invoice"}
         </Button>
@@ -1286,6 +1286,7 @@ export default function InvoiceForm({
           type="button"
           variant="secondary"
           onClick={() => setShowSaveTemplateModal(true)}
+          className="order-3 w-full sm:order-2 sm:w-auto"
         >
           <BookmarkPlus className="h-4 w-4 text-blue-500" />
           Save as Template
@@ -1294,6 +1295,7 @@ export default function InvoiceForm({
           type="button"
           variant="secondary"
           onClick={() => window.history.back()}
+          className="order-2 w-full sm:order-3 sm:w-auto"
         >
           <X className="h-4 w-4 text-red-500" />
           Cancel
