@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { motion, AnimatePresence } from "motion/react";
 import { Trash2, AlertTriangle, X } from "lucide-react";
 import Button from "./Button";
 
@@ -48,19 +49,23 @@ export function useConfirm() {
   }, []);
 
   const ConfirmDialogUI = useCallback(() => {
-    if (!state.open) return null;
+    if (typeof document === "undefined") return null;
     const { options } = state;
 
     return createPortal(
-      <ConfirmDialogInner
-        title={options.title || (options.variant === "danger" ? "Delete" : "Warning")}
-        description={options.description}
-        confirmLabel={options.confirmLabel || "Confirm"}
-        cancelLabel={options.cancelLabel || "Cancel"}
-        variant={options.variant || "default"}
-        onConfirm={handleConfirm}
-        onCancel={handleCancel}
-      />,
+      <AnimatePresence>
+        {state.open && (
+          <ConfirmDialogInner
+            title={options.title || (options.variant === "danger" ? "Delete" : "Warning")}
+            description={options.description}
+            confirmLabel={options.confirmLabel || "Confirm"}
+            cancelLabel={options.cancelLabel || "Cancel"}
+            variant={options.variant || "default"}
+            onConfirm={handleConfirm}
+            onCancel={handleCancel}
+          />
+        )}
+      </AnimatePresence>,
       document.body,
     );
   }, [state, handleConfirm, handleCancel]);
@@ -101,8 +106,22 @@ function ConfirmDialogInner({
     : "bg-amber-500 hover:bg-amber-600 text-white";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-[2px] p-4">
-      <div className="relative w-full max-w-sm rounded-2xl border border-(--border) bg-white dark:bg-[#1a1a1a] shadow-2xl p-8 text-center">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.15 }}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/25 backdrop-blur-[3px] p-4"
+      onClick={(e) => { if (e.target === e.currentTarget) onCancel(); }}
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.9 }}
+        transition={{ type: "spring", damping: 25, stiffness: 350 }}
+        className="relative w-full max-w-sm rounded-2xl border border-(--border) bg-white dark:bg-[#1a1a1a] shadow-2xl p-8 text-center"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Close button */}
         <button
           onClick={onCancel}
@@ -130,7 +149,7 @@ function ConfirmDialogInner({
             {confirmLabel}
           </Button>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

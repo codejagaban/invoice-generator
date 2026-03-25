@@ -12,6 +12,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { Pencil, Trash2, ArrowLeft, FileDown, Mail, CheckCircle2 } from "lucide-react";
 
+import { FadeInUp, StaggerContainer, StaggerItem } from "@/app/components/shared/Motion";
 import Button from "@/app/components/shared/Button";
 import { InputWithRef as Input } from "@/app/components/shared/Input";
 import Card from "@/app/components/shared/Card";
@@ -254,9 +255,9 @@ export default function InvoiceDetailPage() {
       <main className="mx-auto max-w-5xl px-6 py-8">
         <div className="space-y-6">
           {/* ── Hero: Total + Status + Actions ─────────────────── */}
-          <div className="grid gap-6 lg:grid-cols-3">
+          <StaggerContainer staggerDelay={0.08} className="grid gap-6 lg:grid-cols-3">
             {/* Total Amount Card */}
-            <Card className="lg:col-span-2">
+            <StaggerItem className="lg:col-span-2"><Card>
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-sm text-(--muted) mb-1">Total Amount</p>
@@ -359,10 +360,10 @@ export default function InvoiceDetailPage() {
                   <p className="text-sm font-semibold text-black dark:text-white mt-0.5">{invoice.items.length}</p>
                 </div>
               </div>
-            </Card>
+            </Card></StaggerItem>
 
             {/* Actions + Customer Card */}
-            <div className="space-y-4">
+            <StaggerItem><div className="space-y-4">
               {/* Actions */}
               <Card>
                 <p className="text-xs font-medium uppercase tracking-wider text-(--muted) mb-3">Actions</p>
@@ -393,11 +394,11 @@ export default function InvoiceDetailPage() {
                   </Link>
                 </div>
               </Card>
-            </div>
-          </div>
+            </div></StaggerItem>
+          </StaggerContainer>
 
           {/* ── Bill To ───────────────────────────────────────── */}
-          <Card>
+          <FadeInUp delay={0.2}><Card>
             <div className="flex items-start gap-4">
               <div className="h-10 w-10 rounded-full flex items-center justify-center text-sm font-bold bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400 shrink-0">
                 {invoice.customer.name.charAt(0).toUpperCase()}
@@ -417,7 +418,7 @@ export default function InvoiceDetailPage() {
                 )}
               </div>
             </div>
-          </Card>
+          </Card></FadeInUp>
 
           {/* ── Line Items Table ──────────────────────────────── */}
           <Card className="overflow-hidden p-0!">

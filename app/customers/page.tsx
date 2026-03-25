@@ -7,6 +7,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useDbReady } from "@/app/components/DbScopeProvider";
+import { FadeIn, FadeInUp, StaggerContainer, StaggerItem, motion, AnimatePresence } from "@/app/components/shared/Motion";
 import {
   User,
   Mail,
@@ -281,6 +282,7 @@ export default function CustomersPage() {
         ) : (
           <div className="space-y-6">
             {/* Search */}
+            <FadeIn>
             <Input
               type="text"
               placeholder="Search customer..."
@@ -289,6 +291,7 @@ export default function CustomersPage() {
               leadingIcon={<Search className="h-4 w-4" />}
               className="max-w-sm"
             />
+            </FadeIn>
 
             {/* Table */}
             {filteredCustomers.length === 0 ? (
@@ -307,7 +310,7 @@ export default function CustomersPage() {
                 </EmptyState>
               </Card>
             ) : (
-              <Card className="overflow-hidden p-0!">
+              <FadeInUp delay={0.1}><Card className="overflow-hidden p-0!">
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
@@ -366,16 +369,31 @@ export default function CustomersPage() {
                     </tbody>
                   </table>
                 </div>
-              </Card>
+              </Card></FadeInUp>
             )}
           </div>
         )}
       </main>
 
       {/* ── Add/Edit Customer Modal ─────────────────────────── */}
+      <AnimatePresence>
       {showForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-[2px] p-4">
-          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl border border-(--border) bg-white dark:bg-[#1a1a1a] shadow-2xl">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.15 }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/25 backdrop-blur-[3px] p-4"
+          onClick={(e) => { if (e.target === e.currentTarget) resetForm(); }}
+        >
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            transition={{ type: "spring", damping: 25, stiffness: 350 }}
+            className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl border border-(--border) bg-white dark:bg-[#1a1a1a] shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between border-b border-(--border) px-6 py-4">
               <h2 className="text-lg font-semibold text-black dark:text-white">
                 {editingId ? "Edit Customer" : "Add Customer"}
@@ -443,9 +461,10 @@ export default function CustomersPage() {
                 </Button>
               </div>
             </form>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
+      </AnimatePresence>
 
       <ConfirmDialogUI />
     </div>
