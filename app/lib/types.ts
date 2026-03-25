@@ -29,6 +29,8 @@ export interface InvoiceItem {
 
 export type InvoiceStatus = "draft" | "sent" | "paid" | "cancelled";
 
+export type DiscountType = "percentage" | "fixed";
+
 export interface Invoice {
   id: string;
   invoiceNumber: string;
@@ -40,6 +42,8 @@ export interface Invoice {
   items: InvoiceItem[];
   notes?: string;
   taxRate?: number;
+  discountType?: DiscountType;
+  discountValue?: number;
   currency: string;
   templateId?: string;
   accountId?: string;
@@ -66,6 +70,8 @@ export interface InvoiceSummary {
   subtotal: number;
   itemDiscount: number;
   subtotalAfterDiscount: number;
+  globalDiscount: number;
+  subtotalAfterAllDiscounts: number;
   taxAmount: number;
   total: number;
 }
