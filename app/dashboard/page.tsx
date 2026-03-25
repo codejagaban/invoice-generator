@@ -332,8 +332,9 @@ function StatusDonut({
   }
 
   const size = 120;
-  const strokeWidth = 20;
-  const radius = (size - strokeWidth) / 2;
+  const strokeWidth = 18;
+  const pad = 6;
+  const radius = (size - strokeWidth) / 2 - pad;
   const circumference = 2 * Math.PI * radius;
   const offsets = segments.reduce<number[]>((acc, _seg, i) => {
     acc.push(
@@ -348,7 +349,7 @@ function StatusDonut({
 
   return (
     <div className="flex items-center gap-6">
-      <svg width={size + 12} height={size + 12} viewBox={`-6 -6 ${size + 12} ${size + 12}`} className="shrink-0" onMouseLeave={() => setHoveredIdx(null)}>
+      <svg width={size} height={size} className="shrink-0" onMouseLeave={() => setHoveredIdx(null)}>
         {segments.map((seg, i) => {
           const dashLength = (seg.value / total) * circumference;
           const dashOffset = -offsets[i];
@@ -361,7 +362,7 @@ function StatusDonut({
               r={radius}
               fill="none"
               stroke={seg.color}
-              strokeWidth={isHovered ? strokeWidth + 6 : strokeWidth}
+              strokeWidth={isHovered ? strokeWidth + 4 : strokeWidth}
               strokeDasharray={`${dashLength} ${circumference - dashLength}`}
               strokeDashoffset={dashOffset}
               strokeLinecap="butt"
@@ -371,19 +372,18 @@ function StatusDonut({
           );
         })}
         <text
-          x="50%"
-          y={hoveredSeg ? "42%" : "50%"}
+          x={size / 2}
+          y={hoveredSeg ? size / 2 - 7 : size / 2}
           textAnchor="middle"
           dominantBaseline="central"
           className="text-2xl font-bold fill-black dark:fill-white"
-          style={{ transition: "y 0.15s" }}
         >
           {hoveredSeg ? hoveredSeg.value : total}
         </text>
         {hoveredSeg && (
           <text
-            x="50%"
-            y="60%"
+            x={size / 2}
+            y={size / 2 + 12}
             textAnchor="middle"
             dominantBaseline="central"
             className="text-[9px] fill-gray-500 dark:fill-gray-400"
