@@ -26,6 +26,7 @@ import {
   MapPin,
 } from "lucide-react";
 import Image from "next/image";
+import { motion, AnimatePresence } from "motion/react";
 import { useConfirm } from "@/app/components/shared/ConfirmDialog";
 import {
   getCompanyDetails,
@@ -237,9 +238,24 @@ export default function CompanyPage() {
       </main>
 
       {/* ── Add/Edit Company Modal ──────────────────────────── */}
+      <AnimatePresence>
       {showForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-[2px] p-4">
-          <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-xl border border-(--border) bg-white dark:bg-[#1a1a1a] shadow-2xl">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.15 }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/25 backdrop-blur-[3px] p-4"
+          onClick={(e) => { if (e.target === e.currentTarget) handleCancel(); }}
+        >
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            transition={{ type: "spring", damping: 25, stiffness: 350 }}
+            className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-xl border border-(--border) bg-white dark:bg-[#1a1a1a] shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between border-b border-(--border) px-6 py-4">
               <h2 className="text-lg font-semibold text-black dark:text-white">
                 {editingId ? "Edit Company" : "Add Company"}
@@ -255,9 +271,10 @@ export default function CompanyPage() {
                 onCancel={handleCancel}
               />
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
+      </AnimatePresence>
 
       <ConfirmDialogUI />
     </div>
