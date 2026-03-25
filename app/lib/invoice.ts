@@ -34,30 +34,34 @@ export function calculateInvoiceSummary(
     taxAmount += (itemTaxBase * taxRate) / 100;
   }
 
-  const subtotalAfterDiscount = subtotal - itemDiscount;
+  const r = (n: number) => Math.round(n * 100) / 100;
+
+  const subtotalAfterDiscount = r(subtotal - itemDiscount);
 
   // Apply global discount
   let globalDiscount = 0;
   if (discountValue && discountValue > 0) {
     if (discountType === "percentage") {
-      globalDiscount = (subtotalAfterDiscount * discountValue) / 100;
+      globalDiscount = r(subtotalAfterDiscount * discountValue / 100);
     } else {
       globalDiscount = Math.min(discountValue, subtotalAfterDiscount);
     }
   }
 
-  const subtotalAfterAllDiscounts = subtotalAfterDiscount - globalDiscount;
+  const subtotalAfterAllDiscounts = r(subtotalAfterDiscount - globalDiscount);
 
   // Recalculate tax on discounted amount if global discount applied
   if (globalDiscount > 0) {
-    taxAmount = (subtotalAfterAllDiscounts * globalTaxRate) / 100;
+    taxAmount = r(subtotalAfterAllDiscounts * globalTaxRate / 100);
+  } else {
+    taxAmount = r(taxAmount);
   }
 
-  const total = subtotalAfterAllDiscounts + taxAmount;
+  const total = r(subtotalAfterAllDiscounts + taxAmount);
 
   return {
-    subtotal,
-    itemDiscount,
+    subtotal: r(subtotal),
+    itemDiscount: r(itemDiscount),
     subtotalAfterDiscount,
     globalDiscount,
     subtotalAfterAllDiscounts,

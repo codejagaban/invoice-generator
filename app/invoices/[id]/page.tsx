@@ -209,15 +209,16 @@ export default function InvoiceDetailPage() {
     (sum, item) => sum + item.quantity * item.rate,
     0,
   );
+  const r = (n: number) => Math.round(n * 100) / 100;
   let discountAmount = 0;
   if (invoice.discountValue && invoice.discountValue > 0) {
     discountAmount = invoice.discountType === "percentage"
-      ? (total * invoice.discountValue) / 100
+      ? r(total * invoice.discountValue / 100)
       : Math.min(invoice.discountValue, total);
   }
-  const afterDiscount = total - discountAmount;
-  const taxAmount = (afterDiscount * (invoice.taxRate || 0)) / 100;
-  const totalWithTax = afterDiscount + taxAmount;
+  const afterDiscount = r(total - discountAmount);
+  const taxAmount = r(afterDiscount * (invoice.taxRate || 0) / 100);
+  const totalWithTax = r(afterDiscount + taxAmount);
 
   return (
     <div className="min-h-screen bg-(--background)">
