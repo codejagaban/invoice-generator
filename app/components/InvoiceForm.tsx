@@ -56,6 +56,7 @@ import {
   Trash2,
   User,
   X,
+  ChevronDown,
 } from "lucide-react";
 import { validateInvoiceForm } from "@/app/lib/validation";
 import {
@@ -63,32 +64,138 @@ import {
   generateInvoiceNumber,
   formatCurrency,
 } from "@/app/lib/invoice";
-import { createTemplate, getCustomers, getCompanyDetails, getSettings, getAccountDetails } from "@/app/lib/storage";
+import {
+  createTemplate,
+  getCustomers,
+  getCompanyDetails,
+  getSettings,
+  getAccountDetails,
+} from "@/app/lib/storage";
 import { useDbReady } from "@/app/components/DbScopeProvider";
 
 const COUNTRIES = [
   "United Kingdom",
   "United States",
-  "Afghanistan", "Albania", "Algeria", "Angola", "Argentina", "Armenia",
-  "Australia", "Austria", "Azerbaijan", "Bahrain", "Bangladesh", "Belarus",
-  "Belgium", "Bolivia", "Bosnia and Herzegovina", "Botswana", "Brazil",
-  "Bulgaria", "Cambodia", "Cameroon", "Canada", "Chile", "China", "Colombia",
-  "Costa Rica", "Croatia", "Cuba", "Cyprus", "Czech Republic", "Denmark",
-  "Dominican Republic", "Ecuador", "Egypt", "El Salvador", "Estonia",
-  "Ethiopia", "Finland", "France", "Georgia", "Germany", "Ghana", "Greece",
-  "Guatemala", "Honduras", "Hong Kong", "Hungary", "Iceland", "India",
-  "Indonesia", "Iran", "Iraq", "Ireland", "Israel", "Italy", "Jamaica",
-  "Japan", "Jordan", "Kazakhstan", "Kenya", "Kuwait", "Latvia", "Lebanon",
-  "Libya", "Lithuania", "Luxembourg", "Malaysia", "Malta", "Mexico",
-  "Moldova", "Morocco", "Mozambique", "Myanmar", "Nepal", "Netherlands",
-  "New Zealand", "Nicaragua", "Nigeria", "North Korea", "Norway", "Oman",
-  "Pakistan", "Panama", "Paraguay", "Peru", "Philippines", "Poland",
-  "Portugal", "Qatar", "Romania", "Russia", "Saudi Arabia", "Senegal",
-  "Serbia", "Singapore", "Slovakia", "Slovenia", "Somalia", "South Africa",
-  "South Korea", "Spain", "Sri Lanka", "Sudan", "Sweden", "Switzerland",
-  "Syria", "Taiwan", "Tanzania", "Thailand", "Tunisia", "Turkey",
-  "Uganda", "Ukraine", "United Arab Emirates", "Uruguay", "Uzbekistan",
-  "Venezuela", "Vietnam", "Yemen", "Zambia", "Zimbabwe",
+  "Afghanistan",
+  "Albania",
+  "Algeria",
+  "Angola",
+  "Argentina",
+  "Armenia",
+  "Australia",
+  "Austria",
+  "Azerbaijan",
+  "Bahrain",
+  "Bangladesh",
+  "Belarus",
+  "Belgium",
+  "Bolivia",
+  "Bosnia and Herzegovina",
+  "Botswana",
+  "Brazil",
+  "Bulgaria",
+  "Cambodia",
+  "Cameroon",
+  "Canada",
+  "Chile",
+  "China",
+  "Colombia",
+  "Costa Rica",
+  "Croatia",
+  "Cuba",
+  "Cyprus",
+  "Czech Republic",
+  "Denmark",
+  "Dominican Republic",
+  "Ecuador",
+  "Egypt",
+  "El Salvador",
+  "Estonia",
+  "Ethiopia",
+  "Finland",
+  "France",
+  "Georgia",
+  "Germany",
+  "Ghana",
+  "Greece",
+  "Guatemala",
+  "Honduras",
+  "Hong Kong",
+  "Hungary",
+  "Iceland",
+  "India",
+  "Indonesia",
+  "Iran",
+  "Iraq",
+  "Ireland",
+  "Israel",
+  "Italy",
+  "Jamaica",
+  "Japan",
+  "Jordan",
+  "Kazakhstan",
+  "Kenya",
+  "Kuwait",
+  "Latvia",
+  "Lebanon",
+  "Libya",
+  "Lithuania",
+  "Luxembourg",
+  "Malaysia",
+  "Malta",
+  "Mexico",
+  "Moldova",
+  "Morocco",
+  "Mozambique",
+  "Myanmar",
+  "Nepal",
+  "Netherlands",
+  "New Zealand",
+  "Nicaragua",
+  "Nigeria",
+  "North Korea",
+  "Norway",
+  "Oman",
+  "Pakistan",
+  "Panama",
+  "Paraguay",
+  "Peru",
+  "Philippines",
+  "Poland",
+  "Portugal",
+  "Qatar",
+  "Romania",
+  "Russia",
+  "Saudi Arabia",
+  "Senegal",
+  "Serbia",
+  "Singapore",
+  "Slovakia",
+  "Slovenia",
+  "Somalia",
+  "South Africa",
+  "South Korea",
+  "Spain",
+  "Sri Lanka",
+  "Sudan",
+  "Sweden",
+  "Switzerland",
+  "Syria",
+  "Taiwan",
+  "Tanzania",
+  "Thailand",
+  "Tunisia",
+  "Turkey",
+  "Uganda",
+  "Ukraine",
+  "United Arab Emirates",
+  "Uruguay",
+  "Uzbekistan",
+  "Venezuela",
+  "Vietnam",
+  "Yemen",
+  "Zambia",
+  "Zimbabwe",
 ];
 
 const CURRENCIES = [
@@ -118,6 +225,15 @@ export default function InvoiceForm({
 }: InvoiceFormProps) {
   const dbReady = useDbReady();
   const [isLoading, setIsLoading] = useState(false);
+  const [showCompanyDetails, setShowCompanyDetails] = useState(
+    !!(initialData?.company?.address || initialData?.company?.phone || initialData?.company?.taxId),
+  );
+  const [showCustomerDetails, setShowCustomerDetails] = useState(
+    !!(initialData?.customer.address || initialData?.customer.city),
+  );
+  const [showTaxDiscount, setShowTaxDiscount] = useState(
+    !!(initialData?.taxRate || initialData?.discountValue),
+  );
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showSaveTemplateModal, setShowSaveTemplateModal] = useState(false);
   const [templateName, setTemplateName] = useState("");
@@ -128,7 +244,9 @@ export default function InvoiceForm({
   const [companies, setCompanies] = useState<CompanyDetails[]>([]);
   const [selectedCompanyId, setSelectedCompanyId] = useState<string>("");
   const [accounts, setAccounts] = useState<AccountDetails[]>([]);
-  const [selectedAccountId, setSelectedAccountId] = useState<string>(initialData?.accountId || "");
+  const [selectedAccountId, setSelectedAccountId] = useState<string>(
+    initialData?.accountId || "",
+  );
 
   const [formData, setFormData] = useState({
     invoiceNumber: initialData?.invoiceNumber || generateInvoiceNumber(),
@@ -157,6 +275,8 @@ export default function InvoiceForm({
     currency: initialData?.currency || "GBP",
     notes: initialData?.notes || "",
     taxRate: initialData?.taxRate || 0,
+    discountType: initialData?.discountType || ("percentage" as const),
+    discountValue: initialData?.discountValue || 0,
   });
 
   const [items, setItems] = useState<InvoiceItem[]>(
@@ -169,17 +289,20 @@ export default function InvoiceForm({
       },
     ],
   );
-  const [templateId, setTemplateId] = useState<string | undefined>(initialData?.templateId);
+  const [templateId, setTemplateId] = useState<string | undefined>(
+    initialData?.templateId,
+  );
 
   useEffect(() => {
     if (!dbReady) return;
     (async () => {
-      const [storedCustomers, storedCompanies, storedAccounts, settings] = await Promise.all([
-        getCustomers(),
-        getCompanyDetails(),
-        getAccountDetails(),
-        getSettings(),
-      ]);
+      const [storedCustomers, storedCompanies, storedAccounts, settings] =
+        await Promise.all([
+          getCustomers(),
+          getCompanyDetails(),
+          getAccountDetails(),
+          getSettings(),
+        ]);
       setCustomers(storedCustomers);
       setCompanies(storedCompanies);
       setAccounts(storedAccounts);
@@ -188,7 +311,10 @@ export default function InvoiceForm({
         if (defaultAccount) setSelectedAccountId(defaultAccount.id);
       }
       if (!initialData) {
-        setFormData((prev) => ({ ...prev, currency: settings.defaultCurrency }));
+        setFormData((prev) => ({
+          ...prev,
+          currency: settings.defaultCurrency,
+        }));
         // Auto-select default company
         const defaultCompany = storedCompanies.find((c) => c.isDefault);
         if (defaultCompany) {
@@ -209,7 +335,7 @@ export default function InvoiceForm({
         }
       }
     })();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dbReady]);
 
   // Load template from sessionStorage on mount
@@ -376,19 +502,24 @@ export default function InvoiceForm({
           country: formData.customerCountry,
           logo: formData.customerLogo || undefined,
         },
-        company: formData.companyName ? {
-          name: formData.companyName,
-          email: formData.companyEmail,
-          phone: formData.companyPhone || undefined,
-          address: formData.companyAddress,
-          city: formData.companyCity,
-          state: formData.companyState,
-          zipCode: formData.companyZipCode,
-          country: formData.companyCountry,
-          logo: formData.companyLogo || undefined,
-          taxId: formData.companyTaxId || undefined,
-        } : undefined,
-        accountId: selectedAccountId && selectedAccountId !== "none" ? selectedAccountId : undefined,
+        company: formData.companyName
+          ? {
+              name: formData.companyName,
+              email: formData.companyEmail,
+              phone: formData.companyPhone || undefined,
+              address: formData.companyAddress,
+              city: formData.companyCity,
+              state: formData.companyState,
+              zipCode: formData.companyZipCode,
+              country: formData.companyCountry,
+              logo: formData.companyLogo || undefined,
+              taxId: formData.companyTaxId || undefined,
+            }
+          : undefined,
+        accountId:
+          selectedAccountId && selectedAccountId !== "none"
+            ? selectedAccountId
+            : undefined,
         items,
         notes: formData.notes,
         taxRate: Number(formData.taxRate),
@@ -450,7 +581,10 @@ export default function InvoiceForm({
         },
         company: formData.companyName
           ? {
-              id: selectedCompanyId || initialData?.company?.id || String(Date.now()),
+              id:
+                selectedCompanyId ||
+                initialData?.company?.id ||
+                String(Date.now()),
               name: formData.companyName,
               email: formData.companyEmail,
               phone: formData.companyPhone || undefined,
@@ -462,16 +596,26 @@ export default function InvoiceForm({
               logo: formData.companyLogo || undefined,
               taxId: formData.companyTaxId || undefined,
               isDefault: false,
-              createdAt: initialData?.company?.createdAt || new Date().toISOString(),
+              createdAt:
+                initialData?.company?.createdAt || new Date().toISOString(),
               updatedAt: new Date().toISOString(),
             }
           : undefined,
         items,
         notes: formData.notes,
         taxRate: Number(formData.taxRate),
+        discountType:
+          formData.discountValue > 0 ? formData.discountType : undefined,
+        discountValue:
+          formData.discountValue > 0
+            ? Number(formData.discountValue)
+            : undefined,
         currency: formData.currency,
         templateId,
-        accountId: selectedAccountId && selectedAccountId !== "none" ? selectedAccountId : undefined,
+        accountId:
+          selectedAccountId && selectedAccountId !== "none"
+            ? selectedAccountId
+            : undefined,
         createdAt: initialData?.createdAt || new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -488,7 +632,12 @@ export default function InvoiceForm({
     }
   };
 
-  const summary = calculateInvoiceSummary(items, Number(formData.taxRate));
+  const summary = calculateInvoiceSummary(
+    items,
+    Number(formData.taxRate),
+    formData.discountType,
+    Number(formData.discountValue),
+  );
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
@@ -615,77 +764,90 @@ export default function InvoiceForm({
               leadingIcon={<Mail className="h-4 w-4" />}
             />
           </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Input
-              label="Phone"
-              name="companyPhone"
-              value={formData.companyPhone}
-              onChange={handleInputChange}
-            />
-            <Input
-              label="Tax ID"
-              name="companyTaxId"
-              value={formData.companyTaxId}
-              onChange={handleInputChange}
-            />
-          </div>
-          <Input
-            label="Address"
-            name="companyAddress"
-            value={formData.companyAddress}
-            onChange={handleInputChange}
-            leadingIcon={<MapPin className="h-4 w-4" />}
-          />
-          <div className="grid gap-4 sm:grid-cols-3">
-            <Input
-              label="City"
-              name="companyCity"
-              value={formData.companyCity}
-              onChange={handleInputChange}
-              leadingIcon={<Building2 className="h-4 w-4" />}
-            />
-            <Input
-              label="State/Province"
-              name="companyState"
-              value={formData.companyState}
-              onChange={handleInputChange}
-              leadingIcon={<Map className="h-4 w-4" />}
-            />
-            <Input
-              label="Zip/Postal Code"
-              name="companyZipCode"
-              value={formData.companyZipCode}
-              onChange={handleInputChange}
-              leadingIcon={<Hash className="h-4 w-4" />}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-(--muted) mb-1">
-              Country
-            </label>
-            <div className="relative">
-              <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-(--muted)">
-                <Globe className="h-4 w-4" />
-              </span>
-              <Select
-                value={formData.companyCountry || undefined}
-                onValueChange={(value) =>
-                  setFormData((prev) => ({ ...prev, companyCountry: value }))
-                }
-              >
-                <SelectTrigger className="pl-9">
-                  <SelectValue placeholder="Select country" />
-                </SelectTrigger>
-                <SelectContent>
-                  {COUNTRIES.map((country) => (
-                    <SelectItem key={country} value={country}>
-                      {country}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+          {/* More Details toggle */}
+          <button
+            type="button"
+            onClick={() => setShowCompanyDetails(!showCompanyDetails)}
+            className="flex items-center gap-1.5 text-sm font-medium text-(--muted) hover:text-black dark:hover:text-white transition-colors"
+          >
+            <ChevronDown className={`h-4 w-4 transition-transform ${showCompanyDetails ? "rotate-180" : ""}`} />
+            {showCompanyDetails ? "Hide details" : "More details (phone, address, tax ID)"}
+          </button>
+          {showCompanyDetails && (
+            <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Input
+                  label="Phone"
+                  name="companyPhone"
+                  value={formData.companyPhone}
+                  onChange={handleInputChange}
+                />
+                <Input
+                  label="Tax ID"
+                  name="companyTaxId"
+                  value={formData.companyTaxId}
+                  onChange={handleInputChange}
+                />
+              </div>
+              <Input
+                label="Address"
+                name="companyAddress"
+                value={formData.companyAddress}
+                onChange={handleInputChange}
+                leadingIcon={<MapPin className="h-4 w-4" />}
+              />
+              <div className="grid gap-4 sm:grid-cols-3">
+                <Input
+                  label="City"
+                  name="companyCity"
+                  value={formData.companyCity}
+                  onChange={handleInputChange}
+                  leadingIcon={<Building2 className="h-4 w-4" />}
+                />
+                <Input
+                  label="State/Province"
+                  name="companyState"
+                  value={formData.companyState}
+                  onChange={handleInputChange}
+                  leadingIcon={<Map className="h-4 w-4" />}
+                />
+                <Input
+                  label="Zip/Postal Code"
+                  name="companyZipCode"
+                  value={formData.companyZipCode}
+                  onChange={handleInputChange}
+                  leadingIcon={<Hash className="h-4 w-4" />}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-(--muted) mb-1">
+                  Country
+                </label>
+                <div className="relative">
+                  <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-(--muted)">
+                    <Globe className="h-4 w-4" />
+                  </span>
+                  <Select
+                    value={formData.companyCountry || undefined}
+                    onValueChange={(value) =>
+                      setFormData((prev) => ({ ...prev, companyCountry: value }))
+                    }
+                  >
+                    <SelectTrigger className="pl-9">
+                      <SelectValue placeholder="Select country" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {COUNTRIES.map((country) => (
+                        <SelectItem key={country} value={country}>
+                          {country}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
             </div>
-          </div>
+          )}
         </CardContent>
       </Card>
 
@@ -751,63 +913,76 @@ export default function InvoiceForm({
               leadingIcon={<Mail className="h-4 w-4" />}
             />
           </div>
-          <Input
-            label="Address"
-            name="customerAddress"
-            value={formData.customerAddress}
-            onChange={handleInputChange}
-            leadingIcon={<MapPin className="h-4 w-4" />}
-          />
-          <div className="grid gap-4 sm:grid-cols-3">
-            <Input
-              label="City"
-              name="customerCity"
-              value={formData.customerCity}
-              onChange={handleInputChange}
-              leadingIcon={<Building2 className="h-4 w-4" />}
-            />
-            <Input
-              label="State/Province"
-              name="customerState"
-              value={formData.customerState}
-              onChange={handleInputChange}
-              leadingIcon={<Map className="h-4 w-4" />}
-            />
-            <Input
-              label="Zip/Postal Code"
-              name="customerZipCode"
-              value={formData.customerZipCode}
-              onChange={handleInputChange}
-              leadingIcon={<Hash className="h-4 w-4" />}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-(--muted) mb-1">
-              Country
-            </label>
-            <div className="relative">
-              <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-(--muted)">
-                <Globe className="h-4 w-4" />
-              </span>
-              <Select
-                value={formData.customerCountry}
-                onValueChange={(value) =>
-                  setFormData((prev) => ({ ...prev, customerCountry: value }))
-                }
-              >
-                <SelectTrigger className="pl-9">
-                  <SelectValue placeholder="Select country" />
-                </SelectTrigger>
-                <SelectContent>
-                  {COUNTRIES.map((country) => (
-                    <SelectItem key={country} value={country}>
-                      {country}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+          {/* More Details toggle */}
+          <button
+            type="button"
+            onClick={() => setShowCustomerDetails(!showCustomerDetails)}
+            className="flex items-center gap-1.5 text-sm font-medium text-(--muted) hover:text-black dark:hover:text-white transition-colors"
+          >
+            <ChevronDown className={`h-4 w-4 transition-transform ${showCustomerDetails ? "rotate-180" : ""}`} />
+            {showCustomerDetails ? "Hide details" : "More details (address, city, country)"}
+          </button>
+          {showCustomerDetails && (
+            <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
+              <Input
+                label="Address"
+                name="customerAddress"
+                value={formData.customerAddress}
+                onChange={handleInputChange}
+                leadingIcon={<MapPin className="h-4 w-4" />}
+              />
+              <div className="grid gap-4 sm:grid-cols-3">
+                <Input
+                  label="City"
+                  name="customerCity"
+                  value={formData.customerCity}
+                  onChange={handleInputChange}
+                  leadingIcon={<Building2 className="h-4 w-4" />}
+                />
+                <Input
+                  label="State/Province"
+                  name="customerState"
+                  value={formData.customerState}
+                  onChange={handleInputChange}
+                  leadingIcon={<Map className="h-4 w-4" />}
+                />
+                <Input
+                  label="Zip/Postal Code"
+                  name="customerZipCode"
+                  value={formData.customerZipCode}
+                  onChange={handleInputChange}
+                  leadingIcon={<Hash className="h-4 w-4" />}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-(--muted) mb-1">
+                  Country
+                </label>
+                <div className="relative">
+                  <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-(--muted)">
+                    <Globe className="h-4 w-4" />
+                  </span>
+                  <Select
+                    value={formData.customerCountry}
+                    onValueChange={(value) =>
+                      setFormData((prev) => ({ ...prev, customerCountry: value }))
+                    }
+                  >
+                    <SelectTrigger className="pl-9">
+                      <SelectValue placeholder="Select country" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {COUNTRIES.map((country) => (
+                        <SelectItem key={country} value={country}>
+                          {country}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
             </div>
-          </div>
+          )}
         </CardContent>
       </Card>
 
@@ -851,7 +1026,11 @@ export default function InvoiceForm({
                     </div>
                     <Input
                       type="text"
-                      placeholder={item.type === "hours" ? "Service / task description" : "Item description"}
+                      placeholder={
+                        item.type === "hours"
+                          ? "Service / task description"
+                          : "Item description"
+                      }
                       value={item.description}
                       onChange={(e) =>
                         handleItemChange(index, "description", e.target.value)
@@ -880,7 +1059,13 @@ export default function InvoiceForm({
                         }
                         min="0.01"
                         step={item.type === "hours" ? "0.25" : "0.01"}
-                        leadingIcon={item.type === "hours" ? <Clock className="h-4 w-4" /> : <Hash className="h-4 w-4" />}
+                        leadingIcon={
+                          item.type === "hours" ? (
+                            <Clock className="h-4 w-4" />
+                          ) : (
+                            <Hash className="h-4 w-4" />
+                          )
+                        }
                       />
                     </div>
                     <div>
@@ -934,25 +1119,69 @@ export default function InvoiceForm({
         </CardContent>
       </Card>
 
-      {/* Tax & Totals */}
+      {/* Totals */}
       <Card>
         <CardHeader>
-          <CardTitle>Tax & Totals</CardTitle>
+          <CardTitle>Totals</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Input
-              label="Tax Rate (%)"
-              name="taxRate"
-              type="number"
-              value={formData.taxRate}
-              onChange={handleInputChange}
-              min="0"
-              max="100"
-              step="0.01"
-              leadingIcon={<Percent className="h-4 w-4" />}
-            />
-          </div>
+          {/* Toggle for tax & discount */}
+          <button
+            type="button"
+            onClick={() => setShowTaxDiscount(!showTaxDiscount)}
+            className="flex items-center gap-1.5 text-sm font-medium text-(--muted) hover:text-black dark:hover:text-white transition-colors"
+          >
+            <ChevronDown className={`h-4 w-4 transition-transform ${showTaxDiscount ? "rotate-180" : ""}`} />
+            {showTaxDiscount ? "Hide tax & discount" : "Add tax or discount"}
+          </button>
+          {showTaxDiscount && (
+            <div className="grid gap-4 sm:grid-cols-2 animate-in fade-in slide-in-from-top-2 duration-200">
+              <Input
+                label="Tax Rate (%)"
+                name="taxRate"
+                type="number"
+                value={formData.taxRate}
+                onChange={handleInputChange}
+                min="0"
+                max="100"
+                step="0.01"
+                leadingIcon={<Percent className="h-4 w-4" />}
+              />
+              <div>
+                <label className="block text-sm font-medium text-(--muted) mb-1">Discount</label>
+                <div className="flex gap-2">
+                  <Select
+                    value={formData.discountType}
+                    onValueChange={(v) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        discountType: v as "percentage" | "fixed",
+                      }))
+                    }
+                  >
+                    <SelectTrigger className="w-24 shrink-0">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="percentage">%</SelectItem>
+                      <SelectItem value="fixed">Fixed</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Input
+                    name="discountValue"
+                    type="number"
+                    value={formData.discountValue}
+                    onChange={handleInputChange}
+                    min="0"
+                    step="0.01"
+                    placeholder={
+                      formData.discountType === "percentage" ? "0%" : "0.00"
+                    }
+                  />
+                </div>
+              </div>
+            </div>
+          )}
           <div className="space-y-2 border-t pt-4 border-(--border)">
             <div className="flex justify-between text-sm">
               <span className="text-(--muted)">Subtotal:</span>
@@ -962,9 +1191,23 @@ export default function InvoiceForm({
             </div>
             {summary.itemDiscount > 0 && (
               <div className="flex justify-between text-sm">
-                <span className="text-(--muted)">Discount:</span>
-                <span className="font-medium">
+                <span className="text-(--muted)">Item Discount:</span>
+                <span className="font-medium text-red-600 dark:text-red-400">
                   -{formatCurrency(summary.itemDiscount, formData.currency)}
+                </span>
+              </div>
+            )}
+            {summary.globalDiscount > 0 && (
+              <div className="flex justify-between text-sm">
+                <span className="text-(--muted)">
+                  Discount (
+                  {formData.discountType === "percentage"
+                    ? `${formData.discountValue}%`
+                    : "Fixed"}
+                  ):
+                </span>
+                <span className="font-medium text-red-600 dark:text-red-400">
+                  -{formatCurrency(summary.globalDiscount, formData.currency)}
                 </span>
               </div>
             )}
@@ -1012,7 +1255,10 @@ export default function InvoiceForm({
             <p className="text-sm text-(--muted) mb-3">
               Select a bank account to include payment details on the invoice.
             </p>
-            <Select value={selectedAccountId} onValueChange={setSelectedAccountId}>
+            <Select
+              value={selectedAccountId}
+              onValueChange={setSelectedAccountId}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="No bank account" />
               </SelectTrigger>

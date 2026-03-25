@@ -208,8 +208,15 @@ export default function InvoiceDetailPage() {
     (sum, item) => sum + item.quantity * item.rate,
     0,
   );
-  const taxAmount = (total * (invoice.taxRate || 0)) / 100;
-  const totalWithTax = total + taxAmount;
+  let discountAmount = 0;
+  if (invoice.discountValue && invoice.discountValue > 0) {
+    discountAmount = invoice.discountType === "percentage"
+      ? (total * invoice.discountValue) / 100
+      : Math.min(invoice.discountValue, total);
+  }
+  const afterDiscount = total - discountAmount;
+  const taxAmount = (afterDiscount * (invoice.taxRate || 0)) / 100;
+  const totalWithTax = afterDiscount + taxAmount;
 
   return (
     <div className="min-h-screen bg-(--background)">
@@ -454,6 +461,14 @@ export default function InvoiceDetailPage() {
                 <span className="text-(--muted)">Subtotal</span>
                 <span className="font-medium text-black dark:text-white tabular-nums">{formatCurrency(total, invoice.currency)}</span>
               </div>
+              {discountAmount > 0 && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-(--muted)">
+                    Discount {invoice.discountType === "percentage" ? `(${invoice.discountValue}%)` : "(Fixed)"}
+                  </span>
+                  <span className="font-medium text-red-600 dark:text-red-400 tabular-nums">-{formatCurrency(discountAmount, invoice.currency)}</span>
+                </div>
+              )}
               {invoice.taxRate! > 0 && (
                 <div className="flex justify-between text-sm">
                   <span className="text-(--muted)">Tax ({invoice.taxRate}%)</span>
