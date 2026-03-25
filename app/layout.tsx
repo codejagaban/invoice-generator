@@ -89,6 +89,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <script defer src="https://cloud.umami.is/script.js" data-website-id="dbf103bc-d0fa-4355-bc65-1b4b2cca9ceb" />
+      </head>
       <body className={`${inter.className} antialiased`}>
         <SessionProviderWrapper>
           <DbScopeProvider>
