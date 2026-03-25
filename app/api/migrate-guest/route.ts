@@ -8,7 +8,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import pool from "@/app/lib/pool";
 
-const DATA_TABLES = ["invoices", "customers", "templates", "company_details", "account_details", "settings"];
+const DATA_TABLES = [
+  "invoices",
+  "customers",
+  "templates",
+  "company_details",
+  "account_details",
+  "settings",
+];
 
 export async function POST(request: NextRequest) {
   try {
@@ -19,7 +26,10 @@ export async function POST(request: NextRequest) {
 
     const { guestId } = await request.json();
     if (!guestId) {
-      return NextResponse.json({ error: "No guest ID provided" }, { status: 400 });
+      return NextResponse.json(
+        { error: "No guest ID provided" },
+        { status: 400 },
+      );
     }
 
     // Verify the guest user exists
@@ -43,8 +53,17 @@ export async function POST(request: NextRequest) {
       totalMigrated += result.rowCount ?? 0;
     }
 
+    // Defensive: ensure the authenticated account is no longer anonymous.
+    await pool.query(
+      "UPDATE users SET is_anonymous = false, expires_at = NULL WHERE id = $1",
+      [realUserId],
+    );
+
     // Delete the anonymous user
-    await pool.query("DELETE FROM users WHERE id = $1 AND is_anonymous = true", [guestId]);
+    await pool.query(
+      "DELETE FROM users WHERE id = $1 AND is_anonymous = true",
+      [guestId],
+    );
 
     // Clear the cookie by setting it in the response
     const response = NextResponse.json({ migrated: totalMigrated });

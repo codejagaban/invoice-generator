@@ -24,20 +24,34 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         if (!credentials?.email || !credentials?.password) return null;
 
         const { rows } = await pool.query(
-          "SELECT id, name, email, image, password FROM users WHERE email = $1 LIMIT 1",
+          "SELECT id, name, email, image, password FROM users WHERE email = $1 AND is_anonymous = false LIMIT 1",
           [credentials.email as string],
         );
 
         const user = rows[0] as
-          | { id: string; name: string | null; email: string; image: string | null; password: string | null }
+          | {
+              id: string;
+              name: string | null;
+              email: string;
+              image: string | null;
+              password: string | null;
+            }
           | undefined;
 
         if (!user || !user.password) return null;
 
-        const isValid = await bcrypt.compare(credentials.password as string, user.password);
+        const isValid = await bcrypt.compare(
+          credentials.password as string,
+          user.password,
+        );
         if (!isValid) return null;
 
-        return { id: user.id, name: user.name, email: user.email, image: user.image };
+        return {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          image: user.image,
+        };
       },
     }),
   ],
@@ -60,15 +74,23 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           if (!existing) {
             const id = crypto.randomUUID();
             await pool.query(
-              `INSERT INTO users (id, name, email, email_verified, image, password, created_at)
-               VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-              [id, user.name ?? null, user.email ?? null, new Date().toISOString(), user.image ?? null, null, new Date().toISOString()],
+              `INSERT INTO users (id, name, email, email_verified, image, password, is_anonymous, expires_at, created_at)
+               VALUES ($1, $2, $3, $4, $5, $6, false, NULL, $7)`,
+              [
+                id,
+                user.name ?? null,
+                user.email ?? null,
+                new Date().toISOString(),
+                user.image ?? null,
+                null,
+                new Date().toISOString(),
+              ],
             );
             token.id = id;
           } else {
             token.id = existing.id;
             await pool.query(
-              "UPDATE users SET name = COALESCE(name, $1), image = COALESCE(image, $2) WHERE id = $3",
+              "UPDATE users SET name = COALESCE(name, $1), image = COALESCE(image, $2), is_anonymous = false, expires_at = NULL WHERE id = $3",
               [user.name ?? null, user.image ?? null, existing.id],
             );
           }
