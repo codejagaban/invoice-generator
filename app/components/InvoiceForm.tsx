@@ -226,7 +226,11 @@ export default function InvoiceForm({
   const dbReady = useDbReady();
   const [isLoading, setIsLoading] = useState(false);
   const [showCompanyDetails, setShowCompanyDetails] = useState(
-    !!(initialData?.company?.address || initialData?.company?.phone || initialData?.company?.taxId),
+    !!(
+      initialData?.company?.address ||
+      initialData?.company?.phone ||
+      initialData?.company?.taxId
+    ),
   );
   const [showCustomerDetails, setShowCustomerDetails] = useState(
     !!(initialData?.customer.address || initialData?.customer.city),
@@ -770,8 +774,12 @@ export default function InvoiceForm({
             onClick={() => setShowCompanyDetails(!showCompanyDetails)}
             className="flex items-center gap-1.5 text-sm font-medium text-(--muted) hover:text-black dark:hover:text-white transition-colors"
           >
-            <ChevronDown className={`h-4 w-4 transition-transform ${showCompanyDetails ? "rotate-180" : ""}`} />
-            {showCompanyDetails ? "Hide details" : "More details (phone, address, tax ID)"}
+            <ChevronDown
+              className={`h-4 w-4 transition-transform ${showCompanyDetails ? "rotate-180" : ""}`}
+            />
+            {showCompanyDetails
+              ? "Hide details"
+              : "More details (phone, address, tax ID)"}
           </button>
           {showCompanyDetails && (
             <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
@@ -830,7 +838,10 @@ export default function InvoiceForm({
                   <Select
                     value={formData.companyCountry || undefined}
                     onValueChange={(value) =>
-                      setFormData((prev) => ({ ...prev, companyCountry: value }))
+                      setFormData((prev) => ({
+                        ...prev,
+                        companyCountry: value,
+                      }))
                     }
                   >
                     <SelectTrigger className="pl-9">
@@ -919,8 +930,12 @@ export default function InvoiceForm({
             onClick={() => setShowCustomerDetails(!showCustomerDetails)}
             className="flex items-center gap-1.5 text-sm font-medium text-(--muted) hover:text-black dark:hover:text-white transition-colors"
           >
-            <ChevronDown className={`h-4 w-4 transition-transform ${showCustomerDetails ? "rotate-180" : ""}`} />
-            {showCustomerDetails ? "Hide details" : "More details (address, city, country)"}
+            <ChevronDown
+              className={`h-4 w-4 transition-transform ${showCustomerDetails ? "rotate-180" : ""}`}
+            />
+            {showCustomerDetails
+              ? "Hide details"
+              : "More details (address, city, country)"}
           </button>
           {showCustomerDetails && (
             <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
@@ -965,7 +980,10 @@ export default function InvoiceForm({
                   <Select
                     value={formData.customerCountry}
                     onValueChange={(value) =>
-                      setFormData((prev) => ({ ...prev, customerCountry: value }))
+                      setFormData((prev) => ({
+                        ...prev,
+                        customerCountry: value,
+                      }))
                     }
                   >
                     <SelectTrigger className="pl-9">
@@ -1131,7 +1149,9 @@ export default function InvoiceForm({
             onClick={() => setShowTaxDiscount(!showTaxDiscount)}
             className="flex items-center gap-1.5 text-sm font-medium text-(--muted) hover:text-black dark:hover:text-white transition-colors"
           >
-            <ChevronDown className={`h-4 w-4 transition-transform ${showTaxDiscount ? "rotate-180" : ""}`} />
+            <ChevronDown
+              className={`h-4 w-4 transition-transform ${showTaxDiscount ? "rotate-180" : ""}`}
+            />
             {showTaxDiscount ? "Hide tax & discount" : "Add tax or discount"}
           </button>
           {showTaxDiscount && (
@@ -1148,7 +1168,9 @@ export default function InvoiceForm({
                 leadingIcon={<Percent className="h-4 w-4" />}
               />
               <div>
-                <label className="block text-sm font-medium text-(--muted) mb-1">Discount</label>
+                <label className="block text-sm font-medium text-(--muted) mb-1">
+                  Discount
+                </label>
                 <div className="flex gap-2">
                   <Select
                     value={formData.discountType}
@@ -1278,7 +1300,11 @@ export default function InvoiceForm({
 
       {/* Actions */}
       <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-        <Button type="submit" isLoading={isLoading} className="w-full sm:w-auto">
+        <Button
+          type="submit"
+          isLoading={isLoading}
+          className="w-full sm:w-auto"
+        >
           <CheckCircle2 className="h-4 w-4 text-green-400" />
           {initialData ? "Update Invoice" : "Create Invoice"}
         </Button>
