@@ -40,8 +40,8 @@ export async function POST(request: NextRequest) {
     const id = crypto.randomUUID();
 
     await pool.query(
-      `INSERT INTO users (id, name, email, password, is_anonymous, expires_at, created_at)
-       VALUES ($1, $2, $3, $4, false, NULL, $5)`,
+      `INSERT INTO users (id, name, email, password, created_at)
+       VALUES ($1, $2, $3, $4, $5)`,
       [id, name, email, hashedPassword, new Date().toISOString()],
     );
 
