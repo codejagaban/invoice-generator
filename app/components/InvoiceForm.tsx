@@ -320,27 +320,30 @@ export default function InvoiceForm({
         if (defaultAccount) setSelectedAccountId(defaultAccount.id);
       }
       if (!initialData) {
+        const hasTemplate = !!sessionStorage.getItem("selectedTemplate");
         setFormData((prev) => ({
           ...prev,
           currency: settings.defaultCurrency,
         }));
-        // Auto-select default company
-        const defaultCompany = storedCompanies.find((c) => c.isDefault);
-        if (defaultCompany) {
-          setSelectedCompanyId(defaultCompany.id);
-          setFormData((prev) => ({
-            ...prev,
-            companyName: defaultCompany.name,
-            companyEmail: defaultCompany.email,
-            companyPhone: defaultCompany.phone || "",
-            companyAddress: defaultCompany.address,
-            companyCity: defaultCompany.city,
-            companyState: defaultCompany.state,
-            companyZipCode: defaultCompany.zipCode,
-            companyCountry: defaultCompany.country,
-            companyLogo: defaultCompany.logo || "",
-            companyTaxId: defaultCompany.taxId || "",
-          }));
+        // Auto-select default company only if no template is being loaded
+        if (!hasTemplate) {
+          const defaultCompany = storedCompanies.find((c) => c.isDefault);
+          if (defaultCompany) {
+            setSelectedCompanyId(defaultCompany.id);
+            setFormData((prev) => ({
+              ...prev,
+              companyName: defaultCompany.name,
+              companyEmail: defaultCompany.email,
+              companyPhone: defaultCompany.phone || "",
+              companyAddress: defaultCompany.address,
+              companyCity: defaultCompany.city,
+              companyState: defaultCompany.state,
+              companyZipCode: defaultCompany.zipCode,
+              companyCountry: defaultCompany.country,
+              companyLogo: defaultCompany.logo || "",
+              companyTaxId: defaultCompany.taxId || "",
+            }));
+          }
         }
       }
     })();
@@ -379,6 +382,11 @@ export default function InvoiceForm({
           notes: template.notes || "",
           taxRate: template.taxRate || 0,
         }));
+
+        // Open company details if template has company data
+        if (template.company?.name) {
+          setShowCompanyDetails(true);
+        }
 
         // Restore account selection
         if (template.accountId) {

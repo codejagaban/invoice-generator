@@ -2,11 +2,6 @@
  * PDF Generation API Route
  * POST: Generate a PDF version of an invoice
  *
- * TODO: Implement with a library like:
- * - pdfkit: npm install pdfkit
- * - html2pdf: npm install html2pdf.js
- * - jsPDF: npm install jspdf
- * - puppeteer: npm install puppeteer (for more complex PDFs)
  */
 
 import { NextRequest, NextResponse } from "next/server";
