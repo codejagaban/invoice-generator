@@ -7,7 +7,7 @@ import GuestPersistenceBanner from "./GuestPersistenceBanner";
 import SyncBanner from "./SyncBanner";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const pathname = usePathname();
 
   const isAuthPage = pathname === "/sign-in" || pathname === "/sign-up";
@@ -18,7 +18,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     <>
       <Navigation />
       <div className={showSidebar ? "lg:pl-64" : ""}>
-        {!session && !isAuthPage && !isHomePage && <GuestPersistenceBanner />}
+        {status !== "loading" && !session && !isAuthPage && !isHomePage && <GuestPersistenceBanner />}
         {session && <SyncBanner />}
         {children}
       </div>
