@@ -664,20 +664,32 @@ export default function DashboardPage() {
       const convert = (inv: Invoice) =>
         convertWithRates(getInvoiceAmount(inv), inv.currency, rates);
 
-      const thisMonth = filtered.filter((inv) => isThisMonth(inv.date));
-      const lastMonth = filtered.filter((inv) => isLastMonth(inv.date));
+      // For metric cards: use filtered data as "current period", compare against previous period
+      const currentPeriod = filtered;
+      // Calculate previous period for comparison
+      const previousPeriod = period === "this-month"
+        ? invoices.filter((inv) => isLastMonth(inv.date))
+        : period === "last-month"
+          ? invoices.filter((inv) => {
+              const d = new Date(inv.date);
+              const now = new Date();
+              const start = new Date(now.getFullYear(), now.getMonth() - 2, 1);
+              const end = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+              return d >= start && d < end;
+            })
+          : []; // no comparison for wider ranges
 
-      const thisMonthRevenue = thisMonth.reduce(
+      const thisMonthRevenue = currentPeriod.reduce(
         (s, inv) => s + convert(inv),
         0,
       );
-      const lastMonthRevenue = lastMonth.reduce(
+      const lastMonthRevenue = previousPeriod.reduce(
         (s, inv) => s + convert(inv),
         0,
       );
 
-      const thisMonthPaid = thisMonth.filter((inv) => inv.status === "paid");
-      const lastMonthPaid = lastMonth.filter((inv) => inv.status === "paid");
+      const thisMonthPaid = currentPeriod.filter((inv) => inv.status === "paid");
+      const lastMonthPaid = previousPeriod.filter((inv) => inv.status === "paid");
       const thisMonthPaidAmount = thisMonthPaid.reduce(
         (s, inv) => s + convert(inv),
         0,
@@ -791,9 +803,9 @@ export default function DashboardPage() {
         thisMonthRevenue,
         lastMonthRevenue,
         revenueChange: pctChange(thisMonthRevenue, lastMonthRevenue),
-        thisMonthCount: thisMonth.length,
-        lastMonthCount: lastMonth.length,
-        countChange: pctChange(thisMonth.length, lastMonth.length),
+        thisMonthCount: currentPeriod.length,
+        lastMonthCount: previousPeriod.length,
+        countChange: pctChange(currentPeriod.length, previousPeriod.length),
         thisMonthPaidAmount,
         lastMonthPaidAmount,
         paidChange: pctChange(thisMonthPaidAmount, lastMonthPaidAmount),
