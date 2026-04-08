@@ -574,7 +574,7 @@ export default function DashboardPage() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [defaultCurrency, setDefaultCurrency] = useState("GBP");
-  const [period, setPeriod] = useState<TimePeriod>("all");
+  const [period, setPeriod] = useState<TimePeriod>("this-month");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
 
   useEffect(() => {
@@ -982,8 +982,8 @@ export default function DashboardPage() {
                   <p className="mt-2 text-xs text-(--muted)">
                     {metrics.lastMonthRevenue > 0
                       ? metrics.thisMonthRevenue >= metrics.lastMonthRevenue
-                        ? `You earned extra ${formatCurrencyWithSymbol(metrics.thisMonthRevenue - metrics.lastMonthRevenue, defaultCurrency)} compared to last month`
-                        : `Down ${formatCurrencyWithSymbol(metrics.lastMonthRevenue - metrics.thisMonthRevenue, defaultCurrency)} compared to last month`
+                        ? `You earned extra ${formatCurrencyWithSymbol(metrics.thisMonthRevenue - metrics.lastMonthRevenue, defaultCurrency)} vs prev period`
+                        : `Down ${formatCurrencyWithSymbol(metrics.lastMonthRevenue - metrics.thisMonthRevenue, defaultCurrency)} vs prev period`
                       : "No data from last month"}
                   </p>
                 </Card>
@@ -1028,8 +1028,8 @@ export default function DashboardPage() {
                     {metrics.lastMonthPaidAmount > 0
                       ? metrics.thisMonthPaidAmount >=
                         metrics.lastMonthPaidAmount
-                        ? `Collected extra ${formatCurrencyWithSymbol(metrics.thisMonthPaidAmount - metrics.lastMonthPaidAmount, defaultCurrency)} compared to last month`
-                        : `Down ${formatCurrencyWithSymbol(metrics.lastMonthPaidAmount - metrics.thisMonthPaidAmount, defaultCurrency)} compared to last month`
+                        ? `Collected extra ${formatCurrencyWithSymbol(metrics.thisMonthPaidAmount - metrics.lastMonthPaidAmount, defaultCurrency)} vs prev period`
+                        : `Down ${formatCurrencyWithSymbol(metrics.lastMonthPaidAmount - metrics.thisMonthPaidAmount, defaultCurrency)} vs prev period`
                       : "No collections last month"}
                   </p>
                 </Card>
