@@ -982,8 +982,8 @@ export default function DashboardPage() {
                   <p className="mt-2 text-xs text-(--muted)">
                     {metrics.lastMonthRevenue > 0
                       ? metrics.thisMonthRevenue >= metrics.lastMonthRevenue
-                        ? `You earned extra ${formatCurrencyWithSymbol(metrics.thisMonthRevenue - metrics.lastMonthRevenue, defaultCurrency)} vs prev period`
-                        : `Down ${formatCurrencyWithSymbol(metrics.lastMonthRevenue - metrics.thisMonthRevenue, defaultCurrency)} vs prev period`
+                        ? `You earned extra ${formatCurrencyWithSymbol(metrics.thisMonthRevenue - metrics.lastMonthRevenue, defaultCurrency)} vs previous month`
+                        : `Down ${formatCurrencyWithSymbol(metrics.lastMonthRevenue - metrics.thisMonthRevenue, defaultCurrency)} vs previous month`
                       : "No data from last month"}
                   </p>
                 </Card>
@@ -1028,8 +1028,8 @@ export default function DashboardPage() {
                     {metrics.lastMonthPaidAmount > 0
                       ? metrics.thisMonthPaidAmount >=
                         metrics.lastMonthPaidAmount
-                        ? `Collected extra ${formatCurrencyWithSymbol(metrics.thisMonthPaidAmount - metrics.lastMonthPaidAmount, defaultCurrency)} vs prev period`
-                        : `Down ${formatCurrencyWithSymbol(metrics.lastMonthPaidAmount - metrics.thisMonthPaidAmount, defaultCurrency)} vs prev period`
+                        ? `Collected extra ${formatCurrencyWithSymbol(metrics.thisMonthPaidAmount - metrics.lastMonthPaidAmount, defaultCurrency)} vs previous month`
+                        : `Down ${formatCurrencyWithSymbol(metrics.lastMonthPaidAmount - metrics.thisMonthPaidAmount, defaultCurrency)} vs previous month`
                       : "No collections last month"}
                   </p>
                 </Card>
