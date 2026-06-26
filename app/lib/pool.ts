@@ -1,6 +1,4 @@
 import { Pool } from "pg";
-import fs from "fs";
-import path from "path";
 
 if (!process.env.DATABASE_URL) {
   throw new Error("DATABASE_URL environment variable is not set");
@@ -10,23 +8,18 @@ const isLocalhost =
   process.env.DATABASE_URL.includes("localhost") ||
   process.env.DATABASE_URL.includes("127.0.0.1");
 
-function getSslConfig(): false | { rejectUnauthorized: boolean; ca?: string } {
+// Aiven serves a self-signed CA, so it can't be verified against the public
+// bundle. Neon (and other managed providers) use publicly-trusted certs and
+// are verified. This makes the app safe to deploy whether prod still points at
+// Aiven or has already cut over to Neon — no deploy-ordering required.
+const isAiven = process.env.DATABASE_URL.includes("aivencloud.com");
+
+function getSslConfig(): false | { rejectUnauthorized: boolean } {
   if (isLocalhost) return false;
-
-  // Try to load Aiven CA certificate
-  const caPath = path.join(process.cwd(), "certs", "ca.pem");
-  if (fs.existsSync(caPath)) {
-    return {
-      rejectUnauthorized: true,
-      ca: fs.readFileSync(caPath, "utf8"),
-    };
-  }
-
-  // Fallback: accept self-signed certs if no CA file
-  return { rejectUnauthorized: false };
+  return { rejectUnauthorized: !isAiven };
 }
 
-// Strip sslmode from URL — we configure SSL manually via the ssl option
+// Strip sslmode from URL — we configure SSL via the ssl option below.
 const connectionString = process.env.DATABASE_URL.replace(/[?&]sslmode=[^&]*/g, "");
 
 const pool = new Pool({

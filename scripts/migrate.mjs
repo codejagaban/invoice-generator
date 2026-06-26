@@ -4,7 +4,7 @@
  *   node --env-file=.env.production scripts/migrate.mjs     # prod (Aiven)
  */
 import pg from "pg";
-import { readFileSync, existsSync } from "fs";
+import { readFileSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 
@@ -23,16 +23,9 @@ const isLocalhost =
 
 function getSslConfig() {
   if (isLocalhost) return false;
-
-  const caPath = join(projectRoot, "certs", "ca.pem");
-  if (existsSync(caPath)) {
-    return {
-      rejectUnauthorized: true,
-      ca: readFileSync(caPath, "utf8"),
-    };
-  }
-
-  return { rejectUnauthorized: false };
+  // Managed providers (Neon) use publicly-trusted certs — verify against the
+  // built-in CA bundle. No bundled CA file needed.
+  return { rejectUnauthorized: true };
 }
 
 // Strip sslmode from URL — we configure SSL manually via the ssl option

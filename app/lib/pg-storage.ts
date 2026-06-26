@@ -20,6 +20,23 @@ async function query(text: string, params: unknown[] = []) {
   return rows;
 }
 
+/**
+ * Every logo URL referenced anywhere in the database — the top-level `logo`
+ * columns plus the snapshots embedded in invoice/template JSONB. Used by Blob
+ * garbage collection to decide which uploaded logos are still in use.
+ */
+export async function pgGetReferencedLogoUrls(): Promise<string[]> {
+  const rows = await query(`
+    SELECT logo AS url FROM customers WHERE logo IS NOT NULL
+    UNION SELECT logo FROM company_details WHERE logo IS NOT NULL
+    UNION SELECT customer->>'logo' FROM invoices WHERE customer->>'logo' IS NOT NULL
+    UNION SELECT company->>'logo' FROM invoices WHERE company->>'logo' IS NOT NULL
+    UNION SELECT customer->>'logo' FROM templates WHERE customer->>'logo' IS NOT NULL
+    UNION SELECT company->>'logo' FROM templates WHERE company->>'logo' IS NOT NULL
+  `);
+  return rows.map((r) => r.url as string).filter(Boolean);
+}
+
 // ============ INVOICE STORAGE ============
 
 export async function pgGetInvoices(userId: string): Promise<Invoice[]> {

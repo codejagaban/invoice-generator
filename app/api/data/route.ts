@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import * as pg from "@/app/lib/pg-storage";
+import { uploadLogos } from "@/app/lib/blob";
 
 async function getUserId(): Promise<string | null> {
   const session = await auth();
@@ -19,7 +20,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { action, store, id, data, updates } = await request.json();
+    const { action, store, id, data: rawData, updates: rawUpdates } =
+      await request.json();
+
+    // Upload any base64 logos to Blob and swap in the URL before persisting,
+    // so Postgres only ever stores a short URL.
+    const data = rawData ? await uploadLogos(userId, rawData) : rawData;
+    const updates = rawUpdates
+      ? await uploadLogos(userId, rawUpdates)
+      : rawUpdates;
 
     let result: unknown = null;
 
