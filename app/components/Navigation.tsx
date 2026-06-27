@@ -88,9 +88,17 @@ export default function Navigation() {
   // Top bar for home page or unauthenticated users
   if (status === "loading" || !session || pathname === "/") {
     const showGuestNav = !session && pathname !== "/";
+    // The home route is theme-locked dark, so the nav goes dark + glassy there only.
+    const isHome = pathname === "/";
     return (
       <>
-        <header className="border-b border-b-(--border) bg-(--surface) sticky top-0 z-50">
+        <header
+          className={
+            isHome
+              ? "sticky top-0 z-50 border-b border-black/10 bg-[#fafafa]/70 backdrop-blur-md dark:border-white/10 dark:bg-[#0a0a0a]/70"
+              : "border-b border-b-(--border) bg-(--surface) sticky top-0 z-50"
+          }
+        >
           <nav className="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between">
             {/* Left: hamburger (mobile, non-home guest) + logo */}
             <div className="flex items-center gap-2">
