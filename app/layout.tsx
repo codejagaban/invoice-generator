@@ -1,8 +1,13 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 
-const inter = Inter({
+const geist = Geist({
   subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
+  subsets: ["latin"],
+  variable: "--font-geist-mono",
 });
 import AppShell from "@/app/components/AppShell";
 import DbScopeProvider from "@/app/components/DbScopeProvider";
@@ -92,7 +97,7 @@ export default function RootLayout({
       <head>
         <script defer src="https://cloud.umami.is/script.js" data-website-id="dbf103bc-d0fa-4355-bc65-1b4b2cca9ceb" />
       </head>
-      <body className={`${inter.className} antialiased`}>
+      <body className={`${geist.className} ${geistMono.variable} antialiased`}>
         <SessionProviderWrapper>
           <DbScopeProvider>
             <AppShell>{children}</AppShell>
