@@ -3,6 +3,7 @@
 @theme {
   /* Matte black replaces pure black across all utility classes */
   --color-black: #0d0d0d;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
 }
 
 @layer base {
@@ -13,6 +14,10 @@
     --surface-raised: #f9f9f9;
     --border: #e2e2e2;
     --muted: #6b7280;
+
+    /* Landing: dot-grid + cursor-spotlight tint, flips with scheme */
+    --home-dot: rgba(0, 0, 0, 0.1);
+    --home-spot: rgba(0, 0, 0, 0.05);
   }
 
   @media (prefers-color-scheme: dark) {
@@ -23,6 +28,9 @@
       --surface-raised: #222222;
       --border: #2c2c2c;
       --muted: #9ca3af;
+
+      --home-dot: rgba(255, 255, 255, 0.18);
+      --home-spot: rgba(255, 255, 255, 0.06);
     }
   }
 
@@ -75,6 +83,49 @@
 
   to {
     transform: rotate(360deg);
+  }
+}
+
+/* Landing: continuous currency marquee (track is duplicated, so -50% loops seamlessly) */
+@keyframes marquee-x {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* Landing: ambient hero light-bloom */
+@keyframes bloom-pulse {
+
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.85;
+    transform: scale(1.06);
+  }
+}
+
+.animate-marquee-x {
+  animation: marquee-x 38s linear infinite;
+}
+
+.animate-bloom {
+  animation: bloom-pulse 7s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  .animate-marquee-x,
+  .animate-bloom,
+  [data-float] {
+    animation: none !important;
   }
 }
 
